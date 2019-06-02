@@ -1,15 +1,17 @@
-apiVersion: extensions/v1beta1
-kind: Deployment
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   name: {{ template "fullname" . }}
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-spec:
+spec:  
   replicas: {{ .Values.replicaCount }}
+  serviceName: {{ template "fullname" . }}
+  selector:
+    matchLabels:
+      app: {{ template "fullname" . }} # has to match .spec.template.metadata.labels
   template:
     metadata:
-      annotations:
-        buildID: {{ .Values.buildID }}
       labels:
         app: {{ template "fullname" . }}
     spec:
@@ -25,3 +27,18 @@ spec:
         {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 12 }}
+        volumeMounts:
+        - name: datadir
+          mountPath: /opt/solr/server/solr
+          subPath: data
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+    spec:
+      accessModes: [ "ReadWriteMany" ]
+      resources:
+        requests:
+          storage: {{ .Values.storage }}
+      {{- if .Values.storageClass }}
+      storageClassName: {{ .Values.storageClassName | quote }}
+      {{- end }}
