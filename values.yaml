@@ -5,6 +5,7 @@ replicaCount: 1
 image:
   name: xwiki:lts-mysql-tomcat
   pullPolicy: IfNotPresent
+  tag: 123
 service:
   portName: node
   type: ClusterIP
