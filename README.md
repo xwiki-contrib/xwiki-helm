@@ -8,7 +8,7 @@ This is the XWiki [Helm Chart](https://helm.sh/docs/developing_charts) aiming to
 * XWiki Installation Guide: https://www.xwiki.org/xwiki/bin/view/Documentation/AdminGuide/Installation
 * XWiki Docker : https://github.com/xwiki-contrib/docker-xwiki
 
-## Project informations
+## Project Information
 
 * Project Lead: [Ashish Sharma](https://www.xwiki.org/xwiki/bin/view/XWiki/ashish932)
 * [Issue Tracker](http://jira.xwiki.org/browse/HELM)
