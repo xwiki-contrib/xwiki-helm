@@ -3,8 +3,9 @@
 # Declare variables to be passed into your templates.
 replicaCount: 1
 image:
-  name: xwiki:lts-mysql-tomcat
+  name: xwiki
   pullPolicy: IfNotPresent
+  tag: lts-mysql-tomcat
 service:
   portName: node
   type: ClusterIP
