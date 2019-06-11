@@ -23,17 +23,12 @@ This is the XWiki [Helm Chart](https://helm.sh/docs/developing_charts) aiming to
 minikube addons enable ingress
 ```
 
-* Setup Mysql
-
-```bash
-helm install --name mysql-xwiki --set mysqlRootPassword=xwiki,mysqlUser=xwiki,mysqlPassword=xwiki,mysqlDatabase=xwiki,imageTag=5.7 stable/mysql
-```
-
 * Install chart
 
 ```bash
 git clone https://github.com/xwiki-contrib/xwiki-helm
 cd xwiki-helm-chart
+helm dependency update
 helm --debug upgrade -i --force xwiki -f ./values.yaml .
 ```
 

@@ -18,13 +18,26 @@ resources:
   requests:
     cpu: 150m
     memory: 250Mi
+##
+## MySql chart configuration
+##
+## https://github.com/helm/charts/tree/master/stable/mysql
+##
+mysql:
+ ## Whether to deploy a mysql server. Set false for a different database.
+  enabled: true
+  mysqlRootPassword: xwiki
+  mysqlUser: xwiki
+  mysqlPassword: xwiki
+  mysqlDatabase: xwiki
+  imageTag: 5.7
 env:
   - name: 'DB_USER'
     value: 'xwiki'
   - name: 'DB_PASSWORD'
     value: 'xwiki'
   - name: 'DB_HOST'
-    value: 'mysql-xwiki'
+    value: 'xwiki-mysql'
   - name: 'DB_DATABASE'
     value: 'xwiki'
 ingress:
