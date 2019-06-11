@@ -31,15 +31,6 @@ mysql:
   mysqlPassword: xwiki
   mysqlDatabase: xwiki
   imageTag: 5.7
-env:
-  - name: 'DB_USER'
-    value: 'xwiki'
-  - name: 'DB_PASSWORD'
-    value: 'xwiki'
-  - name: 'DB_HOST'
-    value: 'xwiki-mysql'
-  - name: 'DB_DATABASE'
-    value: 'xwiki'
 ingress:
   enabled: true
   issuer: dev-issuer
