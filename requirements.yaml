@@ -2,4 +2,4 @@ dependencies:
   - name: mysql
     repository: https://kubernetes-charts.storage.googleapis.com
     version: 1.2.0
-    condition: mariadb.enabled
+    condition: mysql.enabled
