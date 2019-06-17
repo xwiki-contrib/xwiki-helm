@@ -22,9 +22,26 @@ spec:
         ports:
         - containerPort: {{ .Values.service.internalPort }}
         env:
-        {{- if .Values.env }}
-{{ toYaml .Values.env | indent 8}}
-        {{- end }}
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Release.Name }}-mysql"
+              key: mysql-password
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}
+              key: DB_HOST
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}
+              key: DB_USER
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}
+              key: DB_DATABASE
         resources:
 {{ toYaml .Values.resources | indent 12 }}
         volumeMounts:

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+data:
+  DB_USER: {{ .Values.mysql.mysqlUser | quote }}
+  DB_HOST: "{{ .Release.Name }}-mysql"
+  DB_DATABASE: {{ .Values.mysql.mysqlDatabase | quote }}
+# {{- range $key, $value := .Values.database }}
+#   {{ $key }}: {{ $value | indent 4 }}
+# {{- end }}
