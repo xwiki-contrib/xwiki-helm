@@ -8,9 +8,19 @@ metadata:
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}
 data:
+{{- if .Values.mysql.enabled }}
   DB_USER: {{ .Values.mysql.mysqlUser | quote }}
   DB_HOST: "{{ .Release.Name }}-mysql"
   DB_DATABASE: {{ .Values.mysql.mysqlDatabase | quote }}
+{{- else if .Values.postgresql.enabled }}
+  DB_USER: {{ .Values.postgresql.postgresqlUsername | quote }}
+  DB_HOST: "{{ .Release.Name }}-postgresql"
+  DB_DATABASE: {{ .Values.postgresql.postgresqlDatabase | quote }}
+{{- else }}
+  DB_USER: {{ .Values.externalDB.user | quote }}
+  DB_HOST: {{ .Values.externalDB.host | quote }}
+  DB_DATABASE: {{ .Values.externalDB.database | quote }}
+{{- end }}
 # {{- range $key, $value := .Values.database }}
 #   {{ $key }}: {{ $value | indent 4 }}
 # {{- end }}
