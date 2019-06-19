@@ -20,7 +20,7 @@ spec:
       {{- if .Values.mysql.enabled }}
         image: "{{ .Values.image.name }}:lts-mysql-tomcat"
       {{- else if .Values.postgresql.enabled }}
-        image: "{{ .Values.image.name }}:lts-postgresql-tomcat"
+        image: "{{ .Values.image.name }}:lts-postgres-tomcat"
       {{- else }}
         image: {{ .Values.image.name }}:{{ .Values.image.tag }}
       {{- end }}

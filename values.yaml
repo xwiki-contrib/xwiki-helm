@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   name: xwiki
   pullPolicy: IfNotPresent
-## Image Tag useful when custom DB is provided
+## Image Tag useful when externalDB is been used
   tag: ''
 service:
   portName: node
