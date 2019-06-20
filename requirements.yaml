@@ -2,4 +2,8 @@ dependencies:
   - name: mysql
     repository: https://kubernetes-charts.storage.googleapis.com
     version: 1.2.0
-    condition: mariadb.enabled
+    condition: mysql.enabled
+  - name: postgresql
+    repository: https://kubernetes-charts.storage.googleapis.com
+    version: 5.3.7
+    condition: postgresql.enabled

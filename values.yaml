@@ -5,7 +5,8 @@ replicaCount: 1
 image:
   name: xwiki
   pullPolicy: IfNotPresent
-  tag: lts-mysql-tomcat
+## Image Tag useful when externalDB is been used
+  tag: ''
 service:
   portName: node
   type: ClusterIP
@@ -25,12 +26,38 @@ resources:
 ##
 mysql:
  ## Whether to deploy a mysql server. Set false for a different database.
-  enabled: true
+  enabled: false
   mysqlRootPassword: xwiki
   mysqlUser: xwiki
   mysqlPassword: xwiki
   mysqlDatabase: xwiki
   imageTag: 5.7
+
+##
+## MySql chart configuration
+##
+## https://github.com/helm/charts/tree/master/stable/postgresql
+##
+postgresql:
+ ## Whether to deploy a postgresql server. Set false for a different database.
+  enabled: true
+  postgresqlUsername: xwiki
+  postgresqlPassword: xwiki
+  postgresqlDatabase: xwiki
+  image:
+    tag: 11.3.0-debian-9-r38
+
+##
+## For custom mysql and postgres database. Use externalDB. 
+## Would be used only if postgres and mysql is disabled.
+## Set the image tag if want to use externalDB
+##
+externalDB:
+  password: ''
+  user: ''
+  database: ''
+  host: ''
+
 ingress:
   enabled: true
   issuer: dev-issuer

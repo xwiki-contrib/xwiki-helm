@@ -17,7 +17,13 @@ spec:
     spec:
       containers:
       - name: {{ .Chart.Name }}
+      {{- if .Values.mysql.enabled }}
+        image: "{{ .Values.image.name }}:lts-mysql-tomcat"
+      {{- else if .Values.postgresql.enabled }}
+        image: "{{ .Values.image.name }}:lts-postgres-tomcat"
+      {{- else }}
         image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+      {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.internalPort }}
@@ -25,8 +31,16 @@ spec:
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
+        {{- if .Values.mysql.enabled }}
               name: "{{ .Release.Name }}-mysql"
               key: mysql-password
+        {{- else if .Values.postgresql.enabled }}
+              name: "{{ .Release.Name }}-postgresql"
+              key: postgresql-password
+        {{- else }}
+              name: {{ .Release.Name | quote }}
+              key: DB_PASSWORD
+        {{- end }}
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
