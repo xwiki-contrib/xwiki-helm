@@ -3,6 +3,14 @@ kind: StatefulSet
 metadata:
   name: {{ template "fullname" . }}
   labels:
+  {{- if .Values.mysql.enabled }}
+    app: "{{ .Values.image.name }}-{{ .Chart.AppVersion }}-lts-mysql-tomcat"
+  {{- else if .Values.postgresql.enabled }}
+    app: "{{ .Values.image.name }}-{{ .Chart.AppVersion }}-lts-postgres-tomcat"
+  {{- else }}
+    app: {{ .Values.image.name }}-{{ .Chart.AppVersion }}-{{ .Values.image.tag }}
+  {{- end }}
+    version: "{{ .Chart.AppVersion }}"
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:  
   replicas: {{ .Values.replicaCount }}
@@ -66,10 +74,10 @@ spec:
   - metadata:
       name: datadir
     spec:
-      accessModes: [ "ReadWriteMany" ]
+      accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
           storage: {{ .Values.storage }}
-      {{- if .Values.storageClass }}
+      {{- if .Values.storageClassName }}
       storageClassName: {{ .Values.storageClassName | quote }}
       {{- end }}

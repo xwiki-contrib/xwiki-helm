@@ -9,6 +9,7 @@ image:
   tag: ''
 service:
   portName: node
+  name: http
   type: ClusterIP
   externalPort: 80
   internalPort: 8080
@@ -46,6 +47,8 @@ postgresql:
   postgresqlDatabase: xwiki
   image:
     tag: 11.3.0-debian-9-r38
+  #persistence:
+  #  size: 8Gi
 
 ##
 ## For custom mysql and postgres database. Use externalDB. 
@@ -58,11 +61,17 @@ externalDB:
   database: ''
   host: ''
 
+# To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
 ingress:
-  enabled: true
+  enabled: false
   issuer: dev-issuer
   annotations:
     kubernetes.io/ingress.class: nginx
-storage: "1Gi"
-storageClassName: "my-storage-class"
+
+# To use istio for routing set istio.enabled value to true and ingress.enabled value to false
+istio:
+  enabled: true
+  host: "*"
+storage: "500Mi"
+storageClassName: ""
 buildID: "123"
