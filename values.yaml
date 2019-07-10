@@ -63,14 +63,14 @@ externalDB:
 
 # To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
 ingress:
-  enabled: false
+  enabled: true
   issuer: dev-issuer
   annotations:
     kubernetes.io/ingress.class: nginx
 
 # To use istio for routing set istio.enabled value to true and ingress.enabled value to false
 istio:
-  enabled: true
+  enabled: false
   host: "*"
 storage: "500Mi"
 storageClassName: ""
