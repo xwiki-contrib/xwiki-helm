@@ -11,5 +11,6 @@ spec:
     targetPort: {{ .Values.service.internalPort }}
     protocol: TCP
     name: {{ .Values.service.name }}
+  sessionAffinity: ClientIP
   selector:
     app: {{ template "fullname" . }}
