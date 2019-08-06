@@ -66,3 +66,11 @@ ingress:
 storage: "1Gi"
 storageClassName: "my-storage-class"
 buildID: "123"
+
+
+## Read about PostDistribution budget at https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+## Use only on a clustered setup
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
