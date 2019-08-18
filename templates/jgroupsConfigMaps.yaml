@@ -1,0 +1,19 @@
+{{- if .Values.cluster.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "jgroups-{{ template "fullname" . }}"
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+data:
+  {{ $root := . }}
+  {{ range $path, $bytes := .Files.Glob "jgroups/**.xml" }}
+  {{ base $path }}: {{ $root.Files.Get $path }}
+  {{ end }}
+{{- end }}
+# {{- range $key, $value := .Values.database }}
+#   {{ $key }}: {{ $value | indent 4 }}
+# {{- end }}

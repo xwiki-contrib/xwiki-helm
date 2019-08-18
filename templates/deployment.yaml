@@ -13,7 +13,7 @@ metadata:
     version: "{{ .Chart.AppVersion }}"
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:  
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.cluster.replicaCount }}
   serviceName: {{ template "fullname" . }}
   selector:
     matchLabels:
@@ -64,15 +64,37 @@ spec:
             configMapKeyRef:
               name: {{ template "fullname" . }}
               key: DB_DATABASE
+        {{- if .Values.cluster.enabled }}
+        - name: CLUSTER
+          value: "true"
+        - name: CLUSTER_CHANNEL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}
+              key: CLUSTER_CHANNEL
+        {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 12 }}
         volumeMounts:
         - name: xwiki-persistent-storage
-          mountPath: /opt/solr/server/solr
+          mountPath: /usr/local/xwiki
+        {{- if .Values.cluster.enabled }}
+        {{ range $path, $bytes := .Files.Glob "jgroups/**.xml" }}
+        - name: jgroups-config-volume
+          mountPath: "/usr/local/tomcat/webapps/ROOT/WEB-INF/observation/remote/jgroups/{{ base $path }}"
+          subPath: {{ base $path }}
+        {{ end }}
+        {{- end }}
       volumes:
       - name: xwiki-persistent-storage
         persistentVolumeClaim:
           claimName: xwiki-pv-claim
+      {{- if .Values.cluster.enabled }}
+      - name: jgroups-config-volume
+        configMap:
+         name: "jgroups-{{ template "fullname" . }}"
+      {{- end }}
+          
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

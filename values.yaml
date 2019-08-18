@@ -1,7 +1,6 @@
 # Default values for node.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-replicaCount: 1
 image:
   name: xwiki
   pullPolicy: IfNotPresent
@@ -83,3 +82,11 @@ podDisruptionBudget:
   enabled: false
   minAvailable: 1
   # maxUnavailable: 1
+
+## For enabling clustering in xwiki. Add configuration files in jgroups folder.
+## For more information on clustering read https://www.xwiki.org/xwiki/bin/view/Documentation/AdminGuide/Clustering/
+## For configuring Jgroups read http://www.jgroups.org/ug.html  
+cluster:
+  enabled: true
+  channel: tcp
+  replicaCount: 1

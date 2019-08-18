@@ -21,6 +21,9 @@ data:
   DB_HOST: {{ .Values.externalDB.host | quote }}
   DB_DATABASE: {{ .Values.externalDB.database | quote }}
 {{- end }}
+{{- if .Values.cluster.enabled }}
+  CLUSTER_CHANNEL: {{ .Values.cluster.channel | quote }}
+{{- end }}
 # {{- range $key, $value := .Values.database }}
 #   {{ $key }}: {{ $value | indent 4 }}
 # {{- end }}
