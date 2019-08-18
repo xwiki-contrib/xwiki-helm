@@ -1,0 +1,22 @@
+should use custom image:
+  1: |
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: DB_PASSWORD
+          name: RELEASE-NAME
+    - name: DB_HOST
+      valueFrom:
+        configMapKeyRef:
+          key: DB_HOST
+          name: RELEASE-NAME-xwiki
+    - name: DB_USER
+      valueFrom:
+        configMapKeyRef:
+          key: DB_USER
+          name: RELEASE-NAME-xwiki
+    - name: DB_DATABASE
+      valueFrom:
+        configMapKeyRef:
+          key: DB_DATABASE
+          name: RELEASE-NAME-xwiki

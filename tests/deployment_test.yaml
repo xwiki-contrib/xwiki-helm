@@ -1,0 +1,103 @@
+suite: test deployment
+templates:
+  - deployment.yaml
+tests:
+  - it: should use custom image
+    set:
+      image.tag: latest
+      mysql.enabled: false
+      postgresql.enabled: false
+      image.name: hey
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: hey:latest
+      - matchSnapshot:
+          path: spec.template.spec.containers[0].env
+      - matchRegex:
+          path: metadata.labels.app
+          pattern: hey-*
+      - matchRegex:
+          path: metadata.labels.app
+          pattern: -latest          
+  - it: should use mysql lts image
+    set:
+      image.tag: latest
+      mysql.enabled: true
+      postgresql.enabled: false
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: xwiki:lts-mysql-tomcat
+      - matchSnapshot:
+          path: spec.template.spec.containers[0].env
+      - matchRegex:
+          path: metadata.labels.app
+          pattern: xwiki-*
+      - matchRegex:
+          path: metadata.labels.app
+          pattern: -lts-mysql-tomcat
+  - it: should use postgres lts image
+    set:
+      image.tag: latest
+      mysql.enabled: false
+      postgresql.enabled: true
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: xwiki:lts-postgres-tomcat
+      - matchSnapshot:
+          path: spec.template.spec.containers[0].env
+      - matchRegex:
+          path: metadata.labels.app
+          pattern: xwiki-*
+      - matchRegex:
+          path: metadata.labels.app
+          pattern: -lts-postgres-tomcat 
+  - it: should properly set value
+    set:
+      image.pullPolicy: IfNotPresent
+      service.internalPort: 8080
+    asserts:  
+      - equal:
+          path: metadata.name
+          value: RELEASE-NAME-xwiki
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: IfNotPresent
+      - equal:
+          path: spec.template.spec.containers[0].ports[0].containerPort
+          value: 8080
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].name
+          value: xwiki-persistent-storage
+      - equal:
+          path: spec.template.spec.volumes[0].name
+          value: xwiki-persistent-storage
+      - equal:
+          path: spec.template.spec.volumes[0].persistentVolumeClaim.claimName
+          value: xwiki-pv-claim
+      - matchSnapshot:
+          path: spec.template.spec.containers[0].volumeMounts
+      - matchSnapshot:
+          path: spec.template.spec.volumes 
+  - it: should properly set value pvc
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+        documentIndex: 1
+      - matchSnapshot:
+          path: spec
+        documentIndex: 1
+      - equal:
+          path: metadata.name
+          value: xwiki-pv-claim
+        documentIndex: 1
+
+          
