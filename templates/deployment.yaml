@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: {{ template "fullname" . }}
   labels:
@@ -67,17 +67,25 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 12 }}
         volumeMounts:
-        - name: datadir
+        - name: xwiki-persistent-storage
           mountPath: /opt/solr/server/solr
-          subPath: data
-  volumeClaimTemplates:
-  - metadata:
-      name: datadir
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: {{ .Values.storage }}
-      {{- if .Values.storageClassName }}
-      storageClassName: {{ .Values.storageClassName | quote }}
-      {{- end }}
+      volumes:
+      - name: xwiki-persistent-storage
+        persistentVolumeClaim:
+          claimName: xwiki-pv-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: xwiki-pv-claim
+  version: "{{ .Chart.AppVersion }}"
+  chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.storage }}
+    {{- if .Values.storageClass }}
+    storageClassName: {{ .Values.storageClass | quote }}
+    {{- end }}
