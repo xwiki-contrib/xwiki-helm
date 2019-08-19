@@ -1,0 +1,14 @@
+should set values properly:
+  1: |
+    labels:
+      app: my-release-xwiki
+      chart: xwiki-1.0-SNAPSHOT
+      heritage: Tiller
+      release: my-release
+    name: my-release-xwiki
+  2: |
+    maxUnavailable: 2
+    minAvailable: 1
+    selector:
+      matchLabels:
+        app: my-release-xwiki

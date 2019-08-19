@@ -1,0 +1,38 @@
+suite: test istio gateway
+templates:
+  - gateway.yaml
+tests:
+  - it: should set values properly of Gateway
+    set:
+      istio.enabled: true
+    release:
+      name: my-release
+    asserts:
+      - isKind:
+          of: Gateway
+      - isAPIVersion:
+          of: networking.istio.io/v1alpha3
+      - equal:
+          path: metadata.name
+          value: xwiki-gateway
+      - matchSnapshot:
+          path: spec
+  - it: should properly set value of VirtualService
+    set:
+      service.externalPort: 80
+      istio.enabled: true
+    asserts:
+      - isKind:
+          of: VirtualService
+        documentIndex: 1
+      - isAPIVersion:
+          of: networking.istio.io/v1alpha3
+        documentIndex: 1
+      - equal:
+          path: metadata.name
+          value: xwiki
+        documentIndex: 1
+      - matchSnapshot:
+          path: spec
+        documentIndex: 1
+
