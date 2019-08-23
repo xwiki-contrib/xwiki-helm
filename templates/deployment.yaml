@@ -53,18 +53,19 @@ spec:
         - containerPort: {{ .Values.service.internalPort }}
         livenessProbe:
           httpGet:
-            path: /xwiki/bin/get/Main/WebHome
+            path: /
             port: 8080
-          initialDelaySeconds: 900
+          initialDelaySeconds: 600
+          timeoutSeconds: 5
           scheme: https
           periodSeconds: 30
         readinessProbe:
           httpGet:
-            path: /xwiki/bin/get/Main/WebHome
+            path: /
             port: 8080
           # successThreshold: 6
-          initialDelaySeconds: 400
-          timeoutSeconds: 150
+          initialDelaySeconds: 100
+          timeoutSeconds: 5
           failureThreshold: 5
           scheme: https
           periodSeconds: 10
