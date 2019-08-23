@@ -11,7 +11,7 @@ metadata:
 data:
   {{ $root := . }}
   {{ range $path, $bytes := .Files.Glob "jgroups/**.xml" }}
-  {{ base $path }}: {{ $root.Files.Get $path }}
+  {{ base $path }}: '{{ $root.Files.Get $path }}'
   {{ end }}
 {{- end }}
 # {{- range $key, $value := .Values.database }}

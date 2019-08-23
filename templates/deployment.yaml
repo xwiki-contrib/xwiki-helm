@@ -1,3 +1,19 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: xwiki-solr-pv-claim
+  version: "{{ .Chart.AppVersion }}"
+  chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.storage }}
+    {{- if .Values.storageClass }}
+    storageClassName: {{ .Values.storageClass | quote }}
+    {{- end }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,6 +51,23 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.internalPort }}
+        livenessProbe:
+          httpGet:
+            path: /xwiki/bin/get/Main/WebHome
+            port: 8080
+          initialDelaySeconds: 900
+          scheme: https
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /xwiki/bin/get/Main/WebHome
+            port: 8080
+          # successThreshold: 6
+          initialDelaySeconds: 400
+          timeoutSeconds: 150
+          failureThreshold: 5
+          scheme: https
+          periodSeconds: 10
         env:
         - name: DB_PASSWORD
           valueFrom:
@@ -78,6 +111,9 @@ spec:
         volumeMounts:
         - name: xwiki-persistent-storage
           mountPath: /usr/local/xwiki
+        volumeMounts:
+        - name: xwiki-solr-persistent-storage
+          mountPath: /opt/solr
         {{- if .Values.cluster.enabled }}
         {{ range $path, $bytes := .Files.Glob "jgroups/**.xml" }}
         - name: jgroups-config-volume
@@ -89,6 +125,10 @@ spec:
       - name: xwiki-persistent-storage
         persistentVolumeClaim:
           claimName: xwiki-pv-claim
+      volumes:
+      - name: xwiki-solr-persistent-storage
+        persistentVolumeClaim:
+          claimName: xwiki-solr-pv-claim
       {{- if .Values.cluster.enabled }}
       - name: jgroups-config-volume
         configMap:
@@ -110,4 +150,5 @@ spec:
       storage: {{ .Values.storage }}
     {{- if .Values.storageClass }}
     storageClassName: {{ .Values.storageClass | quote }}
-    {{- end }}
+    {{- end }}          
+
