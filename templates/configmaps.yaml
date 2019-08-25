@@ -8,6 +8,10 @@ metadata:
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}
 data:
+{{- if .Values.solr.enabled }}
+  INDEX_HOST: {{ .Values.solr.host | quote  }}
+  INDEX_PORT: {{ .Values.solr.port | quote  }}
+{{- end }}
 {{- if .Values.mysql.enabled }}
   DB_USER: {{ .Values.mysql.mysqlUser | quote }}
   DB_HOST: "{{ .Release.Name }}-mysql"
