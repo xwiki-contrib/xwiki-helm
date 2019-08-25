@@ -10,7 +10,7 @@ metadata:
     heritage: {{ .Release.Service | quote }}
 data:
   {{ $root := . }}
-  {{ range $path, $bytes := .Files.Glob "jgroups/**.xml" }}
+  {{ range $path, $bytes := .Files.Glob .Values.cluster.filePath }}
   {{ base $path }}: '{{ $root.Files.Get $path }}'
   {{ end }}
 {{- end }}

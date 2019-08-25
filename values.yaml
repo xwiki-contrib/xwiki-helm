@@ -89,4 +89,5 @@ podDisruptionBudget:
 cluster:
   enabled: true
   channel: tcp
+  filePath: "jgroups/**.xml"
   replicaCount: 1

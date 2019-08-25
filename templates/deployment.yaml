@@ -19,13 +19,15 @@ kind: Deployment
 metadata:
   name: {{ template "fullname" . }}
   labels:
+{{- if eq .Values.image.tag "" }}
   {{- if .Values.mysql.enabled }}
     app: "{{ .Values.image.name }}-{{ .Chart.AppVersion }}-lts-mysql-tomcat"
   {{- else if .Values.postgresql.enabled }}
     app: "{{ .Values.image.name }}-{{ .Chart.AppVersion }}-lts-postgres-tomcat"
-  {{- else }}
-    app: {{ .Values.image.name }}-{{ .Chart.AppVersion }}-{{ .Values.image.tag }}
   {{- end }}
+{{- else }}
+    app: {{ .Values.image.name | replace "/" "-" }}-{{ .Chart.AppVersion }}-{{ .Values.image.tag }}
+{{- end }}
     version: "{{ .Chart.AppVersion }}"
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:  
@@ -41,13 +43,15 @@ spec:
     spec:
       containers:
       - name: {{ .Chart.Name }}
+    {{- if eq .Values.image.tag "" }}
       {{- if .Values.mysql.enabled }}
         image: "{{ .Values.image.name }}:lts-mysql-tomcat"
       {{- else if .Values.postgresql.enabled }}
         image: "{{ .Values.image.name }}:lts-postgres-tomcat"
-      {{- else }}
-        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
       {{- end }}
+    {{- else }}
+        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+    {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.internalPort }}
