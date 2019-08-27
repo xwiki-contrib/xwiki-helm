@@ -41,6 +41,14 @@ ip=$(minikube ip)
 curl $ip
 ```
 
+## Test
+
+For testing first add [unittest](https://github.com/lrills/helm-unittest#install)
+```bash
+helm plugin install https://github.com/lrills/helm-unittest
+helm unittest xwiki-helm
+```
+
 ## Project Information
 
 * Project Lead: [Ashish Sharma](https://www.xwiki.org/xwiki/bin/view/XWiki/ashish932)
