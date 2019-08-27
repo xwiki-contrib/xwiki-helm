@@ -49,6 +49,18 @@ spec:
               name: {{ .Release.Name | quote }}
               key: DB_PASSWORD
         {{- end }}
+        {{- if .Values.solr.enabled }}
+        - name: INDEX_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}
+              key: INDEX_HOST
+        - name: INDEX_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ template "fullname" . }}
+              key: INDEX_PORT
+        {{- end }}
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
