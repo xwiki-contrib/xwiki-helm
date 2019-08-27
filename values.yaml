@@ -65,9 +65,9 @@ externalDB:
 ## To use external solr enable solr, provide host and port
 ##
 solr:
-  enabled: false
-  host: ""
-  port: ""
+  enabled: true
+  host: localhost
+  port: 8983
 
 # To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
 ingress:
