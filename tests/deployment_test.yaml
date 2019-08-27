@@ -7,18 +7,18 @@ tests:
       image.tag: latest
       mysql.enabled: false
       postgresql.enabled: false
-      image.name: hey
+      image.name: default
     asserts:
       - isKind:
           of: Deployment
       - equal:
           path: spec.template.spec.containers[0].image
-          value: hey:latest
+          value: default:latest
       - matchSnapshot:
           path: spec.template.spec.containers[0].env
       - matchRegex:
           path: metadata.labels.app
-          pattern: hey-*
+          pattern: default-*
       - matchRegex:
           path: metadata.labels.app
           pattern: -latest          

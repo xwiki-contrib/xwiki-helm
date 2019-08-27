@@ -6,7 +6,7 @@ tests:
     set:
       istio.enabled: true
     release:
-      name: my-release
+      name: release
     asserts:
       - isKind:
           of: Gateway

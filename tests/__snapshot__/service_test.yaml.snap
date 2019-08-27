@@ -6,6 +6,6 @@ should set values properly:
       protocol: TCP
       targetPort: 8080
     selector:
-      app: my-release-xwiki
+      app: release-xwiki
     sessionAffinity: ClientIP
     type: ClusterIP

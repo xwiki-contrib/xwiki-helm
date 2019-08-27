@@ -8,7 +8,7 @@ tests:
       podDisruptionBudget.maxUnavailable: 2
       podDisruptionBudget.enabled: true
     release:
-      name: my-release
+      name: release
     asserts:
       - isKind:
           of: PodDisruptionBudget
@@ -24,7 +24,7 @@ tests:
       podDisruptionBudget.maxUnavailable: null
       podDisruptionBudget.enabled: true
     release:
-      name: my-release
+      name: release
     asserts:
       - isNull:
           path: spec.maxUnavailable
@@ -34,7 +34,7 @@ tests:
       podDisruptionBudget.minAvailable: null
       podDisruptionBudget.enabled: true
     release:
-      name: my-release
+      name: release
     asserts:
       - isNull:
           path: spec.minAvailable

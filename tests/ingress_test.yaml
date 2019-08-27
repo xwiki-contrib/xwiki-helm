@@ -12,7 +12,7 @@ tests:
       service.name: tcp
       ingress.enabled: true
     release:
-      name: my-release
+      name: release
     asserts:
       - isKind:
           of: Ingress
@@ -20,7 +20,7 @@ tests:
           path: metadata.annotations
       - equal:
           path: metadata.name
-          value: my-release-xwiki
+          value: release-xwiki
       - matchRegex:
           path: metadata.labels.chart
           pattern: xwiki-*

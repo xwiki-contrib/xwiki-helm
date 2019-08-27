@@ -10,7 +10,7 @@ tests:
       service.internalPort: 8080
       service.name: tcp
     release:
-      name: my-release
+      name: release
     asserts:
       - isKind:
           of: Service
@@ -23,16 +23,16 @@ tests:
       service.internalPort: 8080
       service.name: tcp
     release:
-      name: my-release
+      name: release
     asserts:
       - equal:
           path: spec.selector.app
-          value: my-release-xwiki
+          value: release-xwiki
       - equal:
           path: spec.selector.matchLabels.app
-          value: my-release-xwiki
+          value: release-xwiki
         template: deployment.yaml
       - equal:
           path: spec.template.metadata.labels.app
-          value: my-release-xwiki
+          value: release-xwiki
         template: deployment.yaml

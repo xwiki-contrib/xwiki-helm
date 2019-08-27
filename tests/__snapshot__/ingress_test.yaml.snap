@@ -6,6 +6,6 @@ should set values properly:
     - http:
         paths:
         - backend:
-            serviceName: my-release-xwiki
+            serviceName: release-xwiki
             servicePort: 80
           path: /
