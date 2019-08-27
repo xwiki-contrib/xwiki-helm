@@ -65,7 +65,7 @@ externalDB:
 ## To use external solr enable solr, provide host and port
 ##
 solr:
-  enabled: true
+  enabled: false
   host: localhost
   port: 8983
 
