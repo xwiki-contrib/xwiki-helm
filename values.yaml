@@ -67,6 +67,7 @@ ingress:
   issuer: dev-issuer
   annotations:
     kubernetes.io/ingress.class: nginx
+    #   ingress.kubernetes.io/rewrite-target: /
 
 # To use istio for routing set istio.enabled value to true and ingress.enabled value to false
 istio:

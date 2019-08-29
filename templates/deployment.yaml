@@ -67,17 +67,17 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 12 }}
         volumeMounts:
-        - name: xwiki-persistent-storage
+        - name: xwiki-data
           mountPath: /opt/solr/server/solr
       volumes:
-      - name: xwiki-persistent-storage
+      - name: xwiki-data
         persistentVolumeClaim:
-          claimName: xwiki-pv-claim
+          claimName: xwiki
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: xwiki-pv-claim
+  name: xwiki
   version: "{{ .Chart.AppVersion }}"
   chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:

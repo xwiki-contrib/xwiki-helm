@@ -1,11 +1,11 @@
 should properly set value:
   1: |
     - mountPath: /opt/solr/server/solr
-      name: xwiki-persistent-storage
+      name: xwiki-data
   2: |
-    - name: xwiki-persistent-storage
+    - name: xwiki-data
       persistentVolumeClaim:
-        claimName: xwiki-pv-claim
+        claimName: xwiki
 should properly set value pvc:
   1: |
     accessModes:

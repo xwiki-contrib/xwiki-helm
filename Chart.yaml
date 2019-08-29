@@ -3,3 +3,13 @@ description: A Helm chart for Kubernetes
 name: xwiki
 version: 1.0-SNAPSHOT
 appVersion: 10.11.8
+description: XWiki is a free wiki software platform written in Java with a design emphasis on extensibility. XWiki is an enterprise wiki. It includes WYSIWYG editing, OpenDocument based document import/export, semantic annotations and tagging, and advanced permissions management.
+keywords:
+- xwiki
+home: http://xwiki.org
+icon: hhttps://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
+sources:
+- https://github.com/xwiki-contrib/docker-xwiki
+maintainers:
+- name: Ashish Sharma
+  email: sharma.ashish960@gmail.com
