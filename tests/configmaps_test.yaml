@@ -52,6 +52,7 @@ tests:
       postgresql.postgresqlDatabase: xwikidb
       mysql.enabled: false
       postgresql.enabled: true
+      solr.enabled: false
     release:
       name: release
     asserts:
@@ -71,6 +72,7 @@ tests:
       externalDB.database: xwikidb
       mysql.enabled: false
       postgresql.enabled: false
+      solr.enabled: false
     asserts:
       - equal:
           path: data.DB_USER
@@ -81,3 +83,16 @@ tests:
       - equal:
           path: data.DB_DATABASE
           value: xwikidb
+  - it: should set solr config values
+    set:
+      mysql.enabled: true
+      solr.enabled: true
+      solr.host: localhost
+      solr.port: 8983
+    asserts:
+      - equal:
+          path: data.INDEX_HOST
+          value: localhost
+      - equal:
+          path: data.INDEX_PORT
+          value: "8983"

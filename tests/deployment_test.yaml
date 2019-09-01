@@ -8,6 +8,7 @@ tests:
       mysql.enabled: false
       postgresql.enabled: false
       image.name: default
+      solr.enabled: false
     asserts:
       - isKind:
           of: Deployment
@@ -27,6 +28,7 @@ tests:
       image.tag: latest
       mysql.enabled: true
       postgresql.enabled: false
+      solr.enabled: false
     asserts:
       - isKind:
           of: Deployment
@@ -46,6 +48,7 @@ tests:
       image.tag: latest
       mysql.enabled: false
       postgresql.enabled: true
+      solr.enabled: false
     asserts:
       - isKind:
           of: Deployment
@@ -64,6 +67,7 @@ tests:
     set:
       image.pullPolicy: IfNotPresent
       service.internalPort: 8080
+      solr.enabled: false
     asserts:  
       - equal:
           path: metadata.name
@@ -99,5 +103,12 @@ tests:
           path: metadata.name
           value: xwiki
         documentIndex: 1
+  - it: should properl set solr
+    set:
+      mysql.enabled: true
+      solr.enabled: true
+    asserts:
+      - matchSnapshot:
+          path: spec.template.spec.containers[0].env
 
           

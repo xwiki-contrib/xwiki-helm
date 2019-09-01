@@ -1,3 +1,35 @@
+should properl set solr:
+  1: |
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: mysql-password
+          name: RELEASE-NAME-mysql
+    - name: INDEX_HOST
+      valueFrom:
+        configMapKeyRef:
+          key: INDEX_HOST
+          name: RELEASE-NAME-xwiki
+    - name: INDEX_PORT
+      valueFrom:
+        configMapKeyRef:
+          key: INDEX_PORT
+          name: RELEASE-NAME-xwiki
+    - name: DB_HOST
+      valueFrom:
+        configMapKeyRef:
+          key: DB_HOST
+          name: RELEASE-NAME-xwiki
+    - name: DB_USER
+      valueFrom:
+        configMapKeyRef:
+          key: DB_USER
+          name: RELEASE-NAME-xwiki
+    - name: DB_DATABASE
+      valueFrom:
+        configMapKeyRef:
+          key: DB_DATABASE
+          name: RELEASE-NAME-xwiki
 should properly set value:
   1: |
     - mountPath: /opt/solr/server/solr
