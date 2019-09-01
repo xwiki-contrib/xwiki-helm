@@ -1,0 +1,40 @@
+suite: test poddisruptionbudget
+templates:
+  - poddisruptionbudget.yaml
+tests:
+  - it: should set values properly
+    set:
+      podDisruptionBudget.minAvailable: 1
+      podDisruptionBudget.maxUnavailable: 2
+      podDisruptionBudget.enabled: true
+    release:
+      name: release
+    asserts:
+      - isKind:
+          of: PodDisruptionBudget
+      - isAPIVersion:
+          of: policy/v1beta1
+      - matchSnapshot:
+          path: metadata
+      - matchSnapshot:
+          path: spec
+  - it: should not set maxUnavailable
+    set:
+      podDisruptionBudget.minAvailable: 1
+      podDisruptionBudget.maxUnavailable: null
+      podDisruptionBudget.enabled: true
+    release:
+      name: release
+    asserts:
+      - isNull:
+          path: spec.maxUnavailable
+  - it: should not set minUnavailable
+    set:
+      podDisruptionBudget.maxUnavailable: 1
+      podDisruptionBudget.minAvailable: null
+      podDisruptionBudget.enabled: true
+    release:
+      name: release
+    asserts:
+      - isNull:
+          path: spec.minAvailable

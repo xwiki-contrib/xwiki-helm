@@ -4,7 +4,6 @@ kind: Ingress
 metadata:
   name: {{ template "fullname" . }}
   annotations:
-    #   ingress.kubernetes.io/rewrite-target: /
   {{- if .Values.ingress.annotations }}
       {{ toYaml .Values.ingress.annotations | indent 0 }}
   {{- end }}

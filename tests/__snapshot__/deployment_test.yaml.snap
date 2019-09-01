@@ -1,0 +1,81 @@
+should properly set value:
+  1: |
+    - mountPath: /opt/solr/server/solr
+      name: xwiki-data
+  2: |
+    - name: xwiki-data
+      persistentVolumeClaim:
+        claimName: xwiki
+should properly set value pvc:
+  1: |
+    accessModes:
+    - ReadWriteMany
+    resources:
+      requests:
+        storage: 500Mi
+should use custom image:
+  1: |
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: DB_PASSWORD
+          name: RELEASE-NAME
+    - name: DB_HOST
+      valueFrom:
+        configMapKeyRef:
+          key: DB_HOST
+          name: RELEASE-NAME-xwiki
+    - name: DB_USER
+      valueFrom:
+        configMapKeyRef:
+          key: DB_USER
+          name: RELEASE-NAME-xwiki
+    - name: DB_DATABASE
+      valueFrom:
+        configMapKeyRef:
+          key: DB_DATABASE
+          name: RELEASE-NAME-xwiki
+should use mysql lts image:
+  1: |
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: mysql-password
+          name: RELEASE-NAME-mysql
+    - name: DB_HOST
+      valueFrom:
+        configMapKeyRef:
+          key: DB_HOST
+          name: RELEASE-NAME-xwiki
+    - name: DB_USER
+      valueFrom:
+        configMapKeyRef:
+          key: DB_USER
+          name: RELEASE-NAME-xwiki
+    - name: DB_DATABASE
+      valueFrom:
+        configMapKeyRef:
+          key: DB_DATABASE
+          name: RELEASE-NAME-xwiki
+should use postgres lts image:
+  1: |
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          key: postgresql-password
+          name: RELEASE-NAME-postgresql
+    - name: DB_HOST
+      valueFrom:
+        configMapKeyRef:
+          key: DB_HOST
+          name: RELEASE-NAME-xwiki
+    - name: DB_USER
+      valueFrom:
+        configMapKeyRef:
+          key: DB_USER
+          name: RELEASE-NAME-xwiki
+    - name: DB_DATABASE
+      valueFrom:
+        configMapKeyRef:
+          key: DB_DATABASE
+          name: RELEASE-NAME-xwiki
