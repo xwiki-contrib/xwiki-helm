@@ -10,7 +10,7 @@ image:
 service:
   portName: node
   name: http
-  type: NodePort
+  type: LoadBalancer
   externalPort: 80
   internalPort: 8080
 resources:
