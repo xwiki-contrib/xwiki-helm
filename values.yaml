@@ -27,13 +27,24 @@ resources:
 ##
 mysql:
  ## Whether to deploy a mysql server. Set false for a different database.
-  enabled: false
+  enabled: true
   mysqlRootPassword: xwiki
   mysqlUser: xwiki
   mysqlPassword: xwiki
   mysqlDatabase: xwiki
   imageTag: 5.7
-
+  configurationFiles:
+    mysql.cnf: |-
+      [client]
+      default-character-set = utf8
+      
+      [mysqld]
+      character-set-server = utf8
+      collation-server = utf8_bin
+      explicit_defaults_for_timestamp = 1
+      
+      [mysql]
+      default-character-set = utf8
 ##
 ## MySql chart configuration
 ##
@@ -41,7 +52,7 @@ mysql:
 ##
 postgresql:
  ## Whether to deploy a postgresql server. Set false for a different database.
-  enabled: true
+  enabled: false
   postgresqlUsername: xwiki
   postgresqlPassword: xwiki
   postgresqlDatabase: xwiki
@@ -65,7 +76,7 @@ externalDB:
 ## To use external solr enable solr, provide host and port
 ##
 solr:
-  enabled: false
+  enabled: true
   host: localhost
   port: 8983
 
