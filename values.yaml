@@ -15,11 +15,11 @@ service:
   internalPort: 8080
 resources:
   limits:
-    cpu: 350m
-    memory: 1000Mi
+    cpu: 3000m
+    memory: 6000Mi
   requests:
-    cpu: 150m
-    memory: 250Mi
+    cpu: 500m
+    memory: 3000Mi
 ##
 ## MySql chart configuration
 ##
