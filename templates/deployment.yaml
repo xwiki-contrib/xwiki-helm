@@ -35,6 +35,8 @@ spec:
         ports:
         - containerPort: {{ .Values.service.internalPort }}
         env:
+        - name: JAVA_OPTS
+          value: "-Xmx2048m"
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
