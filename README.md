@@ -1,6 +1,6 @@
 # XWiki Helm Chart
 
-This is the XWiki [Helm Chart](https://helm.sh/docs/developing_charts) aiming to ease the deployment in both Local and Highly Available setups.  
+This is the XWiki [Helm Chart](https://helm.sh/) aiming to ease the deployment in both Local and Highly Available setups.  
 
 
 ## Resources
