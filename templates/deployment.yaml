@@ -95,7 +95,7 @@ metadata:
   name: xwiki
 spec:
   accessModes:
-    - ReadWriteMany
+    - {{ .Values.storageAccessMode | quote }}
   resources:
     requests:
       storage: {{ .Values.storage }}

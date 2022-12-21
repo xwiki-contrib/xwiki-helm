@@ -106,6 +106,7 @@ istio:
 
 storage: "500Mi"
 storageClassName: ""
+storageAccessMode: "ReadWriteMany"
 
 ## Read about PostDistribution budget at https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
 ## Use only on a clustered setup
