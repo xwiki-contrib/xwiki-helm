@@ -18,7 +18,7 @@ metadata:
   name: {{ $fullName }}
   annotations:
   {{- if .Values.ingress.annotations }}
-      {{ toYaml .Values.ingress.annotations | indent 0 }}
+{{ toYaml .Values.ingress.annotations | indent 4 }}
   {{- end }}
   labels:
     {{- include "labels" . | nindent 4 }}
