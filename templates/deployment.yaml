@@ -26,12 +26,14 @@ spec:
     spec:
       containers:
       - name: {{ .Chart.Name }}
-      {{- if .Values.mysql.enabled }}
+      {{- if .Values.image.tag }}
+        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+      {{- else if .Values.mysql.enabled }}
         image: "{{ .Values.image.name }}:lts-mysql-tomcat"
       {{- else if .Values.postgresql.enabled }}
         image: "{{ .Values.image.name }}:lts-postgres-tomcat"
       {{- else }}
-        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        image: {{ .Values.image.name }}
       {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
