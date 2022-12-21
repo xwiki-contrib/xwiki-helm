@@ -1,9 +1,10 @@
+{{- $fullName := include "fullname" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "fullname" . }}
+  name: {{ $fullName }}
   labels:
-    app: {{ template "fullname" . }}
+    app: {{ $fullName }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}

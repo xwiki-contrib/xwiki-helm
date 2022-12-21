@@ -1,8 +1,10 @@
+{{- $fullName := include "fullname" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "fullname" . }}
+  name: {{ $fullName }}
   labels:
+    {{- include "labels" . | nindent 4 }}
   {{- if .Values.mysql.enabled }}
     app: "{{ .Values.image.name }}-{{ .Chart.AppVersion }}-lts-mysql-tomcat"
   {{- else if .Values.postgresql.enabled }}
@@ -16,11 +18,11 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ template "fullname" . }} # has to match .spec.template.metadata.labels
+      app: {{ $fullName }}
   template:
     metadata:
       labels:
-        app: {{ template "fullname" . }}
+        app: {{ $fullName }}
     spec:
       containers:
       - name: {{ .Chart.Name }}
@@ -54,28 +56,28 @@ spec:
         - name: INDEX_HOST
           valueFrom:
             configMapKeyRef:
-              name: {{ template "fullname" . }}
+              name: {{ $fullName }}
               key: INDEX_HOST
         - name: INDEX_PORT
           valueFrom:
             configMapKeyRef:
-              name: {{ template "fullname" . }}
+              name: {{ $fullName }}
               key: INDEX_PORT
         {{- end }}
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: {{ template "fullname" . }}
+              name: {{ $fullName }}
               key: DB_HOST
         - name: DB_USER
           valueFrom:
             configMapKeyRef:
-              name: {{ template "fullname" . }}
+              name: {{ $fullName }}
               key: DB_USER
         - name: DB_DATABASE
           valueFrom:
             configMapKeyRef:
-              name: {{ template "fullname" . }}
+              name: {{ $fullName }}
               key: DB_DATABASE
         resources:
 {{ toYaml .Values.resources | indent 12 }}

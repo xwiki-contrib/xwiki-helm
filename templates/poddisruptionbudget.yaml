@@ -1,10 +1,11 @@
+{{- $fullName := include "fullname" . -}}
 {{- if .Values.podDisruptionBudget.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ template "fullname" . }}
+  name: {{ $fullName }}
   labels:
-    app: {{ template "fullname" . }}
+    app: {{ $fullName }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: {{ .Release.Name | quote }}
     heritage: {{ .Release.Service | quote }}
@@ -17,5 +18,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app: {{ template "fullname" . }}
+      app: {{ $fullName }}
 {{- end }}

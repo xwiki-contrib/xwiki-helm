@@ -1,9 +1,9 @@
 dependencies:
 - name: mysql
-  repository: https://kubernetes-charts.storage.googleapis.com
-  version: 1.2.0
+  repository: https://charts.helm.sh/stable
+  version: 1.4.0
 - name: postgresql
-  repository: https://kubernetes-charts.storage.googleapis.com
-  version: 5.3.7
-digest: sha256:0aa18b894724a89354e54e4ded80805f4dea1f6a3de4ff37012060e736f5abbc
-generated: "2019-06-13T02:35:04.436894581+05:30"
+  repository: https://charts.helm.sh/stable
+  version: 7.6.0
+digest: sha256:ceba605f4e279037ad2852a2ac0a6e99a0578f72ff9c9c2f6d355100c293c8a1
+generated: "2022-12-21T05:55:01.5892847-03:00"

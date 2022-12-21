@@ -1,9 +1,10 @@
+{{- $fullName := include "fullname" . -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "fullname" . }}
+  name: {{ $fullName }}
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    {{- include "labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -13,4 +14,4 @@ spec:
     name: {{ .Values.service.name }}
   sessionAffinity: ClientIP
   selector:
-    app: {{ template "fullname" . }}
+    app: {{ $fullName }}

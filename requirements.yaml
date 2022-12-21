@@ -1,9 +1,0 @@
-dependencies:
-  - name: mysql
-    repository: https://kubernetes-charts.storage.googleapis.com
-    version: 1.4.0
-    condition: mysql.enabled
-  - name: postgresql
-    repository: https://kubernetes-charts.storage.googleapis.com
-    version: 7.6.0
-    condition: postgresql.enabled
