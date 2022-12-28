@@ -20,6 +20,8 @@ resources:
   requests:
     cpu: 500m
     memory: 3000Mi
+env: 
+  JAVA_OPTS: "-Xmx2048m"
 ##
 ## MySql chart configuration
 ##
@@ -114,3 +116,34 @@ podDisruptionBudget:
   enabled: false
   minAvailable: 1
   # maxUnavailable: 1
+
+# Reference: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: {}
+
+# Reference: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+  # - key: "key"
+  #   operator: "Equal"
+  #   value: "value"
+  #   effect: "NoSchedule"
+
+# https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+affinity: {}
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #     - matchExpressions:
+  #       - key: kubernetes.io/e2e-az-name
+  #         operator: In
+  #         values:
+  #         - e2e-az1
+  #         - e2e-az2
+
+customConfigs:
+  # Properties key that exists, replace in line is done with value here defined. 
+  # If key don't exists, this key and value will be appended in that specific file. 
+  # This files are list of key: value that are translated as key=value in that file.
+  #xwiki.cfg:
+    # 
+  #xwiki.properties:
+    # 

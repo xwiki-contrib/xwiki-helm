@@ -36,11 +36,43 @@ spec:
         image: {{ .Values.image.name }}
       {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - /bin/bash
+        - -c
+        - |-
+          ##
+          # *Experimental* solution for custom properties. 
+          # With time we are looking other alternatives to setup this custom values. 
+          ##
+          # Always execute "first_start" in order to get all new values keys from future versions. 
+          rm -f /usr/local/xwiki/data/xwiki.cfg
+          rm -f /usr/local/xwiki/data/xwiki.properties
+          rm -f /usr/local/xwiki/data/hibernate.cfg.xml
+
+          # Reuse commands/resources from default entrypoint. 
+          source /usr/local/bin/docker-entrypoint.sh
+          file_env 'CONTEXT_PATH' 'ROOT'
+          # Setup all default actions from first start
+          first_start
+
+          # Replace all values from keys defineded on customConfigs
+          {{- range $file, $values := .Values.customConfigs }}
+            {{- range $key, $value := $values }}
+              # TODO review/manage extensions 
+              if grep -wq "{{ $key }}" /usr/local/xwiki/data/{{ $file }}; then
+                echo "Key ({{ $key }}) exists on file ({{ $file }}), replacing that key line with new value."
+                xwiki_replace "/usr/local/xwiki/data/{{ $file }}" "{{ $key }}" "{{ $value }}" || true
+              else 
+                echo "Key ({{ $key }}) don't exists on file ({{ $file }}), appending that key line with new value."
+                echo '{{ $key }} = "{{ $value }}"' >> "/usr/local/xwiki/data/{{ $file }}" || true
+              fi
+            {{- end }}
+          {{- end }}
+
+          /usr/local/bin/docker-entrypoint.sh xwiki 
         ports:
         - containerPort: {{ .Values.service.internalPort }}
         env:
-        - name: JAVA_OPTS
-          value: "-Xmx2048m"
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -85,11 +117,24 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
         volumeMounts:
         - name: xwiki-data
-          mountPath: /opt/solr/server/solr
+          mountPath: /usr/local/xwiki/data
       volumes:
       - name: xwiki-data
         persistentVolumeClaim:
           claimName: xwiki
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
