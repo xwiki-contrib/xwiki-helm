@@ -5,13 +5,6 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "labels" . | nindent 4 }}
-  {{- if .Values.mysql.enabled }}
-    app: "{{ .Values.image.name }}-{{ .Chart.AppVersion }}-lts-mysql-tomcat"
-  {{- else if .Values.postgresql.enabled }}
-    app: "{{ .Values.image.name }}-{{ .Chart.AppVersion }}-lts-postgres-tomcat"
-  {{- else }}
-    app: {{ .Values.image.name }}-{{ .Chart.AppVersion }}-{{ .Values.image.tag }}
-  {{- end }}
     version: "{{ .Chart.AppVersion }}"
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
 spec:  
