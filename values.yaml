@@ -22,44 +22,120 @@ resources:
     memory: 3000Mi
 env: 
   JAVA_OPTS: "-Xmx2048m"
+
 ##
 ## MySql chart configuration
 ##
-## https://github.com/helm/charts/tree/master/stable/mysql
+## https://github.com/bitnami/charts/tree/main/bitnami/mysql
 ##
 mysql:
  ## Whether to deploy a mysql server. Set false for a different database.
   enabled: true
-  mysqlRootPassword: xwiki
-  mysqlUser: xwiki
-  mysqlPassword: xwiki
-  mysqlDatabase: xwiki
-  imageTag: 5.7
-  configurationFiles:
-    mysql.cnf: |-
-      [client]
-      default-character-set = utf8mb4
-      
+  image: 
+    debug: true 
+  auth:
+    rootPassword: "xwiki"
+    username: "xwiki"
+    password: "xwiki"
+    database: "xwiki"
+  initdbScripts:
+    00-init.sql: |
+      grant all privileges on *.* to xwiki@'%'
+  primary:
+    # Changed to use UTF8mb4, check future versions if this was already changed. 
+    # TODO: review explicit_defaults_for_timestamp 
+    configuration: |-
       [mysqld]
-      character-set-server = utf8mb4
-      collation-server = utf8mb4_bin
-      explicit_defaults_for_timestamp = 1
-      
-      [mysql]
-      default-character-set = utf8mb4
+      default_authentication_plugin=mysql_native_password
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/lib/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      max_allowed_packet=16M
+      bind-address=*
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      character-set-server=UTF8MB4
+      collation-server=utf8mb4_0900_ai_ci
+      slow_query_log=0
+      slow_query_log_file=/opt/bitnami/mysql/logs/mysqld.log
+      long_query_time=10.0
+
+      [client]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      default-character-set=UTF8MB4
+      plugin_dir=/opt/bitnami/mysql/lib/plugin
+
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+
 ##
-## MySql chart configuration
+## MariaDB chart configuration
+##
+## https://github.com/bitnami/charts/tree/main/bitnami/mariadb
+##
+mariadb:
+ ## Whether to deploy a mysql server. Set false for a different database.
+  enabled: false
+  auth:
+    rootPassword: "xwiki"
+    username: "xwiki"
+    password: "xwiki"
+    database: "xwiki"
+  initdbScripts:
+    00-init.sql: |
+      grant all privileges on *.* to xwiki@'%'
+    # Changed to use UTF8mb4, check future versions if this was already changed. 
+    # TODO: review explicit_defaults_for_timestamp 
+    configuration: |-
+      [mysqld]
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mariadb
+      plugin_dir=/opt/bitnami/mariadb/plugin
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      tmpdir=/opt/bitnami/mariadb/tmp
+      max_allowed_packet=16M
+      bind-address=*
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      log-error=/opt/bitnami/mariadb/logs/mysqld.log
+      character-set-server=UTF8MB4
+      collation-server=utf8mb4_general_ci
+      slow_query_log=0
+      slow_query_log_file=/opt/bitnami/mariadb/logs/mysqld.log
+      long_query_time=10.0
+
+      [client]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      default-character-set=UTF8MB4
+      plugin_dir=/opt/bitnami/mariadb/plugin
+
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+##
+## PostgreSQL chart configuration
 ##
 ## https://github.com/helm/charts/tree/master/stable/postgresql
 ##
 postgresql:
  ## Whether to deploy a postgresql server. Set false for a different database.
   enabled: false
-  postgresqlUsername: xwiki
-  postgresqlPassword: xwiki
-  postgresqlDatabase: xwiki
-  image:
-    tag: 11.3.0-debian-9-r38
+  auth:
+    postgresPassword: "xwiki"
+    username: "xwiki"
+    password: "xwiki"
+    database: "xwiki"
   #persistence:
   #  size: 8Gi
 

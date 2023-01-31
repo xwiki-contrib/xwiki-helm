@@ -74,7 +74,7 @@ spec:
               key: mysql-password
         {{- else if .Values.postgresql.enabled }}
               name: "{{ .Release.Name }}-postgresql"
-              key: postgresql-password
+              key: postgres-password
         {{- else }}
               name: {{ .Release.Name | quote }}
               key: DB_PASSWORD

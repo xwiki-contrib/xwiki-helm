@@ -18,10 +18,14 @@ maintainers:
   email: guilherme.sautner@xwiki.com
 dependencies:
   - name: mysql
-    repository: https://charts.helm.sh/stable
-    version: 1.4.0
+    repository: https://charts.bitnami.com/bitnami
+    version: 9.4.8
     condition: mysql.enabled
+  - name: mariadb
+    repository: https://charts.bitnami.com/bitnami
+    version: 11.4.5
+    condition: mariadb.enabled
   - name: postgresql
-    repository: https://charts.helm.sh/stable
-    version: 7.6.0
+    repository: https://charts.bitnami.com/bitnami
+    version: 12.1.13
     condition: postgresql.enabled

@@ -13,14 +13,18 @@ data:
   INDEX_HOST: {{ .Values.solr.host | quote  }}
   INDEX_PORT: {{ .Values.solr.port | quote  }}
 {{- end }}
-{{- if .Values.mysql.enabled }}
-  DB_USER: {{ .Values.mysql.mysqlUser | quote }}
+{{- if .Values.mariadb.enabled }}
+  DB_USER: {{ .Values.mariadb.auth.username | quote }}
+  DB_HOST: "{{ .Release.Name }}-mariadb"
+  DB_DATABASE: {{ .Values.mysql.auth.database | quote }}
+{{- else if .Values.mysql.enabled }}
+  DB_USER: {{ .Values.mysql.auth.username | quote }}
   DB_HOST: "{{ .Release.Name }}-mysql"
-  DB_DATABASE: {{ .Values.mysql.mysqlDatabase | quote }}
+  DB_DATABASE: {{ .Values.mysql.auth.database | quote }}
 {{- else if .Values.postgresql.enabled }}
-  DB_USER: {{ .Values.postgresql.postgresqlUsername | quote }}
+  DB_USER: {{ .Values.postgresql.auth.username | quote }}
   DB_HOST: "{{ .Release.Name }}-postgresql"
-  DB_DATABASE: {{ .Values.postgresql.postgresqlDatabase | quote }}
+  DB_DATABASE: {{ .Values.postgresql.auth.database | quote }}
 {{- else }}
   DB_USER: {{ .Values.externalDB.user | quote }}
   DB_HOST: {{ .Values.externalDB.host | quote }}
