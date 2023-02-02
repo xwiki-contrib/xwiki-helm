@@ -1,10 +1,9 @@
-{{- $fullName := include "fullname" . -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $fullName }}
+  name:  {{ include "xwiki.fullname" . }}
   labels:
-    {{- include "labels" . | nindent 4 }}
+    {{- include "xwiki.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -14,4 +13,4 @@ spec:
     name: {{ .Values.service.name }}
   sessionAffinity: ClientIP
   selector:
-    app: {{ $fullName }}
+    {{- include "xwiki.selectorLabels" . | nindent 4 }}

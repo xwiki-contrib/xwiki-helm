@@ -1,13 +1,10 @@
-{{- $fullName := include "fullname" . -}}
+{{- $fullName := include "xwiki.fullname" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ $fullName }}
   labels:
-    app: {{ $fullName }}
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-    release: {{ .Release.Name | quote }}
-    heritage: {{ .Release.Service | quote }}
+    {{- include "xwiki.labels" . | nindent 4 }}
 data:
 {{- if .Values.solr.enabled }}
   INDEX_HOST: {{ .Values.solr.host | quote  }}

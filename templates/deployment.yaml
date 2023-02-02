@@ -1,21 +1,19 @@
-{{- $fullName := include "fullname" . -}}
-apiVersion: apps/v1
+{{- $fullName := include "xwiki.fullname" . -}}
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
 kind: Deployment
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "labels" . | nindent 4 }}
-    version: "{{ .Chart.AppVersion }}"
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    {{- include "xwiki.labels" . | nindent 4 }}
 spec:  
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ $fullName }}
+      {{- include "xwiki.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: {{ $fullName }}
+        {{- include "xwiki.labels" . | nindent 8 }}
     spec:
       containers:
       - name: {{ .Chart.Name }}

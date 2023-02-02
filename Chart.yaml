@@ -17,6 +17,9 @@ maintainers:
 - name: Guilherme Sautner
   email: guilherme.sautner@xwiki.com
 dependencies:
+  - name: "common"
+    repository: "https://charts.bitnami.com/bitnami"
+    version: "2.2.2"
   - name: mysql
     repository: https://charts.bitnami.com/bitnami
     version: 9.4.8
@@ -29,3 +32,4 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     version: 12.1.13
     condition: postgresql.enabled
+    

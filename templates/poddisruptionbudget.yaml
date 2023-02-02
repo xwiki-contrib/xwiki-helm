@@ -1,14 +1,11 @@
-{{- $fullName := include "fullname" . -}}
 {{- if .Values.podDisruptionBudget.enabled }}
+{{- $fullName := include "xwiki.fullname" . -}}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
   name: {{ $fullName }}
   labels:
-    app: {{ $fullName }}
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
-    release: {{ .Release.Name | quote }}
-    heritage: {{ .Release.Service | quote }}
+    {{- include "xwiki.labels" . | nindent 4 }}
 spec:
   {{- if .Values.podDisruptionBudget.minAvailable }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
@@ -18,5 +15,5 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app: {{ $fullName }}
+      {{- include "xwiki.selectorLabels" . | nindent 4 }}
 {{- end }}
