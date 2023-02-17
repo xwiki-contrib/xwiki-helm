@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ (include "xwiki.initScripts" .) }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+data:
+  entrypoint: |
+    #!/bin/bash
+    ##
+    # *Experimental* solution for custom properties. 
+    # With time we are looking other alternatives to setup this custom values. 
+    ##
+    # Always execute "first_start" in order to get all new values keys from future versions. 
+    rm -f /usr/local/xwiki/data/xwiki.cfg
+    rm -f /usr/local/xwiki/data/xwiki.properties
+    rm -f /usr/local/xwiki/data/hibernate.cfg.xml
+
+    # Reuse commands/resources from default entrypoint. 
+    source /usr/local/bin/docker-entrypoint.sh
+    file_env 'CONTEXT_PATH' 'ROOT'
+    # Setup all default actions from first start
+    first_start
+
+    # Replace all values from keys defineded on customConfigs
+    {{- range $file, $values := .Values.customConfigs }}
+      {{- range $key, $value := $values }}
+        # TODO review/manage extensions 
+        if grep -wq "{{ $key }}" /usr/local/xwiki/data/{{ $file }}; then
+          echo "Key ({{ $key }}) exists on file ({{ $file }}), replacing that key line with new value."
+          xwiki_replace "/usr/local/xwiki/data/{{ $file }}" "{{ $key }}" "{{ $value }}" || true
+        else 
+          echo "Key ({{ $key }}) don't exists on file ({{ $file }}), appending that key line with new value."
+          echo '{{ $key }} = {{ $value | quote }}' >> "/usr/local/xwiki/data/{{ $file }}" || true
+        fi
+      {{- end }}
+    {{- end }}
+
+    exec /usr/local/bin/docker-entrypoint.sh xwiki 
+  
