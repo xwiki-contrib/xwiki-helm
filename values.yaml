@@ -23,6 +23,9 @@ resources:
 env: 
   JAVA_OPTS: "-Xmx2048m"
 
+# Enable to choose witch kind of workload will be used: (true) StatefulSet or (false) for Deployment
+workloadStateful: true
+
 ##
 ## MySql chart configuration
 ##
