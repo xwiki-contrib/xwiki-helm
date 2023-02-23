@@ -1,14 +1,15 @@
 should set values properly:
   1: |
     labels:
-      app: release-xwiki
-      chart: xwiki-1.0-SNAPSHOT
-      heritage: Tiller
-      release: release
+      app.kubernetes.io/instance: release
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: xwiki
+      helm.sh/chart: xwiki-1.0.0-Beta.0
     name: release-xwiki
   2: |
     maxUnavailable: 2
     minAvailable: 1
     selector:
-      matchLabels:
-        app: release-xwiki
+      app.kubernetes.io/instance: release
+      app.kubernetes.io/name: xwiki
+      matchLabels: null

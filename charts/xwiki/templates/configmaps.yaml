@@ -13,7 +13,7 @@ data:
 {{- if .Values.mariadb.enabled }}
   DB_USER: {{ .Values.mariadb.auth.username | quote }}
   DB_HOST: "{{ .Release.Name }}-mariadb"
-  DB_DATABASE: {{ .Values.mysql.auth.database | quote }}
+  DB_DATABASE: {{ .Values.mariadb.auth.database | quote }}
 {{- else if .Values.mysql.enabled }}
   DB_USER: {{ .Values.mysql.auth.username | quote }}
   DB_HOST: "{{ .Release.Name }}-mysql"

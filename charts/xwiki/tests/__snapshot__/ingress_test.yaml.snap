@@ -3,9 +3,13 @@ should set values properly:
     kubernetes.io/ingress.class: nginx
   2: |
     rules:
-    - http:
-        paths:
-        - backend:
-            serviceName: release-xwiki
-            servicePort: 80
-          path: /
+      - host: ""
+        http:
+          paths:
+            - backend:
+                service:
+                  name: release-xwiki
+                  port:
+                    number: 80
+              path: /
+              pathType: ImplementationSpecific

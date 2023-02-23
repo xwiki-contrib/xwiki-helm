@@ -8,7 +8,6 @@ This is the XWiki [Helm Chart](https://helm.sh/) aiming to ease the deployment i
 * XWiki Installation Guide: https://www.xwiki.org/xwiki/bin/view/Documentation/AdminGuide/Installation
 * XWiki Docker : https://github.com/xwiki-contrib/docker-xwiki
 
-
 ## Prerequisite
 
 * Minikube
@@ -23,13 +22,21 @@ This is the XWiki [Helm Chart](https://helm.sh/) aiming to ease the deployment i
 minikube addons enable ingress
 ```
 
-* Install chart
+* Install chart from helm source code
 
 ```bash
 git clone https://github.com/xwiki-contrib/xwiki-helm
-cd xwiki-helm-chart
+cd xwiki-helm-chart/charts/xwiki 
 helm dependency update
 helm --debug upgrade -i --force xwiki -f ./values.yaml .
+```
+
+* Install chart from repository 
+
+```bash
+helm repo add xwiki-helm https://xwiki-contrib.github.io./xwiki-helm 
+# Use --devel install most recent released (beta/alpha) version
+helm install --devel xwiki xwiki-helm/xwiki 
 ```
 
 ## Usage
@@ -43,10 +50,10 @@ curl $ip
 
 ## Test
 
-For testing first add [unittest](https://github.com/lrills/helm-unittest#install)
+For testing first add [unittest](https://github.com/helm-unittest/helm-unittest#install)
 ```bash
-helm plugin install https://github.com/lrills/helm-unittest
-helm unittest xwiki-helm
+helm plugin install https://github.com/helm-unittest/helm-unittest
+helm unittest charts/xwiki 
 ```
 
 ## Project Information

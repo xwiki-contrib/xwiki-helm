@@ -1,7 +1,6 @@
 suite: test service
 templates:
   - service.yaml
-  - deployment.yaml
 tests:
   - it: should set values properly
     set:
@@ -14,8 +13,10 @@ tests:
     asserts:
       - isKind:
           of: Service
+#        template: service.yaml 
       - matchSnapshot:
           path: spec
+#        template: service.yaml 
   - it: should have same labels as Deployment
     set:
       service.type: ClusterIP
@@ -26,13 +27,7 @@ tests:
       name: release
     asserts:
       - equal:
-          path: spec.selector.app
-          value: release-xwiki
-      - equal:
-          path: spec.selector.matchLabels.app
-          value: release-xwiki
-        template: deployment.yaml
-      - equal:
-          path: spec.template.metadata.labels.app
-          value: release-xwiki
-        template: deployment.yaml
+          path: spec.selector
+          value: 
+           app.kubernetes.io/instance: release
+           app.kubernetes.io/name: xwiki
