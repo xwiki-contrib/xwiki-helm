@@ -33,6 +33,7 @@ jobs:
 
       - name: Run unit tests
         run: |
+          helm dependency update charts/xwiki/
           helm unittest charts/xwiki
 
       - name: Run chart-releaser
