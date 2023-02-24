@@ -30,9 +30,6 @@ should use custom image:
         configMapKeyRef:
           key: DB_DATABASE
           name: RELEASE-NAME-xwiki
-  2: |
-    checksum/configmap: fa5b594ef4d5ebfe026da07036040e190f31131def38c7cd8b3203b280f45546
-    checksum/initialization-configmaps: 3c24a3930e5a927a5fe423d61c6e8d2508983be792f1fc45e8bab4dc79f560c8
 should use mysql lts image:
   1: |
     - name: DB_PASSWORD
@@ -97,3 +94,7 @@ should use postgres lts image:
         configMapKeyRef:
           key: DB_DATABASE
           name: RELEASE-NAME-xwiki
+testing default values:
+  1: |
+    checksum/configmap: ea9fa534bf2487a713468dcfa86d751e722589f9eaca98671de94e04154b0a1c
+    checksum/initialization-configmaps: 3c24a3930e5a927a5fe423d61c6e8d2508983be792f1fc45e8bab4dc79f560c8

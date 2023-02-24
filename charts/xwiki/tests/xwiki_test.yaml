@@ -4,6 +4,16 @@ templates:
   - configmaps.yaml
   - initialization-configmaps.yaml 
 tests:
+  - it: testing default values
+    asserts:
+      - isKind:
+          of: StatefulSet
+        template: xwiki.yaml
+        documentIndex: 0
+      - matchSnapshot:
+          path: spec.template.metadata.annotations
+        template: xwiki.yaml 
+        documentIndex: 0
   - it: should use custom image
     set:
       image.tag: latest
@@ -24,10 +34,6 @@ tests:
         documentIndex: 0
       - matchSnapshot:
           path: spec.template.spec.containers[0].env
-        template: xwiki.yaml 
-        documentIndex: 0
-      - matchSnapshot:
-          path: spec.template.metadata.annotations
         template: xwiki.yaml 
         documentIndex: 0
   - it: should use mysql lts image
