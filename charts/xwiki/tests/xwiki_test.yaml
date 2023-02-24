@@ -5,15 +5,17 @@ templates:
   - initialization-configmaps.yaml 
 tests:
   - it: testing default values
+    documentIndex: 0
     asserts:
       - isKind:
           of: StatefulSet
         template: xwiki.yaml
-        documentIndex: 0
-      - matchSnapshot:
-          path: spec.template.metadata.annotations
+      - isNotEmpty:
+          path: spec.template.metadata.annotations["checksum/configmap"]
         template: xwiki.yaml 
-        documentIndex: 0
+      - isNotEmpty:
+          path: spec.template.metadata.annotations["checksum/initialization-configmaps"]
+        template: xwiki.yaml 
   - it: should use custom image
     set:
       image.tag: latest

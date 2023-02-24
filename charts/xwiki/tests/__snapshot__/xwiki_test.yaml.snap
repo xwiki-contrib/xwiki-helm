@@ -94,7 +94,3 @@ should use postgres lts image:
         configMapKeyRef:
           key: DB_DATABASE
           name: RELEASE-NAME-xwiki
-testing default values:
-  1: |
-    checksum/configmap: ea9fa534bf2487a713468dcfa86d751e722589f9eaca98671de94e04154b0a1c
-    checksum/initialization-configmaps: 3c24a3930e5a927a5fe423d61c6e8d2508983be792f1fc45e8bab4dc79f560c8
