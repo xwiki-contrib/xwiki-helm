@@ -226,6 +226,7 @@ affinity: {}
   #         - e2e-az1
   #         - e2e-az2
 
+# Custom configuration files for xwiki 
 customConfigs:
   # Properties key that exists, replace in line is done with value here defined. 
   # If key don't exists, this key and value will be appended in that specific file. 
@@ -234,3 +235,7 @@ customConfigs:
     # 
   #xwiki.properties:
     # 
+
+# Properties to be passed to Java process using -D parameters using JAVA_OPTS 
+properties:
+  # "key": "value"

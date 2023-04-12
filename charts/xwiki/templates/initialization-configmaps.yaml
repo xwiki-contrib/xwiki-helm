@@ -36,5 +36,9 @@ data:
       {{- end }}
     {{- end }}
 
-    exec /usr/local/bin/docker-entrypoint.sh xwiki 
+    {{- range $file, $value := .Values.properties }}
+      export JAVA_OPTS="${JAVA_OPTS} -D{{ $file }}={{ $value }}"
+    {{- end }}
+
+    exec /usr/local/bin/docker-entrypoint.sh xwiki
   
