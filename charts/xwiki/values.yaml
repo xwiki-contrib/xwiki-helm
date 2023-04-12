@@ -236,6 +236,6 @@ customConfigs:
   #xwiki.properties:
     # 
 
-# Properties to be passed to Java process using -D parameters using JAVA_OPTS 
+# Properties to be passed to Java process with -D parameters using JAVA_OPTS 
 properties:
   # "key": "value"
