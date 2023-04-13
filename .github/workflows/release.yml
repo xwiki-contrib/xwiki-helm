@@ -43,7 +43,6 @@ jobs:
             helm dependency update $FILE
             helm unittest $FILE
           done
-          fi
 
   release:
     needs: validate
