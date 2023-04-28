@@ -43,6 +43,14 @@ spec:
         ports:
         - containerPort: {{ .Values.service.internalPort }}
         env:
+        {{- if .Values.javaOpts }}
+        - name: JAVA_OPTS
+          value: {{ .Values.javaOpts | join " " | quote }}
+        {{- end }}
+        {{- range .Values.extraEnvVars }}
+        - name: {{ .name  }}
+          value: {{ .value | quote }}
+        {{- end }}
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
