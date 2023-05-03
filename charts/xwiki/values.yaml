@@ -1,0 +1,242 @@
+# Default values for node.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+image:
+  name: xwiki
+  pullPolicy: IfNotPresent
+## Image Tag useful when externalDB is been used
+  tag: ''
+service:
+  portName: node
+  name: http
+  type: ClusterIP
+  externalPort: 80
+  internalPort: 8080
+resources: {}
+#  limits:
+#    cpu: 2000m
+#    memory: 2000Mi
+#  requests:
+#    cpu: 500m
+#    memory: 768Mi
+
+javaOpts: []
+#  - "-Xmx1024m"
+extraEnvVars: []
+#  - name: FOO
+#    value: "bar"
+
+# Enable to choose witch kind of workload will be used: (true) StatefulSet or (false) for Deployment
+workloadStateful: true
+
+##
+## MySql chart configuration
+##
+## https://github.com/bitnami/charts/tree/main/bitnami/mysql
+##
+mysql:
+ ## Whether to deploy a mysql server. Set false for a different database.
+  enabled: true
+  auth:
+    rootPassword: "xwiki"
+    username: "xwiki"
+    password: "xwiki"
+    database: "xwiki"
+  initdbScripts:
+    00-init.sql: |
+      grant all privileges on *.* to xwiki@'%'
+  primary:
+    # Changed to use UTF8mb4, check future versions if this was already changed. 
+    # TODO: review explicit_defaults_for_timestamp 
+    configuration: |-
+      [mysqld]
+      default_authentication_plugin=mysql_native_password
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mysql
+      plugin_dir=/opt/bitnami/mysql/lib/plugin
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      datadir=/bitnami/mysql/data
+      tmpdir=/opt/bitnami/mysql/tmp
+      max_allowed_packet=16M
+      bind-address=*
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+      log-error=/opt/bitnami/mysql/logs/mysqld.log
+      character-set-server=UTF8MB4
+      collation-server=utf8mb4_0900_ai_ci
+      slow_query_log=0
+      slow_query_log_file=/opt/bitnami/mysql/logs/mysqld.log
+      long_query_time=10.0
+
+      [client]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      default-character-set=UTF8MB4
+      plugin_dir=/opt/bitnami/mysql/lib/plugin
+
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mysql/tmp/mysql.sock
+      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+
+##
+## MariaDB chart configuration
+##
+## https://github.com/bitnami/charts/tree/main/bitnami/mariadb
+##
+mariadb:
+ ## Whether to deploy a mysql server. Set false for a different database.
+  enabled: false
+  auth:
+    rootPassword: "xwiki"
+    username: "xwiki"
+    password: "xwiki"
+    database: "xwiki"
+  initdbScripts:
+    00-init.sql: |
+      grant all privileges on *.* to xwiki@'%'
+    # Changed to use UTF8mb4, check future versions if this was already changed. 
+    # TODO: review explicit_defaults_for_timestamp 
+    configuration: |-
+      [mysqld]
+      skip-name-resolve
+      explicit_defaults_for_timestamp
+      basedir=/opt/bitnami/mariadb
+      plugin_dir=/opt/bitnami/mariadb/plugin
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      tmpdir=/opt/bitnami/mariadb/tmp
+      max_allowed_packet=16M
+      bind-address=*
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+      log-error=/opt/bitnami/mariadb/logs/mysqld.log
+      character-set-server=UTF8MB4
+      collation-server=utf8mb4_general_ci
+      slow_query_log=0
+      slow_query_log_file=/opt/bitnami/mariadb/logs/mysqld.log
+      long_query_time=10.0
+
+      [client]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      default-character-set=UTF8MB4
+      plugin_dir=/opt/bitnami/mariadb/plugin
+
+      [manager]
+      port=3306
+      socket=/opt/bitnami/mariadb/tmp/mysql.sock
+      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+##
+## PostgreSQL chart configuration
+##
+## https://github.com/helm/charts/tree/master/stable/postgresql
+##
+postgresql:
+ ## Whether to deploy a postgresql server. Set false for a different database.
+  enabled: false
+  auth:
+    postgresPassword: "xwiki"
+    username: "xwiki"
+    password: "xwiki"
+    database: "xwiki"
+  #persistence:
+  #  size: 8Gi
+
+##
+## For custom mysql and postgres database. Use externalDB. 
+## Would be used only if postgres and mysql is disabled.
+## Set the image tag if want to use externalDB
+##
+externalDB:
+  password: ''
+  user: ''
+  database: ''
+  host: ''
+
+##
+## To use external solr enable solr, provide host and port
+##
+solr:
+  enabled: true
+  host: localhost
+  port: 8983
+
+# To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
+ingress:
+  enabled: false
+  className: ""
+  annotations: 
+    kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # ingress.kubernetes.io/rewrite-target: /
+  hosts: 
+    - host: ""
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: secret-tls
+  #    hosts:
+  #      - xwiki.local
+
+# To use istio for routing set istio.enabled value to true and ingress.enabled value to false
+istio:
+  enabled: false
+  host: "*"
+
+persistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: "500Mi"
+  annotations: {}
+  labels: {}
+  selector: {}
+  dataSource: {}
+
+## Read about PostDistribution budget at https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+## Use only on a clustered setup
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# Reference: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: {}
+
+# Reference: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+  # - key: "key"
+  #   operator: "Equal"
+  #   value: "value"
+  #   effect: "NoSchedule"
+
+# https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+affinity: {}
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #     - matchExpressions:
+  #       - key: kubernetes.io/e2e-az-name
+  #         operator: In
+  #         values:
+  #         - e2e-az1
+  #         - e2e-az2
+
+# Custom configuration files for xwiki 
+customConfigs:
+  # Properties key that exists, replace in line is done with value here defined. 
+  # If key don't exists, this key and value will be appended in that specific file. 
+  # This files are list of key: value that are translated as key=value in that file.
+  #xwiki.cfg:
+    # 
+  #xwiki.properties:
+    # 
+
+# Properties to be passed to Java process with -D parameters using JAVA_OPTS 
+properties:
+  # "key": "value"

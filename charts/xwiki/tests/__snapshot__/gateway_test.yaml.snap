@@ -1,0 +1,40 @@
+should properly set value of VirtualService:
+  1: |
+    gateways:
+      - xwiki-gateway
+    hosts:
+      - '*'
+    http:
+      - match:
+          - uri:
+              prefix: /
+        route:
+          - destination:
+              host: RELEASE-NAME-xwiki
+              port:
+                number: 80
+should set values properly of Gateway:
+  1: |
+    selector:
+      istio: ingressgateway
+    servers:
+      - hosts:
+          - '*'
+        port:
+          name: http
+          number: 80
+          protocol: HTTP
+  2: |
+    gateways:
+      - xwiki-gateway
+    hosts:
+      - '*'
+    http:
+      - match:
+          - uri:
+              prefix: /
+        route:
+          - destination:
+              host: release-xwiki
+              port:
+                number: 80

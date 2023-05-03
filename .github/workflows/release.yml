@@ -1,0 +1,77 @@
+name: Releases
+
+on:
+  push:
+    branches:
+      - master
+      - dev-v1
+    paths:
+      - '.github/**'
+      - 'charts/**'
+      - '!**.md'
+
+jobs:
+
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.changed.outputs.result }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: changed
+        name: Changed
+        run: |
+          files_changed="$(git show --pretty="" --name-only)"
+          echo "$files_changed"
+          num_version_bumps="$(echo "$files_changed" | grep Chart.yaml | xargs git show | grep -c "+version" || true)"
+          if [[ "$num_version_bumps" -eq "1" ]]; then
+            echo "result=ok" >> $GITHUB_OUTPUT
+          else
+            echo "result=skip"
+            echo "::warning::Version not changed, skipping release job..."
+          fi
+
+      - name: Tests
+        if: ${{ steps.changed.outputs.result == 'ok' }}
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm plugin install https://github.com/helm-unittest/helm-unittest
+          for FILE in charts/*; do 
+            helm dependency update $FILE
+            helm unittest $FILE
+          done
+
+  release:
+    needs: validate
+    if: ${{ needs.validate.outputs.result == 'ok' }}
+    # depending on default permission settings for your org (contents being read-only or read-write for workloads), you will have to add permissions
+    # see: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Add repos
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm plugin install https://github.com/helm-unittest/helm-unittest
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.5.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

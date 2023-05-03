@@ -1,0 +1,35 @@
+apiVersion: v2
+description: XWiki is a free wiki software platform written in Java with a design emphasis on extensibility. XWiki is an enterprise wiki. It includes WYSIWYG editing, OpenDocument based document import/export, semantic annotations and tagging, and advanced permissions management.
+name: xwiki
+version: 1.0.0-Beta.3
+type: application
+keywords:
+- xwiki
+home: http://xwiki.org
+icon: https://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
+sources:
+- https://github.com/xwiki-contrib/docker-xwiki
+maintainers:
+- name: Ashish Sharma
+  email: sharma.ashish960@gmail.com
+- name: Ludovic Dubost
+  email: ludovic@xwiki.com
+- name: Guilherme Sautner
+  email: guilherme.sautner@xwiki.com
+dependencies:
+  - name: "common"
+    repository: "https://charts.bitnami.com/bitnami"
+    version: "2.2.2"
+  - name: mysql
+    repository: https://charts.bitnami.com/bitnami
+    version: 9.4.8
+    condition: mysql.enabled
+  - name: mariadb
+    repository: https://charts.bitnami.com/bitnami
+    version: 11.4.5
+    condition: mariadb.enabled
+  - name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: 12.1.13
+    condition: postgresql.enabled
+    

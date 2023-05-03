@@ -1,0 +1,103 @@
+suite: test configmaps
+templates:
+  - configmaps.yaml
+tests:
+  - it: should set values properly
+    release:
+      name: release
+      service: tiller
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - isAPIVersion:
+          of: v1
+      - equal:
+          path: metadata.name
+          value: release-xwiki
+#      - equal:
+#          path: metadata.labels.app
+#          value: release-xwiki
+#      - matchRegex:
+#          path: metadata.labels.chart
+#          value: xwiki-*
+#      - equal:
+#          path: metadata.labels.release
+#          value: release
+#      - equal:
+#          path: metadata.labels.heritage
+#          value: Tiller
+#      - matchSnapshot:
+#          path: spec
+  - it: should set mysql config values
+    set:
+      mysql.auth.username: xwikim
+      mysql.auth.database: xwikimdb
+      mysql.enabled: true
+      postgresql.enabled: false
+    release:
+      name: release
+    asserts:
+      - equal:
+          path: data.DB_USER
+          value: xwikim
+      - equal:
+          path: data.DB_HOST
+          value: release-mysql
+      - equal:
+          path: data.DB_DATABASE
+          value: xwikimdb
+  - it: should set postgres config values
+    set:
+      postgresql.auth.username: xwikip
+      postgresql.auth.database: xwikipdb
+      mysql.enabled: false
+      postgresql.enabled: true
+    release:
+      name: release
+    asserts:
+      - equal:
+          path: data.DB_USER
+          value: xwikip
+      - equal:
+          path: data.DB_HOST
+          value: release-postgresql
+      - equal:
+          path: data.DB_DATABASE
+          value: xwikipdb
+  - it: should set mariadb config values
+    set:
+      mariadb.auth.username: xwikim
+      mariadb.auth.database: xwikimdb
+      mysql.enabled: false
+      postgresql.enabled: false
+      mariadb.enabled: true
+    release:
+      name: release
+    asserts:
+      - equal:
+          path: data.DB_USER
+          value: xwikim
+      - equal:
+          path: data.DB_HOST
+          value: release-mariadb
+      - equal:
+          path: data.DB_DATABASE
+          value: xwikimdb
+  - it: should set externalDB config values
+    set:
+      externalDB.user: xwikie
+      externalDB.host: xwiki-host
+      externalDB.database: xwikiedb
+      mysql.enabled: false
+      postgresql.enabled: false
+      mariadb.enabled: false
+    asserts:
+      - equal:
+          path: data.DB_USER
+          value: xwikie
+      - equal:
+          path: data.DB_HOST
+          value: xwiki-host
+      - equal:
+          path: data.DB_DATABASE
+          value: xwikiedb

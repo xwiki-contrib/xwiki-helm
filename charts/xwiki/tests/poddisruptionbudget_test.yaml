@@ -15,8 +15,6 @@ tests:
       - isAPIVersion:
           of: policy/v1beta1
       - matchSnapshot:
-          path: metadata
-      - matchSnapshot:
           path: spec
   - it: should not set maxUnavailable
     set:

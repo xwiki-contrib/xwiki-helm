@@ -31,5 +31,5 @@ spec:
     - destination:
         port:
           number: {{ .Values.service.externalPort }}
-        host: {{ template "fullname" . }}
+        host: {{ template "xwiki.fullname" . }}
 {{- end -}}

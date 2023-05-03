@@ -10,11 +10,13 @@ tests:
     asserts:
       - isKind:
           of: Gateway
+        documentIndex: 0
       - isAPIVersion:
           of: networking.istio.io/v1alpha3
       - equal:
           path: metadata.name
           value: xwiki-gateway
+        documentIndex: 0
       - matchSnapshot:
           path: spec
   - it: should properly set value of VirtualService

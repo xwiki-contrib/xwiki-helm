@@ -1,0 +1,12 @@
+should set values properly:
+  1: |
+    ports:
+      - name: tcp
+        port: 80
+        protocol: TCP
+        targetPort: 8080
+    selector:
+      app.kubernetes.io/instance: release
+      app.kubernetes.io/name: xwiki
+    sessionAffinity: ClientIP
+    type: ClusterIP

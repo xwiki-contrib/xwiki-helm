@@ -1,0 +1,32 @@
+name: Tests
+
+on:
+  push:
+    paths:
+      - '.github/**'
+      - 'charts/**'
+      - '!**.md'
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Add repos
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm plugin install https://github.com/helm-unittest/helm-unittest
+
+      - name: Run unit tests
+        run: |
+          for FILE in charts/*; do 
+            helm dependency update $FILE
+            helm unittest $FILE
+          done
