@@ -45,3 +45,27 @@ Create the name of init scripts configmap
 {{- define "xwiki.initScripts" -}}
 {{- printf "%s-init-scripts" (include "xwiki.fullname" .) }}
 {{- end }}
+
+{{/*
+Istio cert name to be used
+*/}}
+{{- define "xwiki.istio.credentialName" -}}
+{{- $secretName := .Values.istio.tls.secretName }}
+{{- if $secretName }}
+{{- printf "%s" (tpl $secretName $) -}}
+{{- else }}
+    {{- printf "%s-istio-cert" (include "xwiki.fullname" .) -}}
+{{- end }}
+{{- end }}
+
+{{/*
+Istio gateway name to be used
+*/}}
+{{- define "xwiki.istio.gatewayName" -}}
+{{- $gatewayName := .Values.istio.externalGatewayName }}
+{{- if $gatewayName }}
+{{- printf "%s" (tpl $gatewayName $) -}}}
+{{- else }}
+{{- printf "%s-gateway" (include "xwiki.fullname" .) }}
+{{- end }}
+{{- end }}

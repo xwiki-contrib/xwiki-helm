@@ -1,0 +1,16 @@
+{{- if .Values.istio.tls.certificate.enabled -}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ template "xwiki.istio.credentialName" . }}
+  namespace: {{ .Values.istio.tls.certificate.namespace }}
+spec:
+  secretName: {{ template "xwiki.istio.credentialName" . }}
+  commonName: {{ .Values.istio.host | quote }}
+  {{- with .Values.istio.tls.certificate.issuerRef }}  
+  issuerRef:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  dnsNames:
+  - {{ .Values.istio.host | quote }}
+{{- end }}

@@ -185,6 +185,25 @@ ingress:
 istio:
   enabled: false
   host: "*"
+  externalGatewayName: ""
+  gateway:
+    enabled: false
+    # `ingress` is used on new helm intalls, otherwise use `ingressgateway` 
+    selectorIstio: ingress
+  tls:
+    enabled: false
+    httpsRedirect: true
+    secretName: ""
+    minProtocolVersion: "TLSV1_2"
+    mode: "SIMPLE"
+    certificate:
+      # Generate certificate (cert-manager)
+      enabled: false
+      namespace: istio-ingress
+      issuerRef: {}
+      #  name: issuer
+      #  kind: ClusterIssuer
+      
 
 persistence:
   enabled: true

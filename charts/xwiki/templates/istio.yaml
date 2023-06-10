@@ -1,0 +1,22 @@
+{{- if .Values.istio.enabled -}}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ printf "%s-vs" (include "xwiki.fullname" .) }}
+spec:
+  hosts:
+  - {{ .Values.istio.host | quote }}
+  gateways:
+  - {{ template "xwiki.istio.gatewayName" . }}
+  http:
+  - match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        port:
+          number: {{ .Values.service.externalPort }}
+        host: {{ template "xwiki.fullname" . }}
+---
+
+{{- end -}}
