@@ -17,6 +17,11 @@ spec:
         port:
           number: {{ .Values.service.externalPort }}
         host: {{ template "xwiki.fullname" . }}
+      headers:
+        request:
+          set:
+            # Required for some extensions (Realtime Editor/Websocket) 
+            x-forwarded-host: {{ .Values.istio.host | quote }}
 ---
 
 {{- end -}}
