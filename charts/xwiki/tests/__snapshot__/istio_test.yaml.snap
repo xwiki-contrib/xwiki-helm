@@ -1,0 +1,19 @@
+should properly set value of VirtualService:
+  1: |
+    gateways:
+      - RELEASE-NAME-xwiki-gateway
+    hosts:
+      - '*'
+    http:
+      - match:
+          - uri:
+              prefix: /
+        route:
+          - destination:
+              host: RELEASE-NAME-xwiki
+              port:
+                number: 80
+            headers:
+              request:
+                set:
+                  x-forwarded-host: '*'

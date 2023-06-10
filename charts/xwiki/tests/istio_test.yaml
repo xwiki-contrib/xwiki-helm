@@ -1,0 +1,17 @@
+suite: test istio
+templates:
+  - istio.yaml
+tests:
+  - it: should properly set value of VirtualService
+    set:
+      service.externalPort: 80
+      istio.enabled: true
+    documentIndex: 0
+    asserts:
+      - isKind:
+          of: VirtualService
+      - isAPIVersion:
+          of: networking.istio.io/v1beta1
+      - matchSnapshot:
+          path: spec
+
