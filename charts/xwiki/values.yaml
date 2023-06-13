@@ -266,3 +266,10 @@ customConfigs:
 # Properties to be passed to Java process with -D parameters using JAVA_OPTS 
 properties:
   # "key": "value"
+
+glowroot:
+  enabled: false
+  properties:
+    data.dir: /usr/local/xwiki/data/glowroot/data
+    log.dir: /usr/local/xwiki/data/glowroot/log
+    tmp.dir: /usr/local/xwiki/data/glowroot/tmp
