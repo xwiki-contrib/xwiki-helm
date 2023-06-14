@@ -31,7 +31,7 @@ data:
           xwiki_replace "/usr/local/xwiki/data/{{ $file }}" "{{ $key }}" "{{ $value }}" || true
         else 
           echo "Key ({{ $key }}) don't exists on file ({{ $file }}), appending that key line with new value."
-          echo '{{ $key }} = {{ $value | quote }}' >> "/usr/local/xwiki/data/{{ $file }}" || true
+          echo '{{ $key }} = {{ $value }}' >> "/usr/local/xwiki/data/{{ $file }}" || true
         fi
       {{- end }}
     {{- end }}
