@@ -1,0 +1,32 @@
+{{- if .Values.istio.gateway.enabled -}}
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ (include "xwiki.istio.gatewayName" .) }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+spec:
+  selector:
+    istio: {{ .Values.istio.gateway.selectorIstio | quote }} # use Istio default gateway implementation
+  servers:
+  - hosts:
+    - {{ .Values.istio.host | quote }}
+    port:
+      number: 80
+      name: http
+      protocol: HTTP
+  {{- if .Values.istio.tls.enabled }}
+    tls:
+      httpsRedirect: {{ .Values.istio.tls.httpsRedirect }}
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      credentialName: {{ (include "xwiki.istio.credentialName" .) }}
+      minProtocolVersion: {{ .Values.istio.tls.minProtocolVersion }}
+      mode: {{ .Values.istio.tls.mode }}
+    hosts:
+    - {{ .Values.istio.host | quote }}
+  {{- end }}
+{{- end }}

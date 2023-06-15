@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - dev-v1
+      - v1.1.*
     paths:
       - '.github/**'
       - 'charts/**'

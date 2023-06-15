@@ -1,0 +1,16 @@
+suite: test istio gateway
+templates:
+  - istio-gateway.yaml
+tests:
+  - it: should set values properly of Gateway
+    set:
+      istio.gateway.enabled: true
+    release:
+      name: release
+    asserts:
+      - isKind:
+          of: Gateway
+      - isAPIVersion:
+          of: networking.istio.io/v1beta1
+      - matchSnapshot:
+          path: spec

@@ -1,0 +1,11 @@
+should set values properly of Gateway:
+  1: |
+    selector:
+      istio: ingress
+    servers:
+      - hosts:
+          - '*'
+        port:
+          name: http
+          number: 80
+          protocol: HTTP

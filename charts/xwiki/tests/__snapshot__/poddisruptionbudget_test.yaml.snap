@@ -1,0 +1,8 @@
+should set values properly:
+  1: |
+    maxUnavailable: 2
+    minAvailable: 1
+    selector:
+      app.kubernetes.io/instance: release
+      app.kubernetes.io/name: xwiki
+      matchLabels: null

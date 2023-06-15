@@ -31,7 +31,7 @@ data:
           xwiki_replace "/usr/local/xwiki/data/{{ $file }}" "{{ $key }}" "{{ $value }}" || true
         else 
           echo "Key ({{ $key }}) don't exists on file ({{ $file }}), appending that key line with new value."
-          echo '{{ $key }} = {{ $value | quote }}' >> "/usr/local/xwiki/data/{{ $file }}" || true
+          echo '{{ $key }} = {{ $value }}' >> "/usr/local/xwiki/data/{{ $file }}" || true
         fi
       {{- end }}
     {{- end }}
@@ -40,5 +40,24 @@ data:
       export JAVA_OPTS="${JAVA_OPTS} -D{{ $file }}={{ $value }}"
     {{- end }}
 
+    {{- if .Values.glowroot.enabled }}
+    mkdir -p /usr/local/xwiki/data/glowroot 
+    GLOWROOT_VERSION="0.14.0" 
+    if ! [ -d "/usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}" ]; then 
+      wget -O  /tmp/glowroot-${GLOWROOT_VERSION}-dist.zip https://github.com/glowroot/glowroot/releases/download/v${GLOWROOT_VERSION}/glowroot-${GLOWROOT_VERSION}-dist.zip 
+      unzip /tmp/glowroot-${GLOWROOT_VERSION}-dist.zip -d /usr/local/xwiki/data/glowroot/
+      rm -f /tmp/glowroot-${GLOWROOT_VERSION}-dist.zip 
+      mv /usr/local/xwiki/data/glowroot/glowroot /usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}
+    fi 
+    cp /configmaps/glowroot.properties /usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}/glowroot.properties
+    # Append first to enable user override agent. 
+    export JAVA_OPTS=" -javaagent:/usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}/glowroot.jar ${JAVA_OPTS}"
+    {{- end }}
+
     exec /usr/local/bin/docker-entrypoint.sh xwiki
-  
+  glowroot.properties: |
+    {{- with .Values.glowroot.properties }}
+      {{- range $k, $v := . }}
+        {{- printf "%s=%s" $k $v | nindent 4 }}
+      {{- end }}
+    {{- end }}
