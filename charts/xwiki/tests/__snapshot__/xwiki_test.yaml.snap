@@ -67,7 +67,7 @@ should use postgres lts image:
     - name: DB_PASSWORD
       valueFrom:
         secretKeyRef:
-          key: postgres-password
+          key: password
           name: RELEASE-NAME-postgresql
     - name: INDEX_HOST
       valueFrom:
