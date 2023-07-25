@@ -1,0 +1,25 @@
+{{- $fullName := include "solr.fullname" . -}}
+apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
+kind: StatefulSet
+metadata: 
+  name: {{ $fullName }}
+  labels:
+    {{- include "solr.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  serviceName: {{ $fullName }}
+  selector:
+    matchLabels:
+      {{- include "solr.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      # annotations: 
+      labels:
+        {{- include "solr.labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ printf "%s-solr" .Chart.Name }}
+        image: {{ printf "%s/%s:%s" .Values.solr.image.registry .Values.solr.image.name .Values.solr.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.solr.service.internalPort }}

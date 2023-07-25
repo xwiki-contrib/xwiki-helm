@@ -1,4 +1,5 @@
 {{- $fullName := include "xwiki.fullname" . -}}
+{{- $solrHost := include "solr.fullname" . -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,8 +8,7 @@ metadata:
     {{- include "xwiki.labels" . | nindent 4 }}
 data:
 {{- if .Values.solr.enabled }}
-  INDEX_HOST: {{ .Values.solr.host | quote  }}
-  INDEX_PORT: {{ .Values.solr.port | quote  }}
+  SOLR_BASEURL: "http://{{ $solrHost }}:{{ .Values.solr.service.externalPort }}/solr"
 {{- end }}
 {{- if .Values.mariadb.enabled }}
   DB_USER: {{ .Values.mariadb.auth.username | quote }}

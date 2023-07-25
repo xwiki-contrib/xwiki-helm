@@ -159,9 +159,19 @@ externalDB:
 ## To use external solr enable solr, provide host and port
 ##
 solr:
-  enabled: true
-  host: localhost
-  port: 8983
+  enabled: true #If set to false mount an internal Solr instance
+  image:
+    registry: docker.io 
+    name: gridexx/xwiki
+    tag: solr
+  service:
+    portName: solr-node
+    name: http
+    type: ClusterIP
+    externalPort: 8983
+    internalPort: 8983
+  # host: localhost
+  # port: 8983
 
 # To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
 ingress:

@@ -65,16 +65,11 @@ spec:
               key: DB_PASSWORD
         {{- end }}
         {{- if .Values.solr.enabled }}
-        - name: INDEX_HOST
+        - name: SOLR_BASEURL
           valueFrom:
             configMapKeyRef:
               name: {{ $fullName }}
-              key: INDEX_HOST
-        - name: INDEX_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: {{ $fullName }}
-              key: INDEX_PORT
+              key: SOLR_BASEURL
         {{- end }}
         - name: DB_HOST
           valueFrom:

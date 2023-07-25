@@ -22,6 +22,16 @@ data:
     # Setup all default actions from first start
     first_start
 
+    # Add URL for Solr Remote instance
+    # Backward compatibility for old image
+    {{- if .Values.solr.enabled }}
+    # Remove SOLR variables (will be overriden)
+    INDEX_PORT=""
+    INDEX_HOST=""
+    echo "solr.remote.baseURL=${SOLR_BASEURL}" >> /usr/local/xwiki/data/xwiki.properties
+    echo "Adding SOLR_URL to xwiki.properties: ${SOLR_URL}"
+    {{- end }}
+
     # Replace all values from keys defineded on customConfigs
     {{- range $file, $values := .Values.customConfigs }}
       {{- range $key, $value := $values }}
