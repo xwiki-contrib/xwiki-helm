@@ -160,18 +160,29 @@ externalDB:
 ##
 solr:
   enabled: true #If set to false mount an internal Solr instance
+  replicaCount: 1
   image:
     registry: docker.io 
     name: gridexx/xwiki
     tag: solr
+  resources: {}
   service:
     portName: solr-node
     name: http
     type: ClusterIP
     externalPort: 8983
     internalPort: 8983
-  # host: localhost
-  # port: 8983
+  persistence:
+    enabled: true
+    existingClaim: ""
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: "500Mi"
+    annotations: {}
+    labels: {}
+    selector: {}
+    dataSource: {}
 
 # To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
 ingress:

@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "solr.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.solr.replicaCount }}
   serviceName: {{ $fullName }}
   selector:
     matchLabels:
@@ -23,3 +23,55 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.solr.service.internalPort }}
+        resources:
+          {{ toYaml .Values.solr.resources | indent 12 }}
+        volumeMounts:
+        - name: xwiki-solr-data
+          mountPath: /var/solr
+        - name: configmaps
+          mountPath: /configmaps
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+      - name: xwiki-solr-data
+        {{- if and .Values.solr.persistence.enabled .Values.solr.persistence.existingClaim }}
+        persistentVolumeClaim:
+          claimName: {{ tpl .Values.persistence.existingClaim $ }}
+  {{- else if not .Values.solr.persistence.enabled }}
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: xwiki-solr-data
+        {{- if .Values.solr.persistence.annotations }}
+        annotations: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.annotations "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.solr.persistence.labels }}
+        labels: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.labels "context" $) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+        {{- range .Values.solr.persistence.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        {{- if .Values.solr.persistence.dataSource }}
+        dataSource: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.dataSource "context" $) | nindent 10 }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.solr.persistence.size | quote }}
+        {{- if .Values.solr.persistence.selector }}
+        selector: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.selector "context" $) | nindent 10 }}
+        {{- end }}
+        {{- include "common.storage.class" (dict "persistence" .Values.solr.persistence "global" .Values.global) | nindent 8 }}
+  {{- end }}
