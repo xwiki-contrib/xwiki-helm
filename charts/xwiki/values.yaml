@@ -161,10 +161,7 @@ externalDB:
 solr:
   enabled: true #If set to false mount an internal Solr instance
   replicaCount: 1
-  image:
-    registry: docker.io 
-    name: gridexx/xwiki
-    tag: solr
+  image: gridexx/solr-1000
   resources: {}
   service:
     portName: solr-node
@@ -173,7 +170,7 @@ solr:
     externalPort: 8983
     internalPort: 8983
   persistence:
-    enabled: true
+    enabled: false
     existingClaim: ""
     storageClass: ""
     accessModes:
