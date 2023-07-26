@@ -5,15 +5,10 @@ should use custom image:
         secretKeyRef:
           key: DB_PASSWORD
           name: RELEASE-NAME
-    - name: INDEX_HOST
+    - name: SOLR_BASEURL
       valueFrom:
         configMapKeyRef:
-          key: INDEX_HOST
-          name: RELEASE-NAME-xwiki
-    - name: INDEX_PORT
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_PORT
+          key: SOLR_BASEURL
           name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
@@ -37,15 +32,10 @@ should use mysql lts image:
         secretKeyRef:
           key: mysql-password
           name: RELEASE-NAME-mysql
-    - name: INDEX_HOST
+    - name: SOLR_BASEURL
       valueFrom:
         configMapKeyRef:
-          key: INDEX_HOST
-          name: RELEASE-NAME-xwiki
-    - name: INDEX_PORT
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_PORT
+          key: SOLR_BASEURL
           name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
@@ -69,15 +59,10 @@ should use postgres lts image:
         secretKeyRef:
           key: password
           name: RELEASE-NAME-postgresql
-    - name: INDEX_HOST
+    - name: SOLR_BASEURL
       valueFrom:
         configMapKeyRef:
-          key: INDEX_HOST
-          name: RELEASE-NAME-xwiki
-    - name: INDEX_PORT
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_PORT
+          key: SOLR_BASEURL
           name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
