@@ -28,8 +28,6 @@ spec:
         volumeMounts:
         - name: xwiki-solr-data
           mountPath: /var/solr
-        - name: configmaps
-          mountPath: /configmaps
     {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
