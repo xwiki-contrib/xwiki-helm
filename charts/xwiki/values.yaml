@@ -159,7 +159,7 @@ externalDB:
 ## To use external solr enable solr, provide host and port
 ##
 solr:
-  enabled: true #If set to false mount an internal Solr instance
+  enabled: false #If set to false mount an internal Solr instance
   replicaCount: 1
   image: gridexx/solr:1001
   resources: {}

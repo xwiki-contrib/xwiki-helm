@@ -5,11 +5,6 @@ should use custom image:
         secretKeyRef:
           key: DB_PASSWORD
           name: RELEASE-NAME
-    - name: SOLR_BASEURL
-      valueFrom:
-        configMapKeyRef:
-          key: SOLR_BASEURL
-          name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
         configMapKeyRef:
@@ -32,11 +27,6 @@ should use mysql lts image:
         secretKeyRef:
           key: mysql-password
           name: RELEASE-NAME-mysql
-    - name: SOLR_BASEURL
-      valueFrom:
-        configMapKeyRef:
-          key: SOLR_BASEURL
-          name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
         configMapKeyRef:
@@ -59,11 +49,6 @@ should use postgres lts image:
         secretKeyRef:
           key: password
           name: RELEASE-NAME-postgresql
-    - name: SOLR_BASEURL
-      valueFrom:
-        configMapKeyRef:
-          key: SOLR_BASEURL
-          name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
         configMapKeyRef:
