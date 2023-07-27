@@ -161,7 +161,7 @@ externalDB:
 solr:
   enabled: true #If set to false mount an internal Solr instance
   replicaCount: 1
-  image: gridexx/solr-1000
+  image: gridexx/solr:1001
   resources: {}
   service:
     portName: solr-node

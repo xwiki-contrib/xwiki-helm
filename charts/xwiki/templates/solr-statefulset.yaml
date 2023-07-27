@@ -19,48 +19,33 @@ spec:
     spec:
       initContainers:
       - name: download-cores
-        image: appropriate/curl
+        image: curlimages/curl:8.2.1
+        command: ['/bin/sh', '-c']
         volumeMounts:
           - name: xwiki-solr-data
-            mountPath: /home/curl_user/cores
-        command: ['/bin/sh', '-c']
+            mountPath: /tmp/cores
         securityContext: 
           enabled: true
-          # runAsUser: 1000
-          runAsGroup: 1000
-          fsGroup: 1000
-          # runAsNonRoot: 
+          runAsGroup: 1001
+          runAsUser: 1001
+          fsGroup: 1001
+
         args:
         - |
           SOLR_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core/15.5/xwiki-platform-search-solr-server-core-15.5.jar"
           SOLR_MINIMAL_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core-minimal/15.5/xwiki-platform-search-solr-server-core-minimal-15.5.zip"
-          mkdir -p /home/curl_user/cores
-          cd /home/curl_user
+          cd /tmp
           curl $SOLR_CORE_URL -o ./xwiki-server-core.zip && \
           curl $SOLR_MINIMAL_CORE_URL -o ./xwiki-minimal-core.zip
-          mkdir -p /home/curl_user/cores/xwiki
-          mkdir -p /home/curl_user/cores/xwiki_events
-          mkdir -p /home/curl_user/cores/xwiki_extension_index
-          mkdir -p /home/curl_user/cores/xwiki_ratings
-          echo "SLASH /"
-          ls
-          unzip -qq ./xwiki-server-core.zip  -d /home/curl_user/cores/xwiki
-          unzip -qq ./xwiki-minimal-core.zip -d /home/curl_user/cores/xwiki_events
-          unzip -qq ./xwiki-minimal-core.zip -d /home/curl_user/cores/xwiki_extension_index
-          unzip -qq ./xwiki-minimal-core.zip -d /home/curl_user/cores/xwiki_ratings
-          echo "CORES"
-          ls /home/curl_user/cores
-          echo "CORES XWIKI"
-          ls /home/curl_user/cores/xwiki
-          echo "CORES XWIKI RATINGS"
-          ls /home/curl_user/cores/xwiki_ratings
-          addgroup solr
-          adduser -G 1000 -D 1000
-          chown -R 1000:1000 /home/curl_user/cores
-          ls -la /home/curl_user/cores
+          unzip -qq ./xwiki-server-core.zip  -d ./cores/xwiki
+          unzip -qq ./xwiki-minimal-core.zip -d ./cores/xwiki_events
+          unzip -qq ./xwiki-minimal-core.zip -d ./cores/xwiki_extension_index
+          unzip -qq ./xwiki-minimal-core.zip -d ./cores/xwiki_ratings
       containers:
       - name: {{ printf "%s-solr" .Chart.Name }}
         image: {{ .Values.solr.image }}
+        securityContext:
+          allowPrivilegeEscalation: false
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.solr.service.internalPort }}
