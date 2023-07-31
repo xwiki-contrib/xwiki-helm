@@ -6,6 +6,12 @@ on:
       - '.github/**'
       - 'charts/**'
       - '!**.md'
+    
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  CT_MYSQL_ARGS: '--helm-extra-set-args "--set mysql.enabled=true --set mariadb.enabled=false --set postgresql.enabled=false"'
+  CT_MARIADB_ARGS: '--helm-extra-set-args "--set mysql.enabled=false --set mariadb.enabled=true --set postgresql.enabled=false"'
+  CT_POSTGRES_ARGS: '--helm-extra-set-args "--set mysql.enabled=false --set mariadb.enabled=false --set postgresql.enabled=true"'
 
 jobs:
   tests:
@@ -24,9 +30,44 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm plugin install https://github.com/helm-unittest/helm-unittest
 
+      - name: Set up Python
+        uses: actions/setup-python@v4.7.0
+        with:
+          python-version: 3.7
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.3.1
+
+      - name: List chart-testing changes 
+        id: list-changed
+        run: |
+          changed=$(ct list-changed --target-branch ${{ github.event.repository.default_branch }})
+          if [[ -n "$changed" ]]; then
+            echo "{changed}={true}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run chart-testing lint
+        run: ct lint --validate-maintainers=false --target-branch ${{ github.event.repository.default_branch }}
+
       - name: Run unit tests
         run: |
           for FILE in charts/*; do 
             helm dependency update $FILE
             helm unittest $FILE
           done
+        
+      - name: Create kind cluster
+        if: steps.list-changed.outputs.changed == 'true'
+        uses: helm/kind-action@v1.8.0
+
+      - name: Run chart-testing with MySql
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} ${{ env.CT_MYSQL_ARGS }}
+
+      - name: Run chart-testing with MariaDB
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} ${{ env.CT_MARIADB_ARGS }}
+
+      - name: Run chart-testing with Postgres
+        if: steps.list-changed.outputs.changed == 'true'
+        run: ct install --target-branch ${{ github.event.repository.default_branch }} ${{ env.CT_POSTGRES_ARGS }}
