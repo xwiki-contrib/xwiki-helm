@@ -54,6 +54,12 @@ data:
     export JAVA_OPTS=" -javaagent:/usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}/glowroot.jar ${JAVA_OPTS}"
     {{- end }}
 
+    # Replace the platform provenance to keep track of the image
+    sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-war/<id>org.xwiki.contrib:xwiki-platform-distribution-helm-docker/' \
+      /usr/local/tomcat/webapps/ROOT/META-INF/extension.xed
+    sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-docker/<id>org.xwiki.contrib:xwiki-platform-distribution-helm-docker/' \
+      /usr/local/tomcat/webapps/ROOT/META-INF/extension.xed
+
     exec /usr/local/bin/docker-entrypoint.sh xwiki
   glowroot.properties: |
     {{- with .Values.glowroot.properties }}
