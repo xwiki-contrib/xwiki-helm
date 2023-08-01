@@ -1,7 +1,7 @@
 apiVersion: v2
 description: XWiki is a free wiki software platform written in Java with a design emphasis on extensibility. XWiki is an enterprise wiki. It includes WYSIWYG editing, OpenDocument based document import/export, semantic annotations and tagging, and advanced permissions management.
 name: xwiki
-version: 1.2.0-Beta.0
+version: 1.2.0-Beta.1
 type: application
 keywords:
 - xwiki
@@ -16,6 +16,8 @@ maintainers:
   email: ludovic@xwiki.com
 - name: Guilherme Sautner
   email: guilherme.sautner@xwiki.com
+- name: Arsène Fougerouse
+  email: arsene.fougerouse@xwiki.com
 dependencies:
   - name: "common"
     repository: "https://charts.bitnami.com/bitnami"
