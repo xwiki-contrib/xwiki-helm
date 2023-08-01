@@ -5,16 +5,6 @@ should use custom image:
         secretKeyRef:
           key: DB_PASSWORD
           name: RELEASE-NAME
-    - name: INDEX_HOST
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_HOST
-          name: RELEASE-NAME-xwiki
-    - name: INDEX_PORT
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_PORT
-          name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
         configMapKeyRef:
@@ -37,16 +27,6 @@ should use mysql lts image:
         secretKeyRef:
           key: mysql-password
           name: RELEASE-NAME-mysql
-    - name: INDEX_HOST
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_HOST
-          name: RELEASE-NAME-xwiki
-    - name: INDEX_PORT
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_PORT
-          name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
         configMapKeyRef:
@@ -69,16 +49,6 @@ should use postgres lts image:
         secretKeyRef:
           key: password
           name: RELEASE-NAME-postgresql
-    - name: INDEX_HOST
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_HOST
-          name: RELEASE-NAME-xwiki
-    - name: INDEX_PORT
-      valueFrom:
-        configMapKeyRef:
-          key: INDEX_PORT
-          name: RELEASE-NAME-xwiki
     - name: DB_HOST
       valueFrom:
         configMapKeyRef:

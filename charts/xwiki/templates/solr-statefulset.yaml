@@ -1,0 +1,104 @@
+{{- if .Values.solr.enabled }}
+{{- $fullName := include "solr.fullname" . -}}
+apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
+kind: StatefulSet
+metadata: 
+  name: {{ $fullName }}
+  labels:
+    {{- include "solr.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.solr.replicaCount }}
+  serviceName: {{ $fullName }}
+  selector:
+    matchLabels:
+      {{- include "solr.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      # annotations: 
+      labels:
+        {{- include "solr.labels" . | nindent 8 }}
+    spec:
+      initContainers:
+      - name: download-cores
+        image: curlimages/curl:8.2.1
+        command: ['/bin/sh', '-c']
+        volumeMounts:
+          - name: xwiki-solr-data
+            mountPath: /tmp/cores
+        securityContext: 
+          enabled: true
+          runAsGroup: 1001
+          runAsUser: 1001
+          fsGroup: 1001
+
+        args:
+        - |
+          SOLR_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core/15.5/xwiki-platform-search-solr-server-core-15.5.jar"
+          SOLR_MINIMAL_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core-minimal/15.5/xwiki-platform-search-solr-server-core-minimal-15.5.zip"
+          cd /tmp
+          curl $SOLR_CORE_URL -o ./xwiki-server-core.zip && \
+          curl $SOLR_MINIMAL_CORE_URL -o ./xwiki-minimal-core.zip
+          unzip -qq ./xwiki-server-core.zip  -d ./cores/xwiki
+          unzip -qq ./xwiki-minimal-core.zip -d ./cores/xwiki_events
+          unzip -qq ./xwiki-minimal-core.zip -d ./cores/xwiki_extension_index
+          unzip -qq ./xwiki-minimal-core.zip -d ./cores/xwiki_ratings
+      containers:
+      - name: {{ printf "%s-solr" .Chart.Name }}
+        image: {{ .Values.solr.image }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.solr.service.internalPort }}
+        resources:
+          {{ toYaml .Values.solr.resources | indent 12 }}
+        volumeMounts:
+        - name: xwiki-solr-data
+          mountPath: /var/solr/data
+
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+      - name: xwiki-solr-data
+        {{- if and .Values.solr.persistence.enabled .Values.solr.persistence.existingClaim }}
+        persistentVolumeClaim:
+          claimName: {{ tpl .Values.solr.persistence.existingClaim $ }}
+  {{- else if not .Values.solr.persistence.enabled }}
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: xwiki-solr-data
+        {{- if .Values.solr.persistence.annotations }}
+        annotations: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.annotations "context" $) | nindent 10 }}
+        {{- end }}
+        {{- if .Values.solr.persistence.labels }}
+        labels: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.labels "context" $) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+        {{- range .Values.solr.persistence.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        {{- if .Values.solr.persistence.dataSource }}
+        dataSource: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.dataSource "context" $) | nindent 10 }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.solr.persistence.size | quote }}
+        {{- if .Values.solr.persistence.selector }}
+        selector: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.selector "context" $) | nindent 10 }}
+        {{- end }}
+        {{- include "common.storage.class" (dict "persistence" .Values.solr.persistence "global" .Values.global) | nindent 8 }}
+  {{- end }}
+{{- end }}

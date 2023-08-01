@@ -14,6 +14,24 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- include "common.names.fullname" . }}
 {{- end }}
 
+{{- define "solr.fullname" -}}
+{{- printf "%s-solr" (include "common.names.fullname" .) }}
+{{- end }}
+
+{{/*
+Solr Common labels
+*/}}
+{{- define "solr.labels" -}}
+run: solr
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "solr.selectorLabels" -}}
+run: solr
+{{- end }}
+
 {{/*
 Common labels
 */}}

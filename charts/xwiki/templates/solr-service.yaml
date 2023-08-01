@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name:  {{ include "solr.fullname" . }}
+  labels:
+    {{- include "solr.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.solr.service.type }}
+  ports:
+  - port: {{ .Values.solr.service.externalPort }}
+    targetPort: {{ .Values.solr.service.internalPort }}
+    protocol: TCP
+    name: {{ .Values.solr.service.name }}
+  sessionAffinity: ClientIP
+  selector:
+    {{- include "solr.selectorLabels" . | nindent 4 }}
