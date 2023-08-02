@@ -13,6 +13,10 @@ service:
   type: ClusterIP
   externalPort: 80
   internalPort: 8080
+  # Set an array of externalIPs for the service
+  # externalIPs:
+    # - 10.20.30.40
+    # - 10.20.30.41
 resources: {}
 #  limits:
 #    cpu: 2000m

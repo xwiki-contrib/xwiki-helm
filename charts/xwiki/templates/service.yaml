@@ -6,6 +6,12 @@ metadata:
     {{- include "xwiki.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  {{- if gt (len .Values.service.externalIPs) 0 }}
+  externalIPs:
+    {{- range .Values.service.externalIPs }}
+    - {{ . }}
+    {{- end }}
+  {{- end }}
   ports:
   - port: {{ .Values.service.externalPort }}
     targetPort: {{ .Values.service.internalPort }}
