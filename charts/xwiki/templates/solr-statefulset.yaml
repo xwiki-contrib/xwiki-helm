@@ -2,7 +2,7 @@
 {{- $fullName := include "solr.fullname" . -}}
 apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
 kind: StatefulSet
-metadata: 
+metadata:
   name: {{ $fullName }}
   labels:
     {{- include "solr.labels" . | nindent 4 }}
@@ -14,7 +14,7 @@ spec:
       {{- include "solr.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      # annotations: 
+      # annotations:
       labels:
         {{- include "solr.labels" . | nindent 8 }}
     spec:
@@ -25,7 +25,7 @@ spec:
         volumeMounts:
           - name: xwiki-solr-data
             mountPath: /tmp/cores
-        securityContext: 
+        securityContext:
           enabled: true
           runAsGroup: 1001
           runAsUser: 1001

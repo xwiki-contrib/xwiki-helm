@@ -16,10 +16,10 @@ tests:
     asserts:
       - isKind:
           of: Ingress
-        template: ingress.yaml 
+        template: ingress.yaml
       - matchSnapshot:
           path: metadata.annotations
-        template: ingress.yaml 
+        template: ingress.yaml
       - equal:
           path: metadata.name
           value: release-xwiki
@@ -28,4 +28,4 @@ tests:
 #          pattern: xwiki-*
       - matchSnapshot:
           path: spec
-        template: ingress.yaml 
+        template: ingress.yaml

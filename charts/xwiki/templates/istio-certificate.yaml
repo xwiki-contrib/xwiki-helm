@@ -7,7 +7,7 @@ metadata:
 spec:
   secretName: {{ template "xwiki.istio.credentialName" . }}
   commonName: {{ .Values.istio.host | quote }}
-  {{- with .Values.istio.tls.certificate.issuerRef }}  
+  {{- with .Values.istio.tls.certificate.issuerRef }}
   issuerRef:
     {{- toYaml . | nindent 4 }}
   {{- end }}
