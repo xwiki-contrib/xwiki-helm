@@ -256,7 +256,7 @@ podDisruptionBudget:
   minAvailable: 1
   # maxUnavailable: 1
 
-# Reference: https://kubernetes.io/docs/user-guide/node-selection/
+# Reference: https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/#create-a-pod-that-gets-scheduled-to-your-chosen-node
 nodeSelector: {}
 
 # Reference: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
