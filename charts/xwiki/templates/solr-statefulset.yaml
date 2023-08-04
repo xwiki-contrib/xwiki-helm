@@ -56,15 +56,15 @@ spec:
         - name: xwiki-solr-data
           mountPath: /var/solr/data
 
-    {{- with .Values.nodeSelector }}
+    {{- with .Values.solr.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- with .Values.affinity }}
+    {{- with .Values.solr.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- with .Values.tolerations }}
+    {{- with .Values.solr.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}

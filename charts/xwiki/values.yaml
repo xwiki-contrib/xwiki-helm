@@ -14,7 +14,7 @@ service:
   externalPort: 80
   internalPort: 8080
   # Set an array of externalIPs for the service
-  # externalIPs:
+  externalIPs: []
     # - 10.20.30.40
     # - 10.20.30.41
 resources: {}
@@ -184,6 +184,9 @@ solr:
     labels: {}
     selector: {}
     dataSource: {}
+  nodeSelector: {}
+  affinity: {}
+  tolerations: {}
 
 # To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
 ingress:
