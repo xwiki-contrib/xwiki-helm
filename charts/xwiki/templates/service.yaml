@@ -17,6 +17,6 @@ spec:
     targetPort: {{ .Values.service.internalPort }}
     protocol: TCP
     name: {{ .Values.service.name }}
-  sessionAffinity: ClientIP
+  sessionAffinity: {{ .Values.service.sessionAffinity }}
   selector:
     {{- include "xwiki.selectorLabels" . | nindent 4 }}

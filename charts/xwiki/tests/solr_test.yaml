@@ -37,11 +37,14 @@ tests:
         template: solr-statefulset.yaml
   - it: change service values
     set:
-      solr.enabled: true
-      solr.service.type: LoadBalancer
-      solr.service.name: my-solr-service
-      solr.service.externalPort: 6060
-      solr.service.internalPort: 7070
+      solr:
+        enabled: true
+        service:
+          type: LoadBalancer
+          name: my-solr-service
+          externalPort: 6060
+          internalPort: 7070
+          sessionAffinity: None
     asserts:
       - equal:
           path: spec.type
@@ -58,6 +61,10 @@ tests:
       - equal:
           path: spec.ports[0].name
           value: my-solr-service
+        template: solr-service.yaml
+      - equal:
+          path: spec.sessionAffinity
+          value: None
         template: solr-service.yaml
 
   - it: test volume persistence

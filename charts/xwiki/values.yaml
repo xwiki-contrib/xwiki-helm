@@ -17,6 +17,8 @@ service:
   externalIPs: []
     # - 10.20.30.40
     # - 10.20.30.41
+  # Reference: https://kubernetes.io/docs/reference/networking/virtual-ips/#session-affinity
+  sessionAffinity: ClientIP
 resources: {}
 #  limits:
 #    cpu: 2000m
@@ -174,6 +176,7 @@ solr:
     type: ClusterIP
     externalPort: 8983
     internalPort: 8983
+    sessionAffinity: ClientIP
   persistence:
     enabled: false
     existingClaim: ""
