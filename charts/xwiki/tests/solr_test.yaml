@@ -1,0 +1,142 @@
+suite: test solr statefulset
+templates:
+  - solr-statefulset.yaml
+  - solr-service.yaml
+tests:
+  - it: enable solr external instance, check default value
+    set:
+      solr.enabled: true
+    asserts:
+      - isKind:
+          of: StatefulSet
+        template: solr-statefulset.yaml
+        documentIndex: 0
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: xwiki-solr-data
+              emptyDir: {}
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.type
+          value: ClusterIP
+        template: solr-service.yaml
+      - equal:
+          path: spec.ports[0].port
+          value: 8983
+        template: solr-service.yaml
+      - equal:
+          path: spec.ports[0].targetPort
+          value: 8983
+        template: solr-service.yaml
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: xwiki-solr-data
+              emptyDir: {}
+        template: solr-statefulset.yaml
+  - it: change service values
+    set:
+      solr:
+        enabled: true
+        service:
+          type: LoadBalancer
+          name: my-solr-service
+          externalPort: 6060
+          internalPort: 7070
+          sessionAffinity: None
+    asserts:
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+        template: solr-service.yaml
+      - equal:
+          path: spec.ports[0].port
+          value: 6060
+        template: solr-service.yaml
+      - equal:
+          path: spec.ports[0].targetPort
+          value: 7070
+        template: solr-service.yaml
+      - equal:
+          path: spec.ports[0].name
+          value: my-solr-service
+        template: solr-service.yaml
+      - equal:
+          path: spec.sessionAffinity
+          value: None
+        template: solr-service.yaml
+
+  - it: test volume persistence
+    set:
+      solr.enabled: true
+      solr.persistence.enabled: true
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0]
+          value:
+            name: xwiki-solr-data
+        template: solr-statefulset.yaml
+  - it: test persistence
+    set:
+      solr:
+        enabled: true
+        persistence:
+          enabled: true
+          existingClaim: my-claim
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes
+          value:
+            - name: xwiki-solr-data
+              persistentVolumeClaim:
+                claimName: my-claim
+        template: solr-statefulset.yaml
+  - it: test affinity, selector and tolerations
+    set:
+      solr.enabled: true
+      solr.nodeSelector:
+        disktype: ssd
+        cputype: arm
+      solr.tolerations:
+        - key: "java8"
+          operator: "Exists"
+          effect: "NoSchedule"
+      solr.affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: disktype
+                operator: In
+                values:
+                - ssd
+    asserts:
+      - equal:
+          path: spec.template.spec.nodeSelector
+          value:
+            disktype: ssd
+            cputype: arm
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.template.spec.tolerations[0]
+          value:
+              key: "java8"
+              operator: "Exists"
+              effect: "NoSchedule"
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.template.spec.affinity
+          value:
+              nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  nodeSelectorTerms:
+                  - matchExpressions:
+                    - key: disktype
+                      operator: In
+                      values:
+                      - ssd
+        template: solr-statefulset.yaml
+
+
+

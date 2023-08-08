@@ -12,7 +12,7 @@ spec:
     targetPort: {{ .Values.solr.service.internalPort }}
     protocol: TCP
     name: {{ .Values.solr.service.name }}
-  sessionAffinity: ClientIP
+  sessionAffinity: {{ .Values.solr.service.sessionAffinity }}
   selector:
     {{- include "solr.selectorLabels" . | nindent 4 }}
 {{- end }}

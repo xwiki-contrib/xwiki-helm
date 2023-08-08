@@ -10,7 +10,7 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
-spec:  
+spec:
   replicas: {{ .Values.replicaCount }}
   {{- if .Values.workloadStateful }}
   serviceName: {{ $fullName }}
@@ -21,7 +21,7 @@ spec:
   template:
     metadata:
       annotations:
-        # Annotations to rollout changes on configs on workload 
+        # Annotations to rollout changes on configs on workload
         checksum/configmap: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
         checksum/initialization-configmaps: {{ include (print $.Template.BasePath "/initialization-configmaps.yaml") . | sha256sum }}
       labels:

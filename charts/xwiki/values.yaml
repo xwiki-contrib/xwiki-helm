@@ -13,6 +13,12 @@ service:
   type: ClusterIP
   externalPort: 80
   internalPort: 8080
+  # Set an array of externalIPs for the service
+  externalIPs: []
+    # - 10.20.30.40
+    # - 10.20.30.41
+  # Reference: https://kubernetes.io/docs/reference/networking/virtual-ips/#session-affinity
+  sessionAffinity: ClientIP
 resources: {}
 #  limits:
 #    cpu: 2000m
@@ -47,8 +53,8 @@ mysql:
     00-init.sql: |
       grant all privileges on *.* to xwiki@'%'
   primary:
-    # Changed to use UTF8mb4, check future versions if this was already changed. 
-    # TODO: review explicit_defaults_for_timestamp 
+    # Changed to use UTF8mb4, check future versions if this was already changed.
+    # TODO: review explicit_defaults_for_timestamp
     configuration: |-
       [mysqld]
       default_authentication_plugin=mysql_native_password
@@ -97,8 +103,8 @@ mariadb:
   initdbScripts:
     00-init.sql: |
       grant all privileges on *.* to xwiki@'%'
-    # Changed to use UTF8mb4, check future versions if this was already changed. 
-    # TODO: review explicit_defaults_for_timestamp 
+    # Changed to use UTF8mb4, check future versions if this was already changed.
+    # TODO: review explicit_defaults_for_timestamp
     configuration: |-
       [mysqld]
       skip-name-resolve
@@ -141,11 +147,11 @@ postgresql:
     username: "xwiki"
     password: "xwiki"
     database: "xwiki"
-  #persistence:
+  # persistence:
   #  size: 8Gi
 
 ##
-## For custom mysql and postgres database. Use externalDB. 
+## For custom mysql and postgres database. Use externalDB.
 ## Would be used only if postgres and mysql is disabled.
 ## Set the image tag if want to use externalDB
 ##
@@ -159,7 +165,8 @@ externalDB:
 ## To use external solr enable solr, provide host and port
 ##
 solr:
-  enabled: false #If set to false mount an internal Solr instance
+  # If set to false mount an internal Solr instance
+  enabled: false
   replicaCount: 1
   image: gridexx/xwiki:solr8
   resources: {}
@@ -169,6 +176,7 @@ solr:
     type: ClusterIP
     externalPort: 8983
     internalPort: 8983
+    sessionAffinity: ClientIP
   persistence:
     enabled: false
     existingClaim: ""
@@ -180,19 +188,22 @@ solr:
     labels: {}
     selector: {}
     dataSource: {}
+  nodeSelector: {}
+  affinity: {}
+  tolerations: {}
 
 # To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
 ingress:
   enabled: false
   className: ""
-  annotations: 
+  annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/affinity: cookie
     nginx.ingress.kubernetes.io/session-cookie-name: XNGINX
     nginx.ingress.kubernetes.io/session-cookie-expires: "1800"
     # kubernetes.io/tls-acme: "true"
     # ingress.kubernetes.io/rewrite-target: /
-  hosts: 
+  hosts:
     - host: ""
       paths:
         - path: /
@@ -213,7 +224,7 @@ istio:
   externalGatewayName: ""
   gateway:
     enabled: false
-    # `ingress` is used on new helm intalls, otherwise use `ingressgateway` 
+    # `ingress` is used on new helm intalls, otherwise use `ingressgateway`
     selectorIstio: ingress
   tls:
     enabled: false
@@ -228,7 +239,7 @@ istio:
       issuerRef: {}
       #  name: issuer
       #  kind: ClusterIssuer
-      
+
 
 persistence:
   enabled: true
@@ -249,7 +260,7 @@ podDisruptionBudget:
   minAvailable: 1
   # maxUnavailable: 1
 
-# Reference: https://kubernetes.io/docs/user-guide/node-selection/
+# Reference: https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/#create-a-pod-that-gets-scheduled-to-your-chosen-node
 nodeSelector: {}
 
 # Reference: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -271,17 +282,17 @@ affinity: {}
   #         - e2e-az1
   #         - e2e-az2
 
-# Custom configuration files for xwiki 
+# Custom configuration files for xwiki
 customConfigs:
-  # Properties key that exists, replace in line is done with value here defined. 
-  # If key don't exists, this key and value will be appended in that specific file. 
+  # Properties key that exists, replace in line is done with value here defined.
+  # If key don't exists, this key and value will be appended in that specific file.
   # This files are list of key: value that are translated as key=value in that file.
-  #xwiki.cfg:
-    # 
-  #xwiki.properties:
-    # 
+  # xwiki.cfg:
+    #
+  # xwiki.properties:
+    #
 
-# Properties to be passed to Java process with -D parameters using JAVA_OPTS 
+# Properties to be passed to Java process with -D parameters using JAVA_OPTS
 properties:
   # "key": "value"
 

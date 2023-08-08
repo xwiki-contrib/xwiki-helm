@@ -20,7 +20,7 @@ spec:
       headers:
         request:
           set:
-            # Required for some extensions (Realtime Editor/Websocket) 
+            # Required for some extensions (Realtime Editor/Websocket)
             x-forwarded-host: {{ .Values.istio.host | quote }}
 ---
 apiVersion: networking.istio.io/v1beta1

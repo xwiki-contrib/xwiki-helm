@@ -13,10 +13,10 @@ tests:
     asserts:
       - isKind:
           of: Service
-#        template: service.yaml 
+#        template: service.yaml
       - matchSnapshot:
           path: spec
-#        template: service.yaml 
+#        template: service.yaml
   - it: should have same labels as Deployment
     set:
       service.type: ClusterIP
@@ -28,6 +28,6 @@ tests:
     asserts:
       - equal:
           path: spec.selector
-          value: 
+          value:
            app.kubernetes.io/instance: release
            app.kubernetes.io/name: xwiki
