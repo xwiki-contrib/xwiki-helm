@@ -1,0 +1,31 @@
+{{- if (.Values.cluster.enabled) }}
+{{- $fullName := include "xwiki.fullname" . -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $fullName }}-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $fullName }}-pod-reader
+rules:
+- apiGroups: [""] 
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+kind: RoleBinding
+#kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ $fullName }}-api-access
+subjects:
+- kind: ServiceAccount
+  name: {{ $fullName }}-sa
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  #kind: ClusterRole
+  name: {{ $fullName }}-pod-reader
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

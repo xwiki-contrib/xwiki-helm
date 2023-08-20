@@ -1,7 +1,15 @@
 # Default values for node.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-replicaCount: 1
+cluster:
+  enabled: false
+  replicas: 1
+  jgroups:
+    port: 7800
+    kube_ping:
+      version: "2.0.1.Final"
+      url: "https://nexus.xwiki.org/nexus/service/local/repositories/central/content/org/jgroups/kubernetes/jgroups-kubernetes/${KUBEPING_VERSION}/jgroups-kubernetes-${KUBEPING_VERSION}.jar"
+
 image:
   name: xwiki
   pullPolicy: IfNotPresent

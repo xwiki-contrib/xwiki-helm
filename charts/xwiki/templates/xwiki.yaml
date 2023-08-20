@@ -11,7 +11,7 @@ metadata:
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.cluster.replicas }}
   {{- if .Values.workloadStateful }}
   serviceName: {{ $fullName }}
   {{- end }}
@@ -27,6 +27,9 @@ spec:
       labels:
         {{- include "xwiki.labels" . | nindent 8 }}
     spec:
+      {{- if (.Values.cluster.enabled) }}
+      serviceAccountName: {{ $fullName }}-sa
+      {{- end }}
       containers:
       - name: {{ .Chart.Name }}
       {{- if .Values.image.tag }}
@@ -42,6 +45,9 @@ spec:
         command: ["/bin/bash", "/configmaps/entrypoint"]
         ports:
         - containerPort: {{ .Values.service.internalPort }}
+        {{- if (.Values.cluster.enabled) }}
+        - containerPort: {{ .Values.cluster.jgroups.port }}
+        {{- end }}
         env:
         {{- if .Values.javaOpts }}
         - name: JAVA_OPTS
@@ -115,7 +121,7 @@ spec:
           claimName: {{ tpl .Values.persistence.existingClaim $ }}
   {{- else if not .Values.persistence.enabled }}
         emptyDir: {}
-  {{- else if .Values.workloadStateful }}
+  {{- else if and .Values.workloadStateful (not .Values.cluster.enabled) }}
   volumeClaimTemplates:
     - metadata:
         name: xwiki-data

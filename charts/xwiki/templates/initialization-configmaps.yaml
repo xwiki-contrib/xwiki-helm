@@ -21,6 +21,24 @@ data:
     file_env 'CONTEXT_PATH' 'ROOT'
     # Setup all default actions from first start
     first_start
+    ## 
+    # On future versions, when LTS start have this method we can remove this from this script. 
+    # This method was requested on: https://github.com/xwiki/xwiki-docker/pull/36
+    ## 
+    function xwiki_replace_or_add() {
+      local file_path="$1"
+      local setting="$2"
+      local new_value="$3"
+
+      # Check if the setting exists in the file
+      if grep -Eq "^ *#? *$setting=" "$file_path"; then
+        # If the setting exists, replace the occurrence with the new value
+        sed -i 's|^\( *#\? *\)'"$setting"'=.*$|'"$setting"'='"$new_value"'|g' "$file_path"
+      else
+        # If the setting doesn't exist, add it at the end of the file
+        echo "$setting=$new_value" >> "$file_path"
+      fi
+    }
 
     # Add URL for Solr Remote instance
     # Backward compatibility for old image
@@ -28,21 +46,16 @@ data:
     # Remove SOLR variables (will be overriden)
     INDEX_PORT=""
     INDEX_HOST=""
-    echo "solr.remote.baseURL=${SOLR_BASEURL}" >> /usr/local/xwiki/data/xwiki.properties
     echo "Adding SOLR_URL to xwiki.properties: ${SOLR_URL}"
+    xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "solr.type" "remote"
+    xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "solr.remote.baseURL" "${SOLR_BASEURL}"
     {{- end }}
 
     # Replace all values from keys defineded on customConfigs
     {{- range $file, $values := .Values.customConfigs }}
       {{- range $key, $value := $values }}
         # TODO review/manage extensions
-        if grep -wq "{{ $key }}" /usr/local/xwiki/data/{{ $file }}; then
-          echo "Key ({{ $key }}) exists on file ({{ $file }}), replacing that key line with new value."
-          xwiki_replace "/usr/local/xwiki/data/{{ $file }}" "{{ $key }}" "{{ $value }}" || true
-        else
-          echo "Key ({{ $key }}) don't exists on file ({{ $file }}), appending that key line with new value."
-          echo '{{ $key }} = {{ $value }}' >> "/usr/local/xwiki/data/{{ $file }}" || true
-        fi
+        xwiki_replace_or_add "/usr/local/xwiki/data/{{ $file }}" {{ $key }} {{ $value }}
       {{- end }}
     {{- end }}
 
@@ -70,6 +83,22 @@ data:
     sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-docker/<id>org.xwiki.contrib:xwiki-platform-distribution-helm-docker/' \
       /usr/local/tomcat/webapps/ROOT/META-INF/extension.xed
 
+    {{- if (.Values.cluster.enabled) }}
+      mkdir -p /usr/local/xwiki/data/jgroups 
+      KUBEPING_VERSION="{{ .Values.cluster.jgroups.kube_ping.version }}"
+      KUBEPING_URL={{ .Values.cluster.jgroups.kube_ping.url }}
+      KUBEPING_FILENAME=$(basename $KUBEPING_URL)
+      echo "Version ${KUBEPING_VERSION} URL: ${KUBEPING_URL} File: ${KUBEPING_FILENAME}"
+      if ! [ -f "/usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME}" ]; then 
+        curl -L "${KUBEPING_URL}" -o "/usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME}"
+      fi
+      cp /usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME} /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
+      cp /configmaps/kubeping.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/observation/remote/jgroups/kubeping.xml 
+      
+      xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "observation.remote.enabled" "true"
+      xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "observation.remote.channels" "kubeping"
+    {{- end }}
+
     exec /usr/local/bin/docker-entrypoint.sh xwiki
   glowroot.properties: |
     {{- with .Values.glowroot.properties }}
@@ -77,3 +106,53 @@ data:
         {{- printf "%s=%s" $k $v | nindent 4 }}
       {{- end }}
     {{- end }}
+
+  {{- if (.Values.cluster.enabled) }}
+  kubeping.xml: |
+    <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="urn:org:jgroups"
+            xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
+        <TCP external_addr="${JGROUPS_EXTERNAL_ADDR:match-interface:eth0}"
+          bind_addr="site_local,match-interface:eth0"
+          bind_port="{{ .Values.cluster.jgroups.port }}"
+          recv_buf_size="${tcp.recv_buf_size:512k}"
+          send_buf_size="${tcp.send_buf_size:512k}"
+          bundler.max_size="64K"
+          diag.enabled="true"
+          thread_naming_pattern="cl"
+          sock_conn_timeout="300"
+
+          use_virtual_threads="${use_fibers:false}"
+          thread_pool.min_threads="0"
+          thread_pool.max_threads="20"
+          thread_pool.keep_alive_time="30000" />
+
+        <org.jgroups.protocols.kubernetes.KUBE_PING
+            port_range="1"
+            namespace="{{ .Release.Namespace }}"
+            labels="app.kubernetes.io/instance={{ .Release.Name }},app.kubernetes.io/name={{ include "common.names.name" . }}"
+        />
+
+        <MERGE3  min_interval="10000"
+                max_interval="30000"/>
+        <FD_SOCK/>
+        <FD_ALL timeout="9000" interval="3000" />
+        <VERIFY_SUSPECT timeout="1500"  />
+        <BARRIER />
+        <pbcast.NAKACK2 use_mcast_xmit="false"
+                      discard_delivered_msgs="true"/>
+        <UNICAST3 />
+        <pbcast.STABLE desired_avg_gossip="50000"
+                      max_bytes="4M"/>
+        <pbcast.GMS print_local_addr="true" join_timeout="3000"/>
+        <UFC max_credits="2M"
+            min_threshold="0.4"/>
+        <MFC max_credits="2M"
+            min_threshold="0.4"/>
+        <FRAG2 frag_size="60K"  />
+        <!--RSVP resend_interval="2000" timeout="10000"/-->
+        <pbcast.STATE_TRANSFER/>
+        <CENTRAL_LOCK />
+        <COUNTER/>
+    </config>
+  {{- end }}
