@@ -186,7 +186,7 @@ solr:
     internalPort: 8983
     sessionAffinity: ClientIP
   persistence:
-    enabled: false
+    enabled: true
     existingClaim: ""
     storageClass: ""
     accessModes:
