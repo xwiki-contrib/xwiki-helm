@@ -43,6 +43,9 @@ spec:
       {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["/bin/bash", "/configmaps/entrypoint"]
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.service.internalPort }}
         {{- if (.Values.cluster.enabled) }}
@@ -99,6 +102,9 @@ spec:
           mountPath: /usr/local/xwiki/data
         - name: configmaps
           mountPath: /configmaps
+    {{- if .Values.securityContext.enabled }}
+      securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 8 }}
+    {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

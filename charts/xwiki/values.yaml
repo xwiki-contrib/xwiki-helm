@@ -44,6 +44,15 @@ extraEnvVars: []
 # Enable to choose witch kind of workload will be used: (true) StatefulSet or (false) for Deployment
 workloadStateful: true
 
+securityContext:
+  enabled: false
+  fsGroup: 101
+
+containerSecurityContext:
+  enabled: false
+  runAsUser: 101
+  runAsNonRoot: true
+
 ##
 ## MySql chart configuration
 ##

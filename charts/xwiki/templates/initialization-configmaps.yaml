@@ -19,6 +19,12 @@ data:
     # Reuse commands/resources from default entrypoint.
     source /usr/local/bin/docker-entrypoint.sh
     file_env 'CONTEXT_PATH' 'ROOT'
+    if [ -d "/usr/local/tomcat" ]; then
+      export AS_PATH=/usr/local/tomcat
+    else
+      export AS_PATH=/var/lib/jetty
+    fi
+    echo "Path: ${AS_PATH}"
     # Setup all default actions from first start
     first_start
     ## 
@@ -79,9 +85,9 @@ data:
 
     # Replace the platform provenance to keep track of the image
     sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-war/<id>org.xwiki.contrib:xwiki-platform-distribution-helm-docker/' \
-      /usr/local/tomcat/webapps/ROOT/META-INF/extension.xed
+      $AS_PATH/webapps/ROOT/META-INF/extension.xed
     sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-docker/<id>org.xwiki.contrib:xwiki-platform-distribution-helm-docker/' \
-      /usr/local/tomcat/webapps/ROOT/META-INF/extension.xed
+      $AS_PATH/webapps/ROOT/META-INF/extension.xed
 
     {{- if (.Values.cluster.enabled) }}
       mkdir -p /usr/local/xwiki/data/jgroups 
@@ -92,8 +98,8 @@ data:
       if ! [ -f "/usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME}" ]; then 
         curl -L "${KUBEPING_URL}" -o "/usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME}"
       fi
-      cp /usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME} /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
-      cp /configmaps/kubeping.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/observation/remote/jgroups/kubeping.xml 
+      cp /usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME} $AS_PATH/webapps/ROOT/WEB-INF/lib/
+      cp /configmaps/kubeping.xml $AS_PATH/webapps/ROOT/WEB-INF/observation/remote/jgroups/kubeping.xml 
       
       xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "observation.remote.enabled" "true"
       xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "observation.remote.channels" "kubeping"
