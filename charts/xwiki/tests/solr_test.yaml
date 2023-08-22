@@ -15,7 +15,6 @@ tests:
           path: spec.template.spec.volumes
           value:
             - name: xwiki-solr-data
-              emptyDir: {}
         template: solr-statefulset.yaml
       - equal:
           path: spec.type
@@ -33,7 +32,6 @@ tests:
           path: spec.template.spec.volumes
           value:
             - name: xwiki-solr-data
-              emptyDir: {}
         template: solr-statefulset.yaml
   - it: change service values
     set:
