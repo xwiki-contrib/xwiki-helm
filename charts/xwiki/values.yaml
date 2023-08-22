@@ -319,3 +319,17 @@ glowroot:
     data.dir: /usr/local/xwiki/data/glowroot/data
     log.dir: /usr/local/xwiki/data/glowroot/log
     tmp.dir: /usr/local/xwiki/data/glowroot/tmp
+
+logback: 
+  enabled: false
+#  customConfiguration: |
+#    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+#      <!-- Direct log messages to stdout -->
+#      <Target>System.out</Target>
+#      <encoder>
+#        <pattern>%d [%t] %-5p %-30.30c{2} - %m %n</pattern>
+#      </encoder>
+#    </appender>
+#  extraConfiguration: |
+#    <logger name="org.xwiki" level="debug"/>
+#    <logger name="com.xwiki" level="debug"/>

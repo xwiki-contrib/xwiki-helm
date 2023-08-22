@@ -83,6 +83,10 @@ data:
     export JAVA_OPTS=" -javaagent:/usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}/glowroot.jar ${JAVA_OPTS}"
     {{- end }}
 
+    {{- if .Values.logback.enabled }}
+    cp /configmaps/logback.xml $AS_PATH/webapps/ROOT/WEB-INF/classes/logback.xml
+    {{- end }}
+
     # Replace the platform provenance to keep track of the image
     sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-war/<id>org.xwiki.contrib:xwiki-platform-distribution-helm-docker/' \
       $AS_PATH/webapps/ROOT/META-INF/extension.xed
@@ -106,6 +110,90 @@ data:
     {{- end }}
 
     exec /usr/local/bin/docker-entrypoint.sh xwiki
+
+  {{- if .Values.logback.enabled }}
+  logback.xml: | 
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration>
+
+    {{- if (.Values.logback.customConfiguration) }}
+      {{- .Values.logback.customConfiguration | nindent 6 }}
+    {{- else }}
+      <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- Direct log messages to stdout -->
+        <Target>System.out</Target>
+        <encoder>
+          <pattern>%d [%t] %-5p %-30.30c{2} - %m %n</pattern>
+        </encoder>
+      </appender>
+
+      <!-- Logback 1.3+ is very verbose by default when loading the configuration but it's mostly noise from XWiki log point of view -->
+      <logger name="ch.qos.logback.classic.model.processor" level="warn"/>
+
+      <logger name="org.xwiki" level="info"/>
+      <logger name="com.xwiki" level="info"/>
+
+      <!-- Old code is using the com.xpn.xwiki package and is logging too much stuff at INFO level, which is why we use
+          the default WARN level. -->
+      <logger name="com.xpn.xwiki" level="warn"/>
+      <logger name="com.xpn.xwiki.store.migration" level="info"/>
+      <logger name="com.xpn.xwiki.internal.filter" level="info"/>
+
+      <!-- Special loggers, not using class names -->
+
+      <!-- Set it to DEBUG to get logs for shuts down operations -->
+      <logger name="org.xwiki.shutdown" level="info"/>
+
+      <!-- Hibernate logging options -->
+
+      <!-- Global level for all Hibernate logs -->
+      <logger name="org.hibernate" level="warn"/>
+
+      <!-- Log HQL query parser activity -->
+      <logger name="org.hibernate.hql.ast.AST" level="warn"/>
+      <!-- Log just the SQL -->
+      <logger name="org.hibernate.SQL" level="warn"/>
+      <!-- Log JDBC bind parameters -->
+      <logger name="org.hibernate.type" level="warn"/>
+      <!-- Log schema export/update -->
+      <logger name="org.hibernate.tool.hbm2ddl" level="warn"/>
+      <!-- Log HQL parse trees -->
+      <logger name="org.hibernate.hql" level="warn"/>
+      <!-- Log cache activity -->
+      <logger name="org.hibernate.cache" level="warn"/>
+      <!-- Log transaction activity -->
+      <logger name="org.hibernate.transaction" level="warn"/>
+      <!-- Log JDBC resource acquisition -->
+      <logger name="org.hibernate.jdbc" level="warn"/>
+      <!-- Enable the following line if you want to track down connection leakages when using
+          DriverManagerConnectionProvider -->
+      <logger name="org.hibernate.connection.DriverManagerConnectionProvider" level="warn"/>
+      <!-- Log prepared statement cache activity -->
+      <logger name="org.hibernate.ps.PreparedStatementCache" level="warn"/>
+
+      <!-- Deactive PDF Export CSS Applier warnings -->
+      <logger name="org.apache.fop.layoutmgr.inline.ContentLayoutManager" level="error"/>
+      <logger name="info.informatica.doc.style.css.dom" level="error"/>
+
+      <!-- Deactivate JGroups warnings -->
+      <logger name="org.jgroups" level="error"/>
+
+      <!-- By default everything that is of severity WARN, ERROR or FATAL is logged to the console.
+          Since the console output is captured and redirected by the servlet container in most cases,
+          the logs will end up the container's logs, for example in catalina.out in Tomcat.
+      -->
+      <root level="warn">
+        <appender-ref ref="stdout"/>
+      </root>
+
+      {{- with .Values.logback.extraConfiguration }}
+        {{- . | nindent 6 }}
+      {{- end }}
+    {{- end }}
+
+    </configuration>
+  {{- end }}
+
   glowroot.properties: |
     {{- with .Values.glowroot.properties }}
       {{- range $k, $v := . }}
