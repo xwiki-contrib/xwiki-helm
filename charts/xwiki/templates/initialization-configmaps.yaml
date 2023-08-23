@@ -58,10 +58,21 @@ data:
     {{- end }}
 
     # Replace all values from keys defineded on customConfigs
+    # If we detect extension, we loop over the array and add them
     {{- range $file, $values := .Values.customConfigs }}
       {{- range $key, $value := $values }}
-        # TODO review/manage extensions
-        xwiki_replace_or_add "/usr/local/xwiki/data/{{ $file }}" {{ $key }} {{ $value }}
+        {{ if eq (toString $key) "extension.repositories" }}
+          {{- range $property := $value }}
+            if [ "${alreadyAddExtensionRepo}" == "true" ]; then
+              echo "{{ $key }}={{ $property }}" >> /usr/local/xwiki/data/{{ $file }}
+            else
+              xwiki_replace_or_add "/usr/local/xwiki/data/{{ $file }}" {{ $key }} {{ $property }}
+              alreadyAddExtensionRepo="true"
+            fi
+          {{- end }}
+        {{ else }}
+          xwiki_replace_or_add "/usr/local/xwiki/data/{{ $file }}" {{ $key }} {{ $value }}
+        {{- end }}
       {{- end }}
     {{- end }}
 
