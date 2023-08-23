@@ -320,7 +320,7 @@ glowroot:
     log.dir: /usr/local/xwiki/data/glowroot/log
     tmp.dir: /usr/local/xwiki/data/glowroot/tmp
 
-logback: 
+logback:
   enabled: false
 #  customConfiguration: |
 #    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
