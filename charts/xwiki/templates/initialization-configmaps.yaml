@@ -36,9 +36,12 @@ data:
       {{- end }}
     {{- end }}
 
+    ## Clear contents of /tmp/java_opts.txt so that we don't add extra arguments at each pod restart.
+    echo "" > /tmp/java_opts.txt
     {{- range $file, $value := .Values.properties }}
-      export JAVA_OPTS="${JAVA_OPTS} -D{{ $file }}={{ $value }}"
+      echo "-D{{ $file }}={{ $value }}" >> /tmp/java_opts.txt
     {{- end }}
+    export JAVA_OPTS="${JAVA_OPTS} @/tmp/java_opts.txt"
 
     {{- if .Values.glowroot.enabled }}
     mkdir -p /usr/local/xwiki/data/glowroot 
