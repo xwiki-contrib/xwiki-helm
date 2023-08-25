@@ -85,9 +85,9 @@ data:
 
     {{- if .Values.glowroot.enabled }}
     mkdir -p /usr/local/xwiki/data/glowroot
-    GLOWROOT_VERSION="0.14.0"
+    GLOWROOT_VERSION={{ .Values.glowroot.version | quote }}
     if ! [ -d "/usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}" ]; then
-      wget -O  /tmp/glowroot-${GLOWROOT_VERSION}-dist.zip https://github.com/glowroot/glowroot/releases/download/v${GLOWROOT_VERSION}/glowroot-${GLOWROOT_VERSION}-dist.zip
+      wget -O  /tmp/glowroot-${GLOWROOT_VERSION}-dist.zip {{ .Values.glowroot.url }}
       unzip /tmp/glowroot-${GLOWROOT_VERSION}-dist.zip -d /usr/local/xwiki/data/glowroot/
       rm -f /tmp/glowroot-${GLOWROOT_VERSION}-dist.zip
       mv /usr/local/xwiki/data/glowroot/glowroot /usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}
