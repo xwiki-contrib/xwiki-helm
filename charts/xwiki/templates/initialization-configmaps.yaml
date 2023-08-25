@@ -76,13 +76,6 @@ data:
       {{- end }}
     {{- end }}
 
-    ## Clear contents of /tmp/java_opts.txt so that we don't add extra arguments at each pod restart.
-    echo "" > /tmp/java_opts.txt
-    {{- range $file, $value := .Values.properties }}
-      echo "-D{{ $file }}={{ $value }}" >> /tmp/java_opts.txt
-    {{- end }}
-    export JAVA_OPTS="${JAVA_OPTS} @/tmp/java_opts.txt"
-
     {{- if .Values.glowroot.enabled }}
     mkdir -p /usr/local/xwiki/data/glowroot
     GLOWROOT_VERSION={{ .Values.glowroot.version | quote }}
@@ -122,6 +115,21 @@ data:
       xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "observation.remote.enabled" "true"
       xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "observation.remote.channels" "kubeping"
     {{- end }}
+
+    if [ -d "/var/lib/jetty" ]; then
+      echo "" > start.d/xwiki.ini 
+      {{- range $file, $value := .Values.properties }}
+        echo "-D{{ $file }}={{ $value }}" >> start.d/xwiki.ini 
+      {{- end }}
+      export JAVA_OPTIONS="${JAVA_OPTS}"
+    else 
+      ## Clear contents of /tmp/java_opts.txt so that we don't add extra arguments at each pod restart.
+      echo "" > /tmp/java_opts.txt
+      {{- range $file, $value := .Values.properties }}
+        echo "-D{{ $file }}={{ $value }}" >> /tmp/java_opts.txt
+      {{- end }}
+      export JAVA_OPTS="${JAVA_OPTS} @/tmp/java_opts.txt"
+    fi 
 
     exec /usr/local/bin/docker-entrypoint.sh xwiki
 
