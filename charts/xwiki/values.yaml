@@ -315,6 +315,8 @@ properties:
 
 glowroot:
   enabled: false
+  version: 0.14.0
+  url: https://github.com/glowroot/glowroot/releases/download/v${GLOWROOT_VERSION}/glowroot-${GLOWROOT_VERSION}-dist.zip
   properties:
     data.dir: /usr/local/xwiki/data/glowroot/data
     log.dir: /usr/local/xwiki/data/glowroot/log
