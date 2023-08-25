@@ -50,7 +50,7 @@ securityContext:
 
 containerSecurityContext:
   enabled: false
-  runAsUser: 101
+  runAsUser: 100
   runAsNonRoot: true
 
 ##
