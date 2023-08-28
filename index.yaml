@@ -2,6 +2,49 @@ apiVersion: v1
 entries:
   xwiki:
   - apiVersion: v2
+    created: "2023-08-28T11:55:39.388915167Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: 2.4.0
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.10.2
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.2.5
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.5.6
+    description: XWiki is a free wiki software platform written in Java with a design
+      emphasis on extensibility. XWiki is an enterprise wiki. It includes WYSIWYG
+      editing, OpenDocument based document import/export, semantic annotations and
+      tagging, and advanced permissions management.
+    digest: 69262b41d5f1d07df96a98bc3ed5afe8e67aeaa756892de20e292c2912f6c909
+    home: http://xwiki.org
+    icon: https://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
+    keywords:
+    - xwiki
+    maintainers:
+    - email: sharma.ashish960@gmail.com
+      name: Ashish Sharma
+    - email: ludovic@xwiki.com
+      name: Ludovic Dubost
+    - email: guilherme.sautner@xwiki.com
+      name: Guilherme Sautner
+    - email: arsene.fougerouse@xwiki.com
+      name: Arsène Fougerouse
+    name: xwiki
+    sources:
+    - https://github.com/xwiki-contrib/docker-xwiki
+    type: application
+    urls:
+    - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-helm-1.2.0-Beta.7/xwiki-1.2.0-Beta.7.tgz
+    version: 1.2.0-Beta.7
+  - apiVersion: v2
     created: "2023-08-20T00:46:20.069216683Z"
     dependencies:
     - name: common
@@ -497,4 +540,4 @@ entries:
     urls:
     - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-1.0.0-Beta.0/xwiki-1.0.0-Beta.0.tgz
     version: 1.0.0-Beta.0
-generated: "2023-08-24T10:46:56.677284341Z"
+generated: "2023-08-28T11:55:39.389063468Z"
