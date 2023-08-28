@@ -1,0 +1,29 @@
+{{- $fullName := include "xwiki.fullname" . -}}
+{{- if .Values.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    {{- if .Values.workloadStateful }}
+    apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
+    kind: StatefulSet
+    {{- else }}
+    apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+    kind: Deployment
+    {{- end }}
+    name: {{ $fullName }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  {{- with .Values.autoscaling.metrics }}
+  metrics:
+    {{- toYaml .Values.autoscaling.metrics | nindent 6 }}
+  {{- end }}
+{{- with .Values.autoscaling.status }}
+status:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}

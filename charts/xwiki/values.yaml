@@ -335,3 +335,31 @@ logback:
 #  extraConfiguration: |
 #    <logger name="org.xwiki" level="debug"/>
 #    <logger name="com.xwiki" level="debug"/>
+
+# Enable Autoscaling for the xwiki deployment/statefullSet:
+# https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  # Custom metrics to trigger the Autoscaling
+  # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-multiple-metrics-and-custom-metrics
+  metrics: {}
+  # - type: Resource
+  #   resource:
+  #     name: cpu
+  #     target:
+  #       type: Utilization
+  #       averageUtilization: 50
+  status: {}
+  # observedGeneration: 1
+  # lastScaleTime: <some-time>
+  # currentReplicas: 1
+  # desiredReplicas: 1
+  # currentMetrics:
+  # - type: Resource
+  #   resource:
+  #     name: cpu
+  #     current:
+  #       averageUtilization: 0
+  #       averageValue: 0
