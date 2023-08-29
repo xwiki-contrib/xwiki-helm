@@ -24,7 +24,7 @@ tests:
           pattern: "extension.repositories=store.xwiki.com:xwiki:https://store.xwiki.com/xwiki/rest/"
       - matchRegex:
           path: data["entrypoint"]
-          pattern: "core.defaultDocumentSyntax xwiki/2.1"
+          pattern: "'core.defaultDocumentSyntax' 'xwiki/2.1'"
       - matchRegex:
           path: data["entrypoint"]
           pattern: GLOWROOT_VERSION="0.14.0"
