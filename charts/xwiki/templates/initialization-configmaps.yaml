@@ -39,7 +39,7 @@ data:
     ## Clear contents of /tmp/java_opts.txt so that we don't add extra arguments at each pod restart.
     echo "" > /tmp/java_opts.txt
     {{- range $file, $value := .Values.properties }}
-      echo "-D{{ $file }}={{ $value }}" >> /tmp/java_opts.txt
+      echo "-D{{ $file }}=\"{{ $value }}\"" >> /tmp/java_opts.txt
     {{- end }}
     export JAVA_OPTS="${JAVA_OPTS} @/tmp/java_opts.txt"
 
