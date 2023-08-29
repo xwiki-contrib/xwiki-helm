@@ -174,6 +174,47 @@ entries:
     - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-helm-1.2.0-Beta.1/xwiki-1.2.0-Beta.1.tgz
     version: 1.2.0-Beta.1
   - apiVersion: v2
+    created: "2023-08-29T09:06:57.241159073Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: 2.4.0
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.10.2
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.2.5
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.5.6
+    description: XWiki is a free wiki software platform written in Java with a design
+      emphasis on extensibility. XWiki is an enterprise wiki. It includes WYSIWYG
+      editing, OpenDocument based document import/export, semantic annotations and
+      tagging, and advanced permissions management.
+    digest: f9cd53bc549d0b2d5e4abed88bf75a88964615dc65eff7344a71dd2f0539ecaf
+    home: http://xwiki.org
+    icon: https://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
+    keywords:
+    - xwiki
+    maintainers:
+    - email: sharma.ashish960@gmail.com
+      name: Ashish Sharma
+    - email: ludovic@xwiki.com
+      name: Ludovic Dubost
+    - email: guilherme.sautner@xwiki.com
+      name: Guilherme Sautner
+    name: xwiki
+    sources:
+    - https://github.com/xwiki-contrib/docker-xwiki
+    type: application
+    urls:
+    - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-helm-1.1.3/xwiki-1.1.3.tgz
+    version: 1.1.3
+  - apiVersion: v2
     created: "2023-08-24T10:46:56.677216639Z"
     dependencies:
     - name: common
@@ -583,4 +624,4 @@ entries:
     urls:
     - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-1.0.0-Beta.0/xwiki-1.0.0-Beta.0.tgz
     version: 1.0.0-Beta.0
-generated: "2023-08-28T14:07:32.552557121Z"
+generated: "2023-08-29T09:06:57.241351375Z"
