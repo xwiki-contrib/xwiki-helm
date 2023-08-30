@@ -64,14 +64,14 @@ data:
         {{ if eq (toString $key) "extension.repositories" }}
           {{- range $property := $value }}
             if [ "${alreadyAddExtensionRepo}" == "true" ]; then
-              echo "{{ $key }}={{ $property }}" >> /usr/local/xwiki/data/{{ $file }}
+              echo '{{ $key }}={{ $property }}' >> /usr/local/xwiki/data/{{ $file }}
             else
-              xwiki_replace_or_add "/usr/local/xwiki/data/{{ $file }}" {{ $key }} {{ $property }}
+              xwiki_replace_or_add "/usr/local/xwiki/data/{{ $file }}" '{{ $key }}' '{{ $property }}'
               alreadyAddExtensionRepo="true"
             fi
           {{- end }}
         {{ else }}
-          xwiki_replace_or_add "/usr/local/xwiki/data/{{ $file }}" {{ $key }} {{ $value }}
+          xwiki_replace_or_add "/usr/local/xwiki/data/{{ $file }}" '{{ $key }}' '{{ $value }}'
         {{- end }}
       {{- end }}
     {{- end }}
