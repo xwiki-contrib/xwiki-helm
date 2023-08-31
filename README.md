@@ -13,7 +13,7 @@ Please check the [documentation](https://extensions.xwiki.org/xwiki/bin/view/Ext
 
 ## Project Information
 
-* Project Lead: [Ashish Sharma](https://www.xwiki.org/xwiki/bin/view/XWiki/ashish932)
+* Project Lead: [Guilherme Sautner](https://www.xwiki.org/xwiki/bin/view/XWiki/sautner)
 * [Documentation](https://extensions.xwiki.org/xwiki/bin/view/Extension/XWikiHelm/)
 * [Issue Tracker](http://jira.xwiki.org/browse/HELM)
 * Communication: [Forums & Mailing Lists](https://dev.xwiki.org/xwiki/bin/view/Community/Discuss), [Chat](https://dev.xwiki.org/xwiki/bin/view/Community/Chat)
