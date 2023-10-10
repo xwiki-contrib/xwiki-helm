@@ -38,7 +38,7 @@ jobs:
         if: ${{ steps.changed.outputs.result == 'ok' }}
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm plugin install https://github.com/helm-unittest/helm-unittest
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version 0.3.4
           for FILE in charts/*; do 
             helm dependency update $FILE
             helm unittest $FILE
@@ -69,7 +69,7 @@ jobs:
       - name: Add repos
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm plugin install https://github.com/helm-unittest/helm-unittest
+          helm plugin install https://github.com/helm-unittest/helm-unittest --version 0.3.4
 
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
