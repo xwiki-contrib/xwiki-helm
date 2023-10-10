@@ -53,6 +53,9 @@ containerSecurityContext:
   runAsUser: 100
   runAsNonRoot: true
 
+volumePermissions:
+  enabled: false
+
 ##
 ## MySql chart configuration
 ##

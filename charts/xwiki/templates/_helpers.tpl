@@ -87,3 +87,18 @@ Istio gateway name to be used
 {{- printf "%s-gateway" (include "xwiki.fullname" .) }}
 {{- end }}
 {{- end }}
+
+{{/*
+Define which image to use
+*/}}
+{{- define "xwiki.imageName" -}}
+{{- if .Values.image.tag }}
+{{- printf "%s:%s" .Values.image.name .Values.image.tag -}}
+{{- else if .Values.mysql.enabled }}
+{{- printf "%s:lts-mysql-tomcat" .Values.image.name -}}
+{{- else if .Values.postgresql.enabled }}
+{{- printf "%s:lts-postgres-tomcat" .Values.image.name -}}
+{{- else }}
+{{- .Values.image.name -}}
+{{- end }}
+{{- end }}
