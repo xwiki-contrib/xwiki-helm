@@ -119,7 +119,7 @@ data:
     if [ -d "/var/lib/jetty" ]; then
       echo "" > start.d/xwiki.ini 
       {{- range $file, $value := .Values.properties }}
-        echo "-D{{ $file }}=\"{{ $value }}\"" >> start.d/xwiki.ini 
+        echo "-D{{ $file }}={{ $value }}" >> start.d/xwiki.ini 
       {{- end }}
       export JAVA_OPTIONS="${JAVA_OPTS}"
     else 
