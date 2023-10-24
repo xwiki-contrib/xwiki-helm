@@ -103,6 +103,26 @@ spec:
             configMapKeyRef:
               name: {{ $fullName }}
               key: DB_DATABASE
+      {{- if .Values.probes.liveness.enabled }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.service.internalPort }}
+          initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+          periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          successThreshold: {{ .Values.probes.liveness.successThreshold }}
+      {{- end }}
+      {{- if .Values.probes.readiness.enabled }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.service.internalPort }}
+          initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+          periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+          successThreshold: {{ .Values.probes.readiness.successThreshold }}
+      {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 12 }}
         volumeMounts:
