@@ -56,6 +56,10 @@ containerSecurityContext:
 volumePermissions:
   enabled: false
 
+#Enable to use secrets
+secrets:
+  enabled: true
+
 ##
 ## MySql chart configuration
 ##
