@@ -21,6 +21,11 @@ spec:
       initContainers:
       - name: download-cores
         image: curlimages/curl:8.2.1
+        env:
+        {{- range .Values.solr.extraEnvVars }}
+        - name: {{ .name  }}
+          value: {{ .value | quote }}
+        {{- end }}
         command: ['/bin/sh', '-c']
         volumeMounts:
           - name: xwiki-solr-data
