@@ -103,10 +103,32 @@ spec:
             configMapKeyRef:
               name: {{ $fullName }}
               key: DB_DATABASE
-      {{- if .Values.probes.liveness.enabled }}
-        livenessProbe:
+      {{- if .Values.probes.startup.enabled }}
+        startupProbe:
+        {{- if .Values.probes.startup.httpGet.enabled }}
+          httpGet:
+            path: {{ .Values.probes.startup.httpGet.path }}
+            port: {{ .Values.service.internalPort }}
+        {{- else }}
           tcpSocket:
             port: {{ .Values.service.internalPort }}
+        {{- end }}
+          initialDelaySeconds: {{ .Values.probes.startup.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
+          periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+          failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+          successThreshold: {{ .Values.probes.startup.successThreshold }}
+      {{- end }}
+      {{- if .Values.probes.liveness.enabled }}
+        livenessProbe:
+        {{- if .Values.probes.liveness.httpGet.enabled }}
+          httpGet:
+            path: {{ .Values.probes.liveness.httpGet.path }}
+            port: {{ .Values.service.internalPort }}
+        {{- else }}
+          tcpSocket:
+            port: {{ .Values.service.internalPort }}
+        {{- end }}
           initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
           periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
@@ -115,8 +137,14 @@ spec:
       {{- end }}
       {{- if .Values.probes.readiness.enabled }}
         readinessProbe:
+        {{- if .Values.probes.readiness.httpGet.enabled }}
+          httpGet:
+            path: {{ .Values.probes.liveness.httpGet.path }}
+            port: {{ .Values.service.internalPort }}
+        {{- else }}
           tcpSocket:
             port: {{ .Values.service.internalPort }}
+        {{- end }}
           initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
           periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
