@@ -184,6 +184,11 @@ externalDB:
   user: ''
   database: ''
   host: ''
+# If set to true default secret will not be created, use custom secret
+  custommKeyRef:
+    enabled: false
+    name: ''
+    key: ''
 
 ##
 ## To use external solr enable solr, provide host and port
