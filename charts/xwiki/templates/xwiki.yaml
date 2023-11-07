@@ -77,6 +77,9 @@ spec:
         {{- else if .Values.postgresql.enabled }}
               name: "{{ .Release.Name }}-postgresql"
               key: password
+        {{- else if .Values.externalDB.customKeyRef.enabled }} 
+              name: {{ .Values.externalDB.customKeyRef.name | quote }}
+              key:  {{ .Values.externalDB.customKeyRef.key  | quote }}
         {{- else }}
               name: {{ .Release.Name | quote }}
               key: DB_PASSWORD
