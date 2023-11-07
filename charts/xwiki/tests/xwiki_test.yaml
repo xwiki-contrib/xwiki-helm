@@ -107,3 +107,12 @@ tests:
 #          path: metadata.name
 #          value: xwiki
 #        documentIndex: 1
+  - it: should use custom DB password secret
+    set:
+      externalDB.customKeyRef.enabled: true
+      externalDB.customKeyRef.name: "custom-secreat"
+      externalDB.customKeyRef.key: "custom-key"
+    asserts:
+      - matchSnapshot:
+          path: spec.template.spec.containers[0].env
+        template: xwiki.yaml
