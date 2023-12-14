@@ -110,5 +110,5 @@ jobs:
             if [ -z "${pkg:-}" ]; then
               break
             fi
-            helm push "${pkg}" oci://git.xwikisas.com:5050/xwikisas/swp/xwiki/helm
+            helm push "${pkg}" oci://git.xwikisas.com:5050/xwikisas/swp/xwiki/contrib-xwiki-helm
           done
