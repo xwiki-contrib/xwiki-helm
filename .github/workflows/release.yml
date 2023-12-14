@@ -51,6 +51,8 @@ jobs:
     # see: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
     permissions:
       contents: write
+      packages: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -94,19 +96,19 @@ jobs:
           CR_KEY: "XWiki SAS"
           # Values for CR_KEYRING and CR_PASSPHRASE_FILE was setup on Prepare GPG key
 
-      - name: Login to GitHub Container Registry
+      - name: Login to XWiki SAS Container Registry
         uses: docker/login-action@v1
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: git.xwikisas.com:5050
+          username: gitlab-ci-token
+          password: ${{ secrets.XWIKISAS_REGISTRY_TOKEN }}
 
-      - name: Push Charts to GHCR
+      - name: Push Charts to XWiki SAS
         run: |
           shopt -s nullglob
           for pkg in .cr-release-packages/*.tgz; do
             if [ -z "${pkg:-}" ]; then
               break
             fi
-            helm push "${pkg}" oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/xwiki-helm
+            helm push "${pkg}" oci://git.xwikisas.com:5050/xwikisas/swp/xwiki/helm
           done
