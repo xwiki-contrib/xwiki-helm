@@ -409,3 +409,8 @@ probes:
     # 5 minutes 
     failureThreshold: 10
     successThreshold: 1
+
+infinispan:
+  enabled: false
+  customConfig: ""
+  defaultMemoryMaxCount: 10000
