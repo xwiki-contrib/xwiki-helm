@@ -1,0 +1,14 @@
+{{- if and .Values.prometheus.javaagent.enabled .Values.prometheus.podmonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name:  {{ include "xwiki.fullname" . }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "xwiki.selectorLabels" . | nindent 4 }}
+  podMetricsEndpoints:
+    - port: monitoring
+{{- end }}

@@ -59,6 +59,9 @@ spec:
         {{- if (.Values.cluster.enabled) }}
         - containerPort: {{ .Values.cluster.jgroups.port }}
         {{- end }}
+        {{- if .Values.prometheus.javaagent.enabled }}
+        - containerPort: {{ .Values.prometheus.javaagent.port }}
+        {{- end }}
         env:
         {{- if .Values.javaOpts }}
         - name: JAVA_OPTS

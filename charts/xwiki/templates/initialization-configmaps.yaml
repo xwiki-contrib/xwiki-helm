@@ -76,7 +76,9 @@ data:
       {{- end }}
     {{- end }}
 
-    {{- if .Values.glowroot.enabled }}
+    {{- if .Values.customJavaAgent }}
+      export JAVA_OPTS=" -javaagent:{{ .Values.customJavaAgent }} ${JAVA_OPTS}"
+    {{- else if .Values.glowroot.enabled }}
     mkdir -p /usr/local/xwiki/data/glowroot
     GLOWROOT_VERSION={{ .Values.glowroot.version | quote }}
     if ! [ -d "/usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}" ]; then
@@ -88,6 +90,13 @@ data:
     cp /configmaps/glowroot.properties /usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}/glowroot.properties
     # Append first to enable user override agent.
     export JAVA_OPTS=" -javaagent:/usr/local/xwiki/data/glowroot/glowroot-${GLOWROOT_VERSION}/glowroot.jar ${JAVA_OPTS}"
+    {{- else if .Values.prometheus.javaagent.enabled }}
+      PROMETHEUS_JAVAAGENT_VERSION={{ .Values.prometheus.javaagent.version }}
+      if ! [ -f "/usr/local/xwiki/data/prometheus/jmx_javaagent-${PROMETHEUS_JAVAAGENT_VERSION}.jar" ]; then
+        mkdir -p /usr/local/xwiki/data/prometheus/ 
+        wget -O /usr/local/xwiki/data/prometheus/jmx_javaagent-${PROMETHEUS_JAVAAGENT_VERSION}.jar {{ .Values.prometheus.javaagent.url }}
+      fi
+      export JAVA_OPTS=" -javaagent:/usr/local/xwiki/data/prometheus/jmx_javaagent-${PROMETHEUS_JAVAAGENT_VERSION}.jar={{ .Values.prometheus.javaagent.port }}:/configmaps/javaagentConfig.yaml ${JAVA_OPTS}"
     {{- end }}
 
     {{- if .Values.logback.enabled }}
@@ -276,6 +285,11 @@ data:
         <COUNTER/>
     </config>
   {{- end }}
+
+{{- if (.Values.prometheus.javaagent.enabled) }}
+  javaagentConfig.yaml: |
+    {{- .Values.prometheus.javaagent.config | nindent 4 }}
+{{- end }}
 
 {{- if (.Values.infinispan.enabled) }}
   infinispanConfig.xml: |

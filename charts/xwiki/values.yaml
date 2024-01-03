@@ -414,3 +414,17 @@ infinispan:
   enabled: false
   customConfig: ""
   defaultMemoryMaxCount: 10000
+
+prometheus:
+  javaagent:
+    # https://github.com/prometheus/jmx_exporter
+    # Enable to download and use this agent
+    enabled: false
+    port: 12345
+    version: 0.20.0
+    url: https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_JAVAAGENT_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_JAVAAGENT_VERSION}.jar
+    config: |
+      rules:
+      - pattern: ".*"
+  podmonitor:
+    enabled: true
