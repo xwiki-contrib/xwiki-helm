@@ -71,7 +71,7 @@ spec:
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-        {{- if (and .Values.externalDB.customKeyRef .Values.externalDB.customKeyRef.enabled ) }} 
+        {{- if (and .Values.externalDB.customKeyRef .Values.externalDB.customKeyRef.enabled ) }}
               name: {{ .Values.externalDB.customKeyRef.name | quote }}
               key:  {{ .Values.externalDB.customKeyRef.key  | quote }}
         {{- else if .Values.mysql.enabled }}
@@ -175,6 +175,12 @@ spec:
     {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.imagePullSecrets }}
+        - name: "{{ . }}"
+      {{- end }}
     {{- end }}
       volumes:
       - name: configmaps
