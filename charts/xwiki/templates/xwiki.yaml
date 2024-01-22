@@ -28,8 +28,8 @@ spec:
         {{- include "xwiki.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ $fullName }}-sa
+      {{- if and .Values.volumePermissions.enabled .Values.persistence.enabled }}
       initContainers:
-        {{- if and .Values.volumePermissions.enabled .Values.persistence.enabled }}
         - name: xwiki-data-permissions
           image: {{ include "xwiki.imageName" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -42,7 +42,7 @@ spec:
           volumeMounts:
             - name: xwiki-data
               mountPath: /usr/local/xwiki/data
-        {{- end }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: {{ include "xwiki.imageName" . }}
