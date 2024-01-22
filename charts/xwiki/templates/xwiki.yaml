@@ -155,7 +155,7 @@ spec:
             successThreshold: {{ .Values.probes.readiness.successThreshold }}
         {{- end }}
           resources:
-  {{ toYaml .Values.resources | indent 12 }}
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: xwiki-data
               mountPath: /usr/local/xwiki/data
