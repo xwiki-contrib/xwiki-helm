@@ -5,23 +5,23 @@ metadata:
   name: {{ printf "%s-vs" (include "xwiki.fullname" .) }}
 spec:
   hosts:
-  - {{ .Values.istio.host | quote }}
+    - {{ .Values.istio.host | quote }}
   gateways:
-  - {{ template "xwiki.istio.gatewayName" . }}
+    - {{ template "xwiki.istio.gatewayName" . }}
   http:
-  - match:
-    - uri:
-        prefix: /
-    route:
-    - destination:
-        port:
-          number: {{ .Values.service.externalPort }}
-        host: {{ template "xwiki.fullname" . }}
-      headers:
-        request:
-          set:
-            # Required for some extensions (Realtime Editor/Websocket)
-            x-forwarded-host: {{ .Values.istio.host | quote }}
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            port:
+              number: {{ .Values.service.externalPort }}
+            host: {{ template "xwiki.fullname" . }}
+          headers:
+            request:
+              set:
+                # Required for some extensions (Realtime Editor/Websocket)
+                x-forwarded-host: {{ .Values.istio.host | quote }}
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule

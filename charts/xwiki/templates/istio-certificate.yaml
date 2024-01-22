@@ -12,5 +12,5 @@ spec:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   dnsNames:
-  - {{ .Values.istio.host | quote }}
+    - {{ .Values.istio.host | quote }}
 {{- end }}
