@@ -52,8 +52,15 @@ containerSecurityContext:
   enabled: false
   runAsUser: 100
   runAsNonRoot: true
+  seccompProfile:
+    type: "RuntimeDefault"
 
 volumePermissions:
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 0
+    seccompProfile:
+      type: "RuntimeDefault"
   enabled: false
 
 ##

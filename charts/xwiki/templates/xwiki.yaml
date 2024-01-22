@@ -27,9 +27,7 @@ spec:
       labels:
         {{- include "xwiki.labels" . | nindent 8 }}
     spec:
-      {{- if (.Values.cluster.enabled) }}
       serviceAccountName: {{ $fullName }}-sa
-      {{- end }}
       initContainers:
         {{- if and .Values.volumePermissions.enabled .Values.persistence.enabled }}
         - name: xwiki-data-permissions
@@ -40,8 +38,7 @@ spec:
             - -ec
             - |
               chown -R "{{ .Values.containerSecurityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }}" /usr/local/xwiki/data
-          securityContext:
-            runAsUser: 0
+          securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           volumeMounts:
             - name: xwiki-data
               mountPath: /usr/local/xwiki/data
