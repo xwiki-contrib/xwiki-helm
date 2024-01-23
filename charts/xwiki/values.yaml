@@ -52,8 +52,15 @@ containerSecurityContext:
   enabled: false
   runAsUser: 100
   runAsNonRoot: true
+  seccompProfile:
+    type: "RuntimeDefault"
 
 volumePermissions:
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 0
+    seccompProfile:
+      type: "RuntimeDefault"
   enabled: false
 
 ##
@@ -181,7 +188,7 @@ externalDB:
   database: ''
   host: ''
 # If set to true default secret will not be created, use custom secret
-  custommKeyRef:
+  customKeyRef:
     enabled: false
     name: ''
     key: ''

@@ -10,5 +10,5 @@ spec:
     matchLabels:
       {{- include "xwiki.selectorLabels" . | nindent 4 }}
   podMetricsEndpoints:
-    - port: monitoring
+      - port: monitoring
 {{- end }}

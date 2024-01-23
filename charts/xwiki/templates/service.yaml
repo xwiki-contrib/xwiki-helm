@@ -13,15 +13,15 @@ spec:
     {{- end }}
   {{- end }}
   ports:
-  - port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
-    protocol: TCP
-    name: {{ .Values.service.name }}
+    - port: {{ .Values.service.externalPort }}
+      targetPort: {{ .Values.service.internalPort }}
+      protocol: TCP
+      name: {{ .Values.service.name }}
   {{- if .Values.prometheus.javaagent.enabled }}
-  - port: {{ .Values.prometheus.javaagent.port }}
-    targetPort: {{ .Values.prometheus.javaagent.port }}
-    protocol: TCP
-    name: monitoring
+    - port: {{ .Values.prometheus.javaagent.port }}
+      targetPort: {{ .Values.prometheus.javaagent.port }}
+      protocol: TCP
+      name: monitoring
   {{- end }}
   sessionAffinity: {{ .Values.service.sessionAffinity }}
   selector:

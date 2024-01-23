@@ -19,44 +19,44 @@ spec:
         {{- include "solr.labels" . | nindent 8 }}
     spec:
       initContainers:
-      - name: download-cores
-        image: curlimages/curl:8.2.1
-        env:
-        {{- range .Values.solr.extraEnvVars }}
-        - name: {{ .name  }}
-          value: {{ .value | quote }}
-        {{- end }}
-        command: ['/bin/sh', '-c']
-        volumeMounts:
-          - name: xwiki-solr-data
-            mountPath: /tmp/cores
-        securityContext:
-          runAsGroup: 1001
-          runAsUser: 1001
-        args:
-        - |
-          SOLR_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core/15.5/xwiki-platform-search-solr-server-core-15.5.jar"
-          SOLR_MINIMAL_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core-minimal/15.5/xwiki-platform-search-solr-server-core-minimal-15.5.zip"
-          cd /tmp
-          curl $SOLR_CORE_URL -o ./xwiki-server-core.zip && \
-          curl $SOLR_MINIMAL_CORE_URL -o ./xwiki-minimal-core.zip
-          unzip -qqo ./xwiki-server-core.zip  -d ./cores/xwiki
-          unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_events
-          unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_extension_index
-          unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_ratings
+        - name: download-cores
+          image: curlimages/curl:8.2.1
+          env:
+          {{- range .Values.solr.extraEnvVars }}
+            - name: {{ .name  }}
+              value: {{ .value | quote }}
+          {{- end }}
+          command: ['/bin/sh', '-c']
+          volumeMounts:
+            - name: xwiki-solr-data
+              mountPath: /tmp/cores
+          securityContext:
+            runAsGroup: 1001
+            runAsUser: 1001
+          args:
+            - |
+              SOLR_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core/15.5/xwiki-platform-search-solr-server-core-15.5.jar"
+              SOLR_MINIMAL_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core-minimal/15.5/xwiki-platform-search-solr-server-core-minimal-15.5.zip"
+              cd /tmp
+              curl $SOLR_CORE_URL -o ./xwiki-server-core.zip && \
+              curl $SOLR_MINIMAL_CORE_URL -o ./xwiki-minimal-core.zip
+              unzip -qqo ./xwiki-server-core.zip  -d ./cores/xwiki
+              unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_events
+              unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_extension_index
+              unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_ratings
       containers:
-      - name: {{ printf "%s-solr" .Chart.Name }}
-        image: {{ .Values.solr.image }}
-        securityContext:
-          allowPrivilegeEscalation: false
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        ports:
-        - containerPort: {{ .Values.solr.service.internalPort }}
-        resources:
-          {{ toYaml .Values.solr.resources | indent 12 }}
-        volumeMounts:
-        - name: xwiki-solr-data
-          mountPath: /var/solr/data
+        - name: {{ printf "%s-solr" .Chart.Name }}
+          image: {{ .Values.solr.image }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.solr.service.internalPort }}
+          resources:
+            {{ toYaml .Values.solr.resources | indent 12 }}
+          volumeMounts:
+            - name: xwiki-solr-data
+              mountPath: /var/solr/data
       securityContext:
         fsGroup: 1001
     {{- with .Values.solr.nodeSelector }}
@@ -72,12 +72,12 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       volumes:
-      - name: xwiki-solr-data
-        {{- if and .Values.solr.persistence.enabled .Values.solr.persistence.existingClaim }}
-        persistentVolumeClaim:
-          claimName: {{ tpl .Values.solr.persistence.existingClaim $ }}
+        - name: xwiki-solr-data
+          {{- if and .Values.solr.persistence.enabled .Values.solr.persistence.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.solr.persistence.existingClaim $ }}
   {{- else if not .Values.solr.persistence.enabled }}
-        emptyDir: {}
+          emptyDir: {}
   {{- else }}
   volumeClaimTemplates:
     - metadata:

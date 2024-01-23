@@ -8,10 +8,10 @@ metadata:
 spec:
   type: {{ .Values.solr.service.type }}
   ports:
-  - port: {{ .Values.solr.service.externalPort }}
-    targetPort: {{ .Values.solr.service.internalPort }}
-    protocol: TCP
-    name: {{ .Values.solr.service.name }}
+    - port: {{ .Values.solr.service.externalPort }}
+      targetPort: {{ .Values.solr.service.internalPort }}
+      protocol: TCP
+      name: {{ .Values.solr.service.name }}
   sessionAffinity: {{ .Values.solr.service.sessionAffinity }}
   selector:
     {{- include "solr.selectorLabels" . | nindent 4 }}
