@@ -5,7 +5,7 @@ metadata:
   name:  {{ include "xwiki.fullname" . }}
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
-    {{- with .Values.prometheus.podmonitor }}
+    {{- with .Values.prometheus.podmonitor.labels }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
