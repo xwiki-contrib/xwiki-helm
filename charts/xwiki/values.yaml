@@ -444,3 +444,4 @@ prometheus:
       - pattern: ".*"
   podmonitor:
     enabled: true
+    labels: {}
