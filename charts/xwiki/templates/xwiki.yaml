@@ -218,8 +218,8 @@ spec:
         {{- end }}
         {{- include "common.storage.class" (dict "persistence" .Values.persistence "global" .Values.global) | nindent 8 }}
   {{- else }}
-        persistentVolumeClaim:
-          claimName: xwiki
+  persistentVolumeClaim:
+    claimName: xwiki
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
