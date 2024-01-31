@@ -11,7 +11,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      {{- include "xwiki.selectorLabels" . | nindent 4 }}
+      {{- include "xwiki.selectorLabels" . | nindent 6 }}
   podMetricsEndpoints:
-      - port: monitoring
+      - targetPort: {{ .Values.prometheus.javaagent.port }}
 {{- end }}
