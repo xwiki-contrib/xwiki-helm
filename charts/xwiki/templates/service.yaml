@@ -17,6 +17,11 @@ spec:
       targetPort: {{ .Values.service.internalPort }}
       protocol: TCP
       name: {{ .Values.service.name }}
+      {{- if (and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.http))) }}
+      nodePort: {{ .Values.service.nodePorts.http }}
+      {{- else if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
   {{- if .Values.prometheus.javaagent.enabled }}
     - port: {{ .Values.prometheus.javaagent.port }}
       targetPort: {{ .Values.prometheus.javaagent.port }}
