@@ -136,12 +136,19 @@ data:
       {{- end }}
       export JAVA_OPTIONS="${JAVA_OPTS}"
     else 
-      ## Clear contents of /tmp/java_opts.txt so that we don't add extra arguments at each pod restart.
-      echo "" > /tmp/java_opts.txt
-      {{- range $file, $value := .Values.properties }}
-        echo '-D{{ $file }}="{{ $value }}"' >> /tmp/java_opts.txt
-      {{- end }}
-      export JAVA_OPTS="${JAVA_OPTS} @/tmp/java_opts.txt"
+      if (/usr/local/tomcat/bin/version.sh | grep -q 'Tomcat/8'); then
+        echo "Old Tomcat don't support java_opts file... Using normal props."
+        {{- range $file, $value := .Values.properties }}
+          export JAVA_OPTS="${JAVA_OPTS} -D{{ $file }}="{{ $value }}"
+        {{- end }}
+      else 
+        ## Clear contents of /tmp/java_opts.txt so that we don't add extra arguments at each pod restart.
+        echo "" > /tmp/java_opts.txt
+        {{- range $file, $value := .Values.properties }}
+          echo '-D{{ $file }}="{{ $value }}"' >> /tmp/java_opts.txt
+        {{- end }}
+        export JAVA_OPTS="${JAVA_OPTS} @/tmp/java_opts.txt"
+      fi
     fi 
 
     exec /usr/local/bin/docker-entrypoint.sh xwiki
