@@ -41,6 +41,12 @@ extraEnvVars: []
 #  - name: FOO
 #    value: "bar"
 
+# Optionally specify an extra list of additional volumes.
+extraVolumes: []
+
+# Optionally specify an extra list of additional volumeMounts.
+extraVolumeMounts: []
+
 # Enable to choose witch kind of workload will be used: (true) StatefulSet or (false) for Deployment
 workloadStateful: true
 
