@@ -346,6 +346,23 @@ customConfigs:
 properties:
   # "key": "value"
 
+# Init containers for the xwiki deployment/statefullSet
+initContainers:
+  database:
+    enabled: false
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 0
+      seccompProfile:
+        type: "RuntimeDefault"
+  solr:
+    enabled: false
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 0
+      seccompProfile:
+        type: "RuntimeDefault"
+
 glowroot:
   enabled: false
   version: 0.14.0
