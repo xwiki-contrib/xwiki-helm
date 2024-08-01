@@ -116,3 +116,47 @@ tests:
       - matchSnapshot:
           path: spec.template.spec.containers[0].env
         template: xwiki.yaml
+  - it: should create a postgres init container
+    set:
+      mysql.enabled: false
+      postgresql.enabled: true
+      mariadb.enabled: false
+      initContainers.database.enabled: true
+      postgresql.image.repository: "postgres"
+      postgresql.image.tag: "latest"
+    asserts:
+      - matchSnapshot:
+          path: spec.template.spec.initContainers
+        template: xwiki.yaml
+  - it: should create a mariadb init container
+    set:
+      mysql.enabled: false
+      postgresql.enabled: false
+      mariadb.enabled: true
+      initContainers.database.enabled: true
+      mariadb.image.repository: "mariadb"
+      mariadb.image.tag: "latest"
+    asserts:
+      - matchSnapshot:
+          path: spec.template.spec.initContainers
+        template: xwiki.yaml
+  - it: should create a mysql init container
+    set:
+      mysql.enabled: true
+      postgresql.enabled: false
+      mariadb.enabled: false
+      initContainers.database.enabled: true
+      mysql.image.repository: "mysql"
+      mysql.image.tag: "latest"
+    asserts:
+      - matchSnapshot:
+          path: spec.template.spec.initContainers
+        template: xwiki.yaml
+  - it: should create a solr init container
+    set:
+      solr.enabled: true
+      initContainers.solr.enabled: true
+    asserts:
+      - matchSnapshot:
+          path: spec.template.spec.initContainers
+        template: xwiki.yaml

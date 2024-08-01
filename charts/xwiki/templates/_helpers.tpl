@@ -142,6 +142,34 @@ Database env vars
 {{- end }}
 
 {{/*
+Image for the database init container
+*/}}
+{{- define "xwiki.initContainer.database.image" -}}
+  {{- if .Values.initContainers.database.image }}
+{{ .Values.initContainers.database.image }}
+  {{- else if .Values.mysql.enabled }}
+{{ printf "%s:%s" .Values.mysql.image.repository .Values.mysql.image.tag }}
+  {{- else if .Values.postgresql.enabled }}
+{{ printf "%s:%s" .Values.postgresql.image.repository .Values.postgresql.image.tag }}
+  {{- else if .Values.mariadb.enabled }}
+{{ printf "%s:%s" .Values.mariadb.image.repository .Values.mariadb.image.tag }}
+  {{- end }}
+{{- end }}
+
+{{/*
+Command for the database init container
+*/}}
+{{- define "xwiki.initContainer.database.command" -}}
+  {{- if .Values.initContainers.database.command }}
+{{ .Values.initContainers.database.command }}
+  {{- else if or .Values.mysql.enabled .Values.mariadb.enabled }}
+mysqladmin ping -h $DB_HOST -u $DB_USER -d $DB_DATABASE -p$DB_PASSWORD
+  {{- else if or .Values.postgresql.enabled }}
+PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
+  {{- end }}
+{{- end }}
+
+{{/*
 Init Containers
 */}}
 {{- define "xwiki.initContainers" -}}
@@ -165,23 +193,17 @@ Init Containers
     {{- omit .Values.initContainers.database.containerSecurityContext "enabled" | toYaml | nindent 6 }}
   {{- end }}
   env:
-    {{- include "xwiki.database.env" . | nindent 6 }}
-    {{- if .Values.mysql.enabled }}
-  image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
-  command: ["/bin/sh", "-ec", "check_db='mysqladmin ping -h $DB_HOST -u $DB_USER -d $DB_DATABASE -p$DB_PASSWORD'"]
-    {{- else if .Values.postgresql.enabled }}
-  image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
-  command: ["/bin/sh", "-ec", "check_db='PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE'"]
-    {{- else if .Values.mariadb.enabled }}
-  image: "{{ .Values.mariadb.image.repository }}:{{ .Values.mariadb.image.tag }}"
-  command: ["/bin/sh", "-ec", "check_db='mysqladmin ping -h $DB_HOST -u $DB_USER -d $DB_DATABASE -p$DB_PASSWORD'"]
-    {{- else }}
-      {{- fail ".Values.initContainers.database.enabled is not supported with external databases" }}
-    {{- end }}
+    {{- include "xwiki.database.env" . | nindent 4 }}
+    - name: CHECK_DB
+      value: {{ include "xwiki.initContainer.database.command" . | trim | quote }}
+  image: {{ include "xwiki.initContainer.database.image" . | trim | quote }}
+  command:
+    - /bin/sh
+    - -ec
   args:
     - |
       for i in $(seq 1 30); do
-        if eval $check_db; then
+        if eval $CHECK_DB; then
           echo "Database is ready!"
           exit 0
         fi
