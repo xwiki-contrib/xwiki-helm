@@ -110,7 +110,7 @@ tests:
   - it: should use custom DB password secret
     set:
       externalDB.customKeyRef.enabled: true
-      externalDB.customKeyRef.name: "custom-secreat"
+      externalDB.customKeyRef.name: "custom-secret"
       externalDB.customKeyRef.key: "custom-key"
     asserts:
       - matchSnapshot:
@@ -156,6 +156,18 @@ tests:
     set:
       solr.enabled: true
       initContainers.solr.enabled: true
+    asserts:
+      - matchSnapshot:
+          path: spec.template.spec.initContainers
+        template: xwiki.yaml
+  - it: should create an external db init container for mysql
+    set:
+      externalDB.customKeyRef.enabled: true
+      externalDB.customKeyRef.name: "custom-secret"
+      externalDB.customKeyRef.key: "custom-key"
+      externalDB.type: "mysql"
+      initContainers.database.enabled: true
+      initContainers.database.image: "mysql:latest"
     asserts:
       - matchSnapshot:
           path: spec.template.spec.initContainers

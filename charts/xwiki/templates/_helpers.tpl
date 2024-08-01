@@ -162,9 +162,9 @@ Command for the database init container
 {{- define "xwiki.initContainer.database.command" -}}
   {{- if .Values.initContainers.database.command }}
 {{ .Values.initContainers.database.command }}
-  {{- else if or .Values.mysql.enabled .Values.mariadb.enabled }}
-mysqladmin ping -h $DB_HOST -u $DB_USER -d $DB_DATABASE -p$DB_PASSWORD
-  {{- else if or .Values.postgresql.enabled }}
+  {{- else if or .Values.mysql.enabled .Values.mariadb.enabled (eq .Values.externalDB.type "mysql") (eq .Values.externalDB.type "mariadb") }}
+mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+  {{- else if or .Values.postgresql.enabled (eq .Values.externalDB.type "postgresql") }}
 PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
   {{- end }}
 {{- end }}

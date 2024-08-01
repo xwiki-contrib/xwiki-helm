@@ -37,7 +37,7 @@ should create a mariadb init container:
               key: DB_DATABASE
               name: RELEASE-NAME-xwiki
         - name: CHECK_DB
-          value: mysqladmin ping -h $DB_HOST -u $DB_USER -d $DB_DATABASE -p$DB_PASSWORD
+          value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
       image: mariadb:latest
       name: wait-for-db
 should create a mysql init container:
@@ -79,7 +79,7 @@ should create a mysql init container:
               key: DB_DATABASE
               name: RELEASE-NAME-xwiki
         - name: CHECK_DB
-          value: mysqladmin ping -h $DB_HOST -u $DB_USER -d $DB_DATABASE -p$DB_PASSWORD
+          value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
       image: mysql:latest
       name: wait-for-db
 should create a postgres init container:
@@ -148,13 +148,55 @@ should create a solr init container:
               name: RELEASE-NAME-xwiki
       image: alpine/curl:8.9.0
       name: wait-for-solr
+should create an external db init container for mysql:
+  1: |
+    - args:
+        - |
+          for i in $(seq 1 30); do
+            if eval $CHECK_DB; then
+              echo "Database is ready!"
+              exit 0
+            fi
+            echo "Waiting for database..."
+            sleep 1
+          done
+          echo "Database is not ready!"
+          exit 1
+      command:
+        - /bin/sh
+        - -ec
+      env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: custom-key
+              name: custom-secret
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: DB_HOST
+              name: RELEASE-NAME-xwiki
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              key: DB_USER
+              name: RELEASE-NAME-xwiki
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: DB_DATABASE
+              name: RELEASE-NAME-xwiki
+        - name: CHECK_DB
+          value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+      image: mysql:latest
+      name: wait-for-db
 should use custom DB password secret:
   1: |
     - name: DB_PASSWORD
       valueFrom:
         secretKeyRef:
           key: custom-key
-          name: custom-secreat
+          name: custom-secret
     - name: DB_HOST
       valueFrom:
         configMapKeyRef:
