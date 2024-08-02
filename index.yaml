@@ -2,6 +2,49 @@ apiVersion: v1
 entries:
   xwiki:
   - apiVersion: v2
+    created: "2024-08-02T13:34:13.588700098Z"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      version: 2.4.0
+    - condition: mysql.enabled
+      name: mysql
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.10.2
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.2.5
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.5.6
+    description: XWiki is a free wiki software platform written in Java with a design
+      emphasis on extensibility. XWiki is an enterprise wiki. It includes WYSIWYG
+      editing, OpenDocument based document import/export, semantic annotations and
+      tagging, and advanced permissions management.
+    digest: 4c57a5130d5a5e1ef60b4ca66ca91d630341b6c0036836896b9978ca9309ef4d
+    home: http://xwiki.org
+    icon: https://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
+    keywords:
+    - xwiki
+    maintainers:
+    - email: sharma.ashish960@gmail.com
+      name: Ashish Sharma
+    - email: ludovic@xwiki.com
+      name: Ludovic Dubost
+    - email: guilherme.sautner@xwiki.com
+      name: Guilherme Sautner
+    - email: arsene.fougerouse@xwiki.com
+      name: Arsène Fougerouse
+    name: xwiki
+    sources:
+    - https://github.com/xwiki-contrib/docker-xwiki
+    type: application
+    urls:
+    - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-helm-1.4.0-Beta.1/xwiki-1.4.0-Beta.1.tgz
+    version: 1.4.0-Beta.1
+  - apiVersion: v2
     created: "2024-06-25T19:27:51.812557931Z"
     dependencies:
     - name: common
@@ -1527,4 +1570,4 @@ entries:
     urls:
     - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-1.0.0-Beta.0/xwiki-1.0.0-Beta.0.tgz
     version: 1.0.0-Beta.0
-generated: "2024-06-25T19:27:51.812957967Z"
+generated: "2024-08-02T13:34:13.589093125Z"
