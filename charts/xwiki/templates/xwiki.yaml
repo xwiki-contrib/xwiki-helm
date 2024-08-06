@@ -101,7 +101,7 @@ spec:
           readinessProbe:
           {{- if .Values.probes.readiness.httpGet.enabled }}
             httpGet:
-              path: {{ .Values.probes.liveness.httpGet.path }}
+              path: {{ .Values.probes.readiness.httpGet.path }}
               port: {{ .Values.service.internalPort }}
           {{- else }}
             tcpSocket:
