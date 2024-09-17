@@ -50,6 +50,12 @@ extraEnvVars: []
 #  - name: FOO
 #    value: "bar"
 
+# Optionally specify an extra list of additional volumes.
+extraVolumes: []
+
+# Optionally specify an extra list of additional volumeMounts.
+extraVolumeMounts: []
+
 # Enable to choose witch kind of workload will be used: (true) StatefulSet or (false) for Deployment
 workloadStateful: true
 
@@ -193,10 +199,12 @@ postgresql:
 ## Set the image tag if want to use externalDB
 ##
 externalDB:
-  password: ""
-  user: ""
-  database: ""
-  host: ""
+  password: ''
+  user: ''
+  database: ''
+  host: ''
+  # To set if database init containers are enabled, supported values are mysql, postgresql, mariadb
+  type: ''
   # If set to true default secret will not be created, use custom secret
   customKeyRef:
     enabled: false
@@ -350,6 +358,27 @@ customConfigs:
 # Properties to be passed to Java process with -D parameters using JAVA_OPTS
 properties:
   # "key": "value"
+
+# Init containers for the xwiki deployment/statefullSet
+initContainers:
+  database:
+    enabled: false
+    # Custom command to be executed in the init container
+    # command: ''
+    # To set when using externalDB
+    # image: "mysql:latest"
+    containerSecurityContext:
+      enabled: false
+      runAsUser: 0
+      seccompProfile:
+        type: "RuntimeDefault"
+  solr:
+    enabled: false
+    containerSecurityContext:
+      enabled: false
+      runAsUser: 0
+      seccompProfile:
+        type: "RuntimeDefault"
 
 glowroot:
   enabled: false

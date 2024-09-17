@@ -1,10 +1,202 @@
+should create a mariadb init container:
+  1: |
+    - args:
+        - |
+          for i in $(seq 1 30); do
+            if eval $CHECK_DB; then
+              echo "Database is ready!"
+              exit 0
+            fi
+            echo "Waiting for database..."
+            sleep 1
+          done
+          echo "Database is not ready!"
+          exit 1
+      command:
+        - /bin/sh
+        - -ec
+      env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: DB_PASSWORD
+              name: RELEASE-NAME
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: DB_HOST
+              name: RELEASE-NAME-xwiki
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              key: DB_USER
+              name: RELEASE-NAME-xwiki
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: DB_DATABASE
+              name: RELEASE-NAME-xwiki
+        - name: CHECK_DB
+          value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+      image: mariadb:latest
+      name: wait-for-db
+should create a mysql init container:
+  1: |
+    - args:
+        - |
+          for i in $(seq 1 30); do
+            if eval $CHECK_DB; then
+              echo "Database is ready!"
+              exit 0
+            fi
+            echo "Waiting for database..."
+            sleep 1
+          done
+          echo "Database is not ready!"
+          exit 1
+      command:
+        - /bin/sh
+        - -ec
+      env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: mysql-password
+              name: RELEASE-NAME-mysql
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: DB_HOST
+              name: RELEASE-NAME-xwiki
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              key: DB_USER
+              name: RELEASE-NAME-xwiki
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: DB_DATABASE
+              name: RELEASE-NAME-xwiki
+        - name: CHECK_DB
+          value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+      image: mysql:latest
+      name: wait-for-db
+should create a postgres init container:
+  1: |
+    - args:
+        - |
+          for i in $(seq 1 30); do
+            if eval $CHECK_DB; then
+              echo "Database is ready!"
+              exit 0
+            fi
+            echo "Waiting for database..."
+            sleep 1
+          done
+          echo "Database is not ready!"
+          exit 1
+      command:
+        - /bin/sh
+        - -ec
+      env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: RELEASE-NAME-postgresql
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: DB_HOST
+              name: RELEASE-NAME-xwiki
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              key: DB_USER
+              name: RELEASE-NAME-xwiki
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: DB_DATABASE
+              name: RELEASE-NAME-xwiki
+        - name: CHECK_DB
+          value: PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
+      image: postgres:latest
+      name: wait-for-db
+should create a solr init container:
+  1: |
+    - command:
+        - /bin/sh
+        - -ec
+        - |
+          for i in $(seq 1 30); do
+            if curl --silent --connect-timeout "15000" $SOLR_BASEURL/admin/info/system | grep '\"status\":0'
+              echo "Solr is ready!"
+              exit 0
+            fi
+            echo "Waiting for Solr..."
+            sleep 1
+          done
+          echo "Solr is not ready!"
+          exit 1
+      env:
+        - name: SOLR_BASEURL
+          valueFrom:
+            configMapKeyRef:
+              key: SOLR_BASEURL
+              name: RELEASE-NAME-xwiki
+      image: alpine/curl:8.9.0
+      name: wait-for-solr
+should create an external db init container for mysql:
+  1: |
+    - args:
+        - |
+          for i in $(seq 1 30); do
+            if eval $CHECK_DB; then
+              echo "Database is ready!"
+              exit 0
+            fi
+            echo "Waiting for database..."
+            sleep 1
+          done
+          echo "Database is not ready!"
+          exit 1
+      command:
+        - /bin/sh
+        - -ec
+      env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: custom-key
+              name: custom-secret
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: DB_HOST
+              name: RELEASE-NAME-xwiki
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              key: DB_USER
+              name: RELEASE-NAME-xwiki
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: DB_DATABASE
+              name: RELEASE-NAME-xwiki
+        - name: CHECK_DB
+          value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+      image: mysql:latest
+      name: wait-for-db
 should use custom DB password secret:
   1: |
     - name: DB_PASSWORD
       valueFrom:
         secretKeyRef:
           key: custom-key
-          name: custom-secreat
+          name: custom-secret
     - name: DB_HOST
       valueFrom:
         configMapKeyRef:

@@ -28,20 +28,9 @@ spec:
         {{- include "xwiki.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ $fullName }}-sa
-      {{- if and .Values.volumePermissions.enabled .Values.persistence.enabled }}
+      {{- if or .Values.initContainers.database.enabled .Values.initContainers.solr.enabled (and .Values.volumePermissions.enabled .Values.persistence.enabled) }}
       initContainers:
-        - name: xwiki-data-permissions
-          image: {{ include "xwiki.imageName" . }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - /bin/sh
-            - -ec
-            - |
-              chown -R "{{ .Values.containerSecurityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }}" /usr/local/xwiki/data
-          securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 12 }}
-          volumeMounts:
-            - name: xwiki-data
-              mountPath: /usr/local/xwiki/data
+        {{- include "xwiki.initContainers" . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -68,22 +57,7 @@ spec:
             - name: {{ .name  }}
               value: {{ .value | quote }}
           {{- end }}
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-          {{- if (and .Values.externalDB.customKeyRef .Values.externalDB.customKeyRef.enabled ) }}
-                  name: {{ .Values.externalDB.customKeyRef.name | quote }}
-                  key:  {{ .Values.externalDB.customKeyRef.key  | quote }}
-          {{- else if .Values.mysql.enabled }}
-                  name: "{{ .Release.Name }}-mysql"
-                  key: mysql-password
-          {{- else if .Values.postgresql.enabled }}
-                  name: "{{ .Release.Name }}-postgresql"
-                  key: password
-          {{- else }}
-                  name: {{ .Release.Name | quote }}
-                  key: DB_PASSWORD
-          {{- end }}
+          {{ include "xwiki.database.env" . | indent 12 }}
           {{- if .Values.solr.enabled }}
             - name: SOLR_BASEURL
               valueFrom:
@@ -91,21 +65,6 @@ spec:
                   name: {{ $fullName }}
                   key: SOLR_BASEURL
           {{- end }}
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ $fullName }}
-                  key: DB_HOST
-            - name: DB_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ $fullName }}
-                  key: DB_USER
-            - name: DB_DATABASE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ $fullName }}
-                  key: DB_DATABASE
         {{- if .Values.probes.startup.enabled }}
           startupProbe:
           {{- if .Values.probes.startup.httpGet.enabled }}
@@ -142,7 +101,7 @@ spec:
           readinessProbe:
           {{- if .Values.probes.readiness.httpGet.enabled }}
             httpGet:
-              path: {{ .Values.probes.liveness.httpGet.path }}
+              path: {{ .Values.probes.readiness.httpGet.path }}
               port: {{ .Values.service.internalPort }}
           {{- else }}
             tcpSocket:
@@ -161,6 +120,9 @@ spec:
               mountPath: /usr/local/xwiki/data
             - name: configmaps
               mountPath: /configmaps
+            {{- if .Values.extraVolumeMounts }}
+            {{- .Values.extraVolumeMounts | toYaml | nindent 12 }}
+            {{- end }}
     {{- if .Values.securityContext.enabled }}
       securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 8 }}
     {{- end }}
@@ -183,6 +145,9 @@ spec:
       {{- end }}
     {{- end }}
       volumes:
+        {{- if .Values.extraVolumes }}
+        {{- .Values.extraVolumes | toYaml | nindent 8 }}
+        {{- end }}
         - name: configmaps
           configMap:
             name: {{ include "xwiki.initScripts" . }}
