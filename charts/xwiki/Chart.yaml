@@ -10,14 +10,16 @@ icon: https://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
 sources:
   - https://github.com/xwiki-contrib/docker-xwiki
 maintainers:
-  - name: Ashish Sharma
-    email: sharma.ashish960@gmail.com
-  - name: Ludovic Dubost
-    email: ludovic@xwiki.com
-  - name: Guilherme Sautner
-    email: guilherme.sautner@xwiki.com
-  - name: Arsène Fougerouse
-    email: arsene.fougerouse@xwiki.com
+- name: Ashish Sharma
+  email: sharma.ashish960@gmail.com
+- name: Ludovic Dubost
+  email: ludovic@xwiki.com
+- name: Guilherme Sautner
+  email: guilherme.sautner@xwiki.com
+- name: Arsène Fougerouse
+  email: arsene.fougerouse@xwiki.com
+- name: Martin Moreira de Jesus
+  email: martin.moreira@xwiki.com
 dependencies:
   - name: "common"
     repository: "https://charts.bitnami.com/bitnami"
