@@ -58,7 +58,7 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Create the name of init scripts configmap 
+Create the name of init scripts configmap
 */}}
 {{- define "xwiki.initScripts" -}}
 {{- printf "%s-init-scripts" (include "xwiki.fullname" .) }}
@@ -181,7 +181,9 @@ Init Containers
     - /bin/sh
     - -ec
     - chown -R "{{ .Values.containerSecurityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }}" /usr/local/xwiki/data
-  securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+  securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 4 }}
+  resources:
+    {{- toYaml .Values.resources | nindent 4 }}
   volumeMounts:
     - name: xwiki-data
       mountPath: /usr/local/xwiki/data
@@ -190,8 +192,10 @@ Init Containers
 - name: wait-for-db
   {{- if .Values.initContainers.database.containerSecurityContext.enabled }}
   securityContext:
-    {{- omit .Values.initContainers.database.containerSecurityContext "enabled" | toYaml | nindent 6 }}
+    {{- omit .Values.initContainers.database.containerSecurityContext "enabled" | toYaml | nindent 4 }}
   {{- end }}
+  resources:
+    {{- toYaml .Values.resources | nindent 4 }}
   env:
     {{- include "xwiki.database.env" . | nindent 4 }}
     - name: CHECK_DB
@@ -232,8 +236,10 @@ Init Containers
       exit 1
   {{- if .Values.initContainers.solr.containerSecurityContext.enabled }}
   securityContext:
-    {{- omit .Values.initContainers.solr.containerSecurityContext "enabled" | toYaml | nindent 6 }}
+    {{- omit .Values.initContainers.solr.containerSecurityContext "enabled" | toYaml | nindent 4 }}
   {{- end }}
+  resources:
+    {{- toYaml .Values.resources | nindent 4 }}
   env:
     - name: SOLR_BASEURL
       valueFrom:
