@@ -40,6 +40,7 @@ should create a mariadb init container:
           value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
       image: mariadb:latest
       name: wait-for-db
+      resources: {}
 should create a mysql init container:
   1: |
     - args:
@@ -82,6 +83,7 @@ should create a mysql init container:
           value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
       image: mysql:latest
       name: wait-for-db
+      resources: {}
 should create a postgres init container:
   1: |
     - args:
@@ -124,6 +126,7 @@ should create a postgres init container:
           value: PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
       image: postgres:latest
       name: wait-for-db
+      resources: {}
 should create a solr init container:
   1: |
     - command:
@@ -148,6 +151,7 @@ should create a solr init container:
               name: RELEASE-NAME-xwiki
       image: alpine/curl:8.9.0
       name: wait-for-solr
+      resources: {}
 should create an external db init container for mysql:
   1: |
     - args:
@@ -190,6 +194,7 @@ should create an external db init container for mysql:
           value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
       image: mysql:latest
       name: wait-for-db
+      resources: {}
 should use custom DB password secret:
   1: |
     - name: DB_PASSWORD
