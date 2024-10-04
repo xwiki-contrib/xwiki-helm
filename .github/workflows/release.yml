@@ -21,21 +21,21 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - id: changed
-        name: Changed
-        run: |
-          files_changed="$(git show --pretty="" --name-only)"
-          echo "$files_changed"
-          num_version_bumps="$(echo "$files_changed" | grep Chart.yaml | xargs git show | grep -c "+version" || true)"
-          if [[ "$num_version_bumps" -eq "1" ]]; then
-            echo "result=ok" >> $GITHUB_OUTPUT
-          else
-            echo "result=skip"
-            echo "::warning::Version not changed, skipping release job..."
-          fi
+#      - id: changed
+#        name: Changed
+#        run: |
+#          files_changed="$(git show --pretty="" --name-only)"
+#          echo "$files_changed"
+#          num_version_bumps="$(echo "$files_changed" | grep Chart.yaml | xargs git show | grep -c "+version" || true)"
+#          if [[ "$num_version_bumps" -eq "1" ]]; then
+#            echo "result=ok" >> $GITHUB_OUTPUT
+#          else
+#            echo "result=skip"
+#            echo "::warning::Version not changed, skipping release job..."
+#          fi
 
       - name: Tests
-        if: ${{ steps.changed.outputs.result == 'ok' }}
+ #       if: ${{ steps.changed.outputs.result == 'ok' }}
         run: |
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm plugin install https://github.com/helm-unittest/helm-unittest --version 0.3.4
