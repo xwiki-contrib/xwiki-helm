@@ -22,17 +22,19 @@ maintainers:
   email: martin.moreira@xwiki.com
 dependencies:
   - name: "common"
-    repository: "https://charts.bitnami.com/bitnami"
-    version: "2.4.0"
+    repository: oci://registry-1.docker.io/bitnamicharts
+    tags:
+    - bitnami-common
+    version: 2.4.0
   - name: mysql
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     version: 9.10.2
     condition: mysql.enabled
   - name: mariadb
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     version: 12.2.5
     condition: mariadb.enabled
   - name: postgresql
-    repository: https://charts.bitnami.com/bitnami
+    repository: oci://registry-1.docker.io/bitnamicharts
     version: 12.5.6
     condition: postgresql.enabled

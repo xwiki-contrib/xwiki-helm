@@ -30,10 +30,10 @@ jobs:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm plugin install https://github.com/helm-unittest/helm-unittest --version 0.3.4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4.7.0
-        with:
-          python-version: 3.7
+#      - name: Set up Python
+#        uses: actions/setup-python@v4.7.0
+#        with:
+#          python-version: 3.7
 
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.3.1
