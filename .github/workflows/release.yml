@@ -41,8 +41,8 @@ jobs:
           helm plugin install https://github.com/helm-unittest/helm-unittest --version 0.3.4
           for FILE in charts/*; do 
             helm dependency update $FILE
-#            helm unittest $FILE
           done
+#            helm unittest $FILE
 
   release:
     needs: validate
