@@ -240,7 +240,6 @@ ingress:
   enabled: false
   className: ""
   annotations:
-    kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/affinity: cookie
     nginx.ingress.kubernetes.io/session-cookie-name: XNGINX
     nginx.ingress.kubernetes.io/session-cookie-expires: "1800"
