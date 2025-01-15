@@ -28,7 +28,7 @@ spec:
     spec:
       initContainers:
         - name: download-cores
-          image: curlimages/curl:8.2.1
+          image: curlimages/curl
           env:
           {{- range .Values.solr.extraEnvVars }}
             - name: {{ .name  }}
@@ -64,7 +64,7 @@ spec:
             {{ toYaml .Values.solr.resources | indent 12 }}
           volumeMounts:
             - name: xwiki-solr-data
-              mountPath: /var/solr/data
+              mountPath: /var/solr/
       securityContext:
         fsGroup: 1001
     {{- with .Values.solr.nodeSelector }}

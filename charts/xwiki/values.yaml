@@ -213,7 +213,7 @@ solr:
   # If set to false mount an internal Solr instance
   enabled: false
   replicaCount: 1
-  image: gridexx/xwiki:solr8
+  image: solr:8.11.4-slim
   extraEnvVars: []
     # - name: FOO
     #   value: "bar"
