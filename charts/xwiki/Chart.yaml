@@ -4,11 +4,11 @@ name: xwiki
 version: 1.4.1
 type: application
 keywords:
-- xwiki
+  - xwiki
 home: http://xwiki.org
 icon: https://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
 sources:
-- https://github.com/xwiki-contrib/docker-xwiki
+  - https://github.com/xwiki-contrib/docker-xwiki
 maintainers:
 - name: Ashish Sharma
   email: sharma.ashish960@gmail.com
