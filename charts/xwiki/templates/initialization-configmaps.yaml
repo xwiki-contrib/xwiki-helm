@@ -104,18 +104,18 @@ data:
     {{- end }}
 
     {{- if .Values.logback.enabled }}
-    cp /configmaps/logback.xml $AS_PATH/webapps/ROOT/WEB-INF/classes/logback.xml
+    cp /configmaps/logback.xml $AS_PATH/webapps/${CONTEXT_PATH}/WEB-INF/classes/logback.xml
     {{- end }}
 
     {{- if .Values.infinispan.enabled }}
-    cp /configmaps/infinispanConfig.xml $AS_PATH/webapps/ROOT/WEB-INF/cache/infinispan/config.xml
+    cp /configmaps/infinispanConfig.xml $AS_PATH/webapps/${CONTEXT_PATH}/WEB-INF/cache/infinispan/config.xml
     {{- end }}
 
     # Replace the platform provenance to keep track of the image
     sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-war/<id>org.xwiki.contrib:xwiki-platform-distribution-helm-docker/' \
-      $AS_PATH/webapps/ROOT/META-INF/extension.xed
+      $AS_PATH/webapps/${CONTEXT_PATH}/META-INF/extension.xed
     sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-docker/<id>org.xwiki.contrib:xwiki-platform-distribution-helm-docker/' \
-      $AS_PATH/webapps/ROOT/META-INF/extension.xed
+      $AS_PATH/webapps/${CONTEXT_PATH}/META-INF/extension.xed
 
     {{- if (.Values.cluster.enabled) }}
       mkdir -p /usr/local/xwiki/data/jgroups 
@@ -126,8 +126,8 @@ data:
       if ! [ -f "/usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME}" ]; then 
         curl -L "${KUBEPING_URL}" -o "/usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME}"
       fi
-      cp /usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME} $AS_PATH/webapps/ROOT/WEB-INF/lib/
-      cp /configmaps/kubeping.xml $AS_PATH/webapps/ROOT/WEB-INF/observation/remote/jgroups/kubeping.xml 
+      cp /usr/local/xwiki/data/jgroups/${KUBEPING_FILENAME} $AS_PATH/webapps/${CONTEXT_PATH}/WEB-INF/lib/
+      cp /configmaps/kubeping.xml $AS_PATH/webapps/${CONTEXT_PATH}/WEB-INF/observation/remote/jgroups/kubeping.xml 
       
       xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "observation.remote.enabled" "true"
       xwiki_replace_or_add /usr/local/xwiki/data/xwiki.properties "observation.remote.channels" "kubeping"
