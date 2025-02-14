@@ -100,8 +100,8 @@ jobs:
       - name: Login to XWiki SAS Container Registry
         uses: docker/login-action@v1
         with:
-          registry: git.xwikisas.com:5050
-          username: gitlab-ci-token
+          registry: ${{ vars.XWIKISAS_REGISTRY }}
+          username: ${{ vars.XWIKISAS_REGISTRY_USER }}
           password: ${{ secrets.XWIKISAS_REGISTRY_TOKEN }}
 
       - name: Push Charts to XWiki SAS
