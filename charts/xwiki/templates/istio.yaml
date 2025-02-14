@@ -3,6 +3,10 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: {{ printf "%s-vs" (include "xwiki.fullname" .) }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   hosts:
     - {{ .Values.istio.host | quote }}
@@ -27,6 +31,10 @@ apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
   name: {{ printf "%s-dr" (include "xwiki.fullname" .) }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   host: {{ template "xwiki.fullname" . }}
   trafficPolicy:

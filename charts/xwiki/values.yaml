@@ -10,12 +10,15 @@ cluster:
       version: "2.0.1.Final"
       url: "https://nexus.xwiki.org/nexus/service/local/repositories/central/content/org/jgroups/kubernetes/jgroups-kubernetes/${KUBEPING_VERSION}/jgroups-kubernetes-${KUBEPING_VERSION}.jar"
 
+commonAnnotations: {}
+
 image:
   name: xwiki
   pullPolicy: IfNotPresent
 ## Image Tag useful when externalDB is been used
   tag: ''
 service:
+  annotations: {}
   portName: node
   name: http
   type: ClusterIP
@@ -27,6 +30,8 @@ service:
     # - 10.20.30.41
   # Reference: https://kubernetes.io/docs/reference/networking/virtual-ips/#session-affinity
   sessionAffinity: ClientIP
+serviceAccount:
+  annotations: {}
 resources: {}
 #  limits:
 #    cpu: 2000m
@@ -214,6 +219,7 @@ solr:
     #   value: "bar"
   resources: {}
   service:
+    annotations: {}
     portName: solr-node
     name: http
     type: ClusterIP
@@ -231,6 +237,7 @@ solr:
     labels: {}
     selector: {}
     dataSource: {}
+  podAnnotations: {}
   nodeSelector: {}
   affinity: {}
   tolerations: {}

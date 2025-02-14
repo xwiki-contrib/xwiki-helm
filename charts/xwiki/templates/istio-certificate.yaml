@@ -4,6 +4,10 @@ kind: Certificate
 metadata:
   name: {{ template "xwiki.istio.credentialName" . }}
   namespace: {{ .Values.istio.tls.certificate.namespace }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   secretName: {{ template "xwiki.istio.credentialName" . }}
   commonName: {{ .Values.istio.host | quote }}

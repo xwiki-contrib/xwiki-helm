@@ -6,6 +6,10 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "solr.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.solr.replicaCount }}
   serviceName: {{ $fullName }}
@@ -17,6 +21,10 @@ spec:
       # annotations:
       labels:
         {{- include "solr.labels" . | nindent 8 }}
+      annotations:
+        {{- if .Values.solr.podAnnotations }}
+        {{ .Values.solr.podAnnotations | toYaml | indent 4 }}
+        {{- end }}
     spec:
       initContainers:
         - name: download-cores

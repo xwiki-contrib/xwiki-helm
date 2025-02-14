@@ -5,6 +5,10 @@ metadata:
   name: {{ (include "xwiki.istio.gatewayName" .) }}
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   selector:
     istio: {{ .Values.istio.gateway.selectorIstio | quote }} # use Istio default gateway implementation

@@ -5,6 +5,13 @@ metadata:
   name:  {{ include "solr.fullname" . }}
   labels:
     {{- include "solr.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.solr.service }}
+    {{ .Values.solr.service | toYaml | indent 4 }}
+    {{- end }}
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   type: {{ .Values.solr.service.type }}
   ports:
