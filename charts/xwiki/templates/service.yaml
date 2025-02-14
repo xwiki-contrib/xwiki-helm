@@ -4,6 +4,13 @@ metadata:
   name:  {{ include "xwiki.fullname" . }}
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.service.annotations }}
+    {{ .Values.service.annotations | toYaml | indent 4 }}
+    {{- end }}
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   type: {{ .Values.service.type }}
   {{- if gt (len .Values.service.externalIPs) 0 }}

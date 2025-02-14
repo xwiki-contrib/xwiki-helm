@@ -4,6 +4,13 @@ kind: ServiceAccount
 metadata:
   name: {{ $fullName }}-sa
 {{- if (.Values.cluster.enabled) }}
+  annotations:
+    {{- if .Values.serviceAccount.annotations }}
+    {{ .Values.serviceAccount.annotations | toYaml | indent 4 }}
+    {{- end }}
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
