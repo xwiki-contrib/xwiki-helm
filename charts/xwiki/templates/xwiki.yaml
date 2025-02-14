@@ -10,6 +10,10 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.cluster.replicas }}
   {{- if .Values.workloadStateful }}

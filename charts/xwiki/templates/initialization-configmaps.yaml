@@ -4,7 +4,7 @@ metadata:
   name: {{ (include "xwiki.initScripts" .) }}
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
-  annotations
+  annotations:
     {{- if .Values.commonAnnotations }}
     {{ .Values.commonAnnotations | toYaml | indent 4 }}
     {{- end }}

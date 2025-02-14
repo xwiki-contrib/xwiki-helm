@@ -8,7 +8,7 @@ metadata:
     {{- include "solr.labels" . | nindent 4 }}
   annotations:
     {{- if .Values.commonAnnotations }}
-    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+{{ toYaml .Values.commonAnnotations | indent 4 }}
     {{- end }}
 spec:
   replicas: {{ .Values.solr.replicaCount }}

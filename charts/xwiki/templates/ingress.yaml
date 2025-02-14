@@ -20,10 +20,10 @@ metadata:
     {{- include "xwiki.labels" . | nindent 4 }}
   annotations:
     {{- if .Values.ingress.annotations }}
-    {{ .Values.ingress.annotations | toYaml | indent 4 }}
+{{ toYaml .Values.ingress.annotations | indent 4 }}
     {{- end }}
     {{- if .Values.commonAnnotations }}
-    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+{{ toYaml .Values.commonAnnotations | indent 4 }}
     {{- end }}
 spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
