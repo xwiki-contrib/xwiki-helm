@@ -339,6 +339,16 @@ affinity: {}
 #
 imagePullSecrets: []
 
+# https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#    - "foo.local"
+#    - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#    - "foo.remote"
+#    - "bar.remote"
 
 # Custom configuration files for xwiki
 customConfigs:
