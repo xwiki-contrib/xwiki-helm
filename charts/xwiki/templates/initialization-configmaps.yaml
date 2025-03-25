@@ -29,6 +29,19 @@ data:
       export AS_PATH=/var/lib/jetty
     fi
     echo "Path: ${AS_PATH}"
+
+    # Currently database preferences are replaced on hibernate (XML) file. 
+    # To prevent errors with special XML chars, replace all for respective encoded alternative. 
+    escapeXML() {
+      echo "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g' -e "s/'/\&apos;/g"
+    }
+    if [[ -n "$DB_PASSWORD" ]]; then
+      export DB_PASSWORD=$(escapeXML $DB_PASSWORD)
+    fi
+    if [[ -n "$JDBC_PARAMS" ]]; then
+      export JDBC_PARAMS=$(escapeXML $JDBC_PARAMS)
+    fi
+
     # Setup all default actions from first start
     first_start
     ## 
