@@ -95,12 +95,14 @@ mysql:
     # TODO: review explicit_defaults_for_timestamp
     configuration: |-
       [mysqld]
-      default_authentication_plugin=mysql_native_password
+      authentication_policy='{{- .Values.auth.authenticationPolicy | default "* ,," }}'
       skip-name-resolve
       explicit_defaults_for_timestamp
       basedir=/opt/bitnami/mysql
       plugin_dir=/opt/bitnami/mysql/lib/plugin
-      port=3306
+      port={{ .Values.primary.containerPorts.mysql }}
+      mysqlx={{ ternary 1 0 .Values.primary.enableMySQLX }}
+      mysqlx_port={{ .Values.primary.containerPorts.mysqlx }}
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       datadir=/bitnami/mysql/data
       tmpdir=/opt/bitnami/mysql/tmp
@@ -108,20 +110,27 @@ mysql:
       bind-address=*
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
       log-error=/opt/bitnami/mysql/logs/mysqld.log
-      character-set-server=UTF8MB4
-      collation-server=utf8mb4_0900_ai_ci
+      character-set-server=utf8mb4
+      collation-server=utf8mb4_bin
+      mysql_native_password=ON
       slow_query_log=0
-      slow_query_log_file=/opt/bitnami/mysql/logs/mysqld.log
       long_query_time=10.0
+      {{- if .Values.tls.enabled }}
+      ssl_cert=/opt/bitnami/mysql/certs/{{ .Values.tls.certFilename }}
+      ssl_key=/opt/bitnami/mysql/certs/{{ .Values.tls.certKeyFilename }}
+      {{- if (include "mysql.tlsCACert" .) }}
+      ssl_ca={{ include "mysql.tlsCACert" . }}
+      {{- end }}
+      {{- end }}
 
       [client]
-      port=3306
+      port={{ .Values.primary.containerPorts.mysql }}
       socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=UTF8MB4
+      default-character-set=utf8mb4
       plugin_dir=/opt/bitnami/mysql/lib/plugin
 
       [manager]
-      port=3306
+      port={{ .Values.primary.containerPorts.mysql }}
       socket=/opt/bitnami/mysql/tmp/mysql.sock
       pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
 
@@ -141,6 +150,7 @@ mariadb:
   initdbScripts:
     00-init.sql: |
       grant all privileges on *.* to xwiki@'%'
+  primary:
     # Changed to use UTF8mb4, check future versions if this was already changed.
     # TODO: review explicit_defaults_for_timestamp
     configuration: |-
@@ -148,8 +158,9 @@ mariadb:
       skip-name-resolve
       explicit_defaults_for_timestamp
       basedir=/opt/bitnami/mariadb
+      datadir=/bitnami/mariadb/data
       plugin_dir=/opt/bitnami/mariadb/plugin
-      port=3306
+      port={{ .Values.primary.containerPorts.mysql }}
       socket=/opt/bitnami/mariadb/tmp/mysql.sock
       tmpdir=/opt/bitnami/mariadb/tmp
       max_allowed_packet=16M
@@ -159,13 +170,35 @@ mariadb:
       character-set-server=UTF8MB4
       collation-server=utf8mb4_general_ci
       slow_query_log=0
-      slow_query_log_file=/opt/bitnami/mariadb/logs/mysqld.log
       long_query_time=10.0
+      binlog_expire_logs_seconds=2592000
+      {{- if .Values.tls.enabled }}
+      ssl_cert=/opt/bitnami/mariadb/certs/{{ .Values.tls.certFilename }}
+      ssl_key=/opt/bitnami/mariadb/certs/{{ .Values.tls.certKeyFilename }}
+      {{- if (include "mariadb.tlsCACert" .) }}
+      ssl_ca={{ include "mariadb.tlsCACert" . }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.tde.enabled }}
+      plugin_load_add=file_key_management
+      file_key_management_filename=/opt/bitnami/mariadb/tde/{{ .Values.tde.encryptedKeyFilename }}
+      file_key_management_filekey=FILE:/opt/bitnami/mariadb/tde/{{ .Values.tde.randomKeyFilename }}
+      file_key_management_encryption_algorithm={{ .Values.tde.fileKeyManagementEncryptionAlgorithm }}
+      innodb_encrypt_tables={{ .Values.tde.innodbEncryptTables }}
+      innodb_encrypt_log={{ .Values.tde.innodbEncryptLog }}
+      innodb_encrypt_temporary_tables={{ .Values.tde.innodbEncryptTemporaryTables }}
+      innodb_encryption_threads={{ .Values.tde.innodbEncryptionThreads }}
+      encrypt_tmp_disk_tables={{ .Values.tde.encryptTmpDiskTables }}
+      encrypt_tmp_files={{ .Values.tde.encryptTmpTiles }}
+      encrypt_binlog={{ .Values.tde.encryptBINLOG }}
+      aria_encrypt_tables={{ .Values.tde.ariaEncryptTables }}
+      {{- end }}
 
       [client]
       port=3306
       socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      default-character-set=UTF8MB4
+      default-character-set=utf8mb4
+
       plugin_dir=/opt/bitnami/mariadb/plugin
 
       [manager]
