@@ -218,6 +218,9 @@ postgresql:
     username: "xwiki"
     password: "xwiki"
     database: "xwiki"
+  primary:
+    initdb:
+      args: "--encoding=UTF8 --locale-provider=builtin --locale=C.UTF-8" 
   # persistence:
   #  size: 8Gi
 
