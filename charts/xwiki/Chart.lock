@@ -4,7 +4,7 @@ dependencies:
   version: 2.30.0
 - name: mysql
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 9.10.2
+  version: 12.3.2
 - name: mariadb
   repository: oci://registry-1.docker.io/bitnamicharts
   version: 12.2.5
