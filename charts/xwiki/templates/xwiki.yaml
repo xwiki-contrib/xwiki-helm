@@ -28,19 +28,21 @@ spec:
         # Annotations to rollout changes on configs on workload
         checksum/configmap: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
         checksum/initialization-configmaps: {{ include (print $.Template.BasePath "/initialization-configmaps.yaml") . | sha256sum }}
+        checksum/initialization-secrets: {{ include (print $.Template.BasePath "/initialization-secrets.yaml") . | sha256sum }}
       labels:
         {{- include "xwiki.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ $fullName }}-sa
-      {{- if or .Values.initContainers.database.enabled .Values.initContainers.solr.enabled (and .Values.volumePermissions.enabled .Values.persistence.enabled) }}
       initContainers:
+        {{- include "xwiki.initContainersSecrets" . | nindent 8 }}
+      {{- if or .Values.initContainers.database.enabled .Values.initContainers.solr.enabled (and .Values.volumePermissions.enabled .Values.persistence.enabled) }}
         {{- include "xwiki.initContainers" . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: {{ include "xwiki.imageName" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/bash", "/configmaps/entrypoint"]
+          command: ["/bin/bash", "/entrypoint/start.sh"]
           {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
@@ -124,6 +126,9 @@ spec:
               mountPath: /usr/local/xwiki/data
             - name: configmaps
               mountPath: /configmaps
+            - name: entrypoint
+              mountPath: /entrypoint
+              readOnly: true
             {{- if .Values.extraVolumeMounts }}
             {{- .Values.extraVolumeMounts | toYaml | nindent 12 }}
             {{- end }}
@@ -159,6 +164,13 @@ spec:
         - name: configmaps
           configMap:
             name: {{ include "xwiki.initScripts" . }}
+        - name: secrets
+          secret:
+            secretName: {{ include "xwiki.initScripts" . }}
+        - name: entrypoint
+          emptyDir:
+            sizeLimit: 1Mi
+            medium: Memory
         - name: xwiki-data
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
           persistentVolumeClaim:

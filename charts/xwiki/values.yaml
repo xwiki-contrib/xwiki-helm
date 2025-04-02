@@ -42,6 +42,22 @@ resources: {}
 
 javaOpts: []
 #  - "-Xmx1024m"
+
+# Secrets for any given Java option
+javaOptsSecrets:
+  # The option will be included in the environment variable JAVA_OPTS and is mandatory.
+  # The following example will create and include -Djavax.net.ssl.trustStorePassword=${TRUSTSTOREPASSWORD} in the JAVA_OPTS environment variable
+  # trustStorePassword:
+  #   option: "-Djavax.net.ssl.trustStorePassword="
+  #   # -- Superadmin password as plain value (fallback if no secret exists inside of Kubernetes).
+  #   value: "testvalue"
+  #   # Superadmin password from existing secret (higher precedence than plain value)
+  #   secret:
+  #     # -- Name of the Kubernetes secret that contains the superadmin password
+  #     name: "secretname"
+  #     # -- Key inside the Kubernetes secret that contains the superadmin password
+  #     key: "keyinsecret"
+
 extraEnvVars: []
 #  - name: FOO
 #    value: "bar"
@@ -359,6 +375,22 @@ customConfigs:
     #
   # xwiki.properties:
     #
+
+# Secrets for custom configuration files for xwiki
+customConfigsSecrets:
+  # Properties key that exists, replace in line is done with value here defined.
+  # If key don't exists, this key and value will be appended in that specific file.
+  # The following example will set xwiki.superadminpassword in the file xwiki.cfg
+  # xwiki.cfg:
+  #   xwiki.superadminpassword:
+  #     # -- Superadmin password as plain value (fallback if no secret exists inside of Kubernetes).
+  #     value: "testvalue"
+  #     # Superadmin password from existing secret (higher precedence than plain value)
+  #     secret:
+  #       # -- Name of the Kubernetes secret that contains the superadmin password
+  #       name: "secretname"
+  #       # -- Key inside the Kubernetes secret that contains the superadmin password
+  #       key: "keyinsecret"
 
 # Properties to be passed to Java process with -D parameters using JAVA_OPTS
 properties:
