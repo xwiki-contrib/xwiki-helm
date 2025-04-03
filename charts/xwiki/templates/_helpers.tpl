@@ -170,6 +170,68 @@ PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
 {{- end }}
 
 {{/*
+Init Containers for secrets
+*/}}
+{{- define "xwiki.initContainersSecrets" -}}
+{{- $fullName := include "xwiki.fullname" . -}}
+- name: xwiki-secrets
+  image: {{ include "xwiki.imageName" . }}
+  imagePullPolicy: {{ .Values.image.pullPolicy }}
+  command: ["/bin/sh", "-c"]
+  args:
+    - |
+        cp /secrets/entrypoint /entrypoint/start.sh
+        chmod 0550 /entrypoint/start.sh
+      {{- range $key, $value := .Values.javaOptsSecrets }}
+      {{- $keySanitised := regexReplaceAll "\\W+" $key "_" }}
+        sed --in-place "s/{{ $keySanitised | upper }}/${ {{- $keySanitised | upper -}} }/g" /entrypoint/start.sh
+      {{- end }}
+      {{- range $_, $values := .Values.customConfigsSecrets }}
+      {{- range $key, $_ := $values }}
+      {{- $keySanitised := regexReplaceAll "\\W+" $key "_" }}
+        sed --in-place "s/{{ $keySanitised | upper }}/${ {{- $keySanitised | upper -}} }/g" /entrypoint/start.sh
+      {{- end }}
+      {{- end }}
+  securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 4 }}
+  resources:
+    {{- toYaml .Values.resources | nindent 4 }}
+  env:
+  {{- range $key, $value := .Values.javaOptsSecrets }}
+    {{- $keySanitised := regexReplaceAll "\\W+" $key "_" }}
+    - name: {{ $keySanitised | upper }}
+      valueFrom:
+        secretKeyRef:
+          {{- if index $value "secret" }}
+          key: {{ $value.secret.key | default $keySanitised |quote }}
+          name: {{ $value.secret.name | default $fullName | quote }}
+          {{- else }}
+          key: {{ $keySanitised | quote }}
+          name: {{ $fullName | quote }}
+          {{- end }}
+  {{- end }}
+  {{- range $_, $values := .Values.customConfigsSecrets }}
+    {{- range $key, $value := $values }}
+      {{- $keySanitised := regexReplaceAll "\\W+" $key "_" }}
+    - name: {{ $keySanitised | upper }}
+      valueFrom:
+        secretKeyRef:
+          {{- if index $value "secret" }}
+          key: {{ $value.secret.key | default $keySanitised |quote }}
+          name: {{ $value.secret.name | default $fullName | quote }}
+          {{- else }}
+          key: {{ $keySanitised | quote }}
+          name: {{ $fullName | quote }}
+          {{- end }}
+    {{- end }}
+  {{- end }}
+  volumeMounts:
+    - name: secrets
+      mountPath: /secrets
+    - name: entrypoint
+      mountPath: /entrypoint
+{{- end }}
+
+{{/*
 Init Containers
 */}}
 {{- define "xwiki.initContainers" -}}

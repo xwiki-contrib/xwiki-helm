@@ -3,6 +3,7 @@ templates:
   - xwiki.yaml
   - configmaps.yaml
   - initialization-configmaps.yaml
+  - initialization-secrets.yaml
 tests:
   - it: testing default values
     documentIndex: 0
@@ -15,6 +16,9 @@ tests:
         template: xwiki.yaml
       - isNotEmpty:
           path: spec.template.metadata.annotations["checksum/initialization-configmaps"]
+        template: xwiki.yaml
+      - isNotEmpty:
+          path: spec.template.metadata.annotations["checksum/initialization-secrets"]
         template: xwiki.yaml
   - it: should use custom image
     set:
@@ -126,7 +130,7 @@ tests:
       postgresql.image.tag: "latest"
     asserts:
       - matchSnapshot:
-          path: spec.template.spec.initContainers
+          path: spec.template.spec.initContainers[1]
         template: xwiki.yaml
   - it: should create a mariadb init container
     set:
@@ -138,7 +142,7 @@ tests:
       mariadb.image.tag: "latest"
     asserts:
       - matchSnapshot:
-          path: spec.template.spec.initContainers
+          path: spec.template.spec.initContainers[1]
         template: xwiki.yaml
   - it: should create a mysql init container
     set:
@@ -150,7 +154,7 @@ tests:
       mysql.image.tag: "latest"
     asserts:
       - matchSnapshot:
-          path: spec.template.spec.initContainers
+          path: spec.template.spec.initContainers[1]
         template: xwiki.yaml
   - it: should create a solr init container
     set:
@@ -158,7 +162,7 @@ tests:
       initContainers.solr.enabled: true
     asserts:
       - matchSnapshot:
-          path: spec.template.spec.initContainers
+          path: spec.template.spec.initContainers[1]
         template: xwiki.yaml
   - it: should create an external db init container for mysql
     set:
@@ -170,5 +174,5 @@ tests:
       initContainers.database.image: "mysql:latest"
     asserts:
       - matchSnapshot:
-          path: spec.template.spec.initContainers
+          path: spec.template.spec.initContainers[1]
         template: xwiki.yaml
