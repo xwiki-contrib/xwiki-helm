@@ -558,3 +558,48 @@ prometheus:
   podmonitor:
     enabled: true
     labels: {}
+
+customJdbc:
+  enabled: false
+  properties:
+    # Kept using replace values, for better wide support. Supporting externals references and other types of pass secrets.
+    connection.username: replaceuser
+    connection.password: replacepassword
+    show_sql: false
+    use_outer_join: true
+    jdbc.use_scrollable_resultset: false
+    dbcp.defaultAutoCommit: false
+    dbcp.maxTotal: 50
+    dbcp.maxIdle: 5
+    dbcp.maxWaitMillis: 30000
+    connection.provider_class: com.xpn.xwiki.store.DBCPConnectionProvider
+
+    hibernate.connection.charSet: UTF-8
+    hibernate.connection.useUnicode: true
+    hibernate.connection.characterEncoding: utf8
+  extraConfig: |
+    <mapping resource="xwiki.hbm.xml"/>
+    <mapping resource="feeds.hbm.xml"/>
+    <mapping resource="instance.hbm.xml"/>
+    <mapping resource="notification-filter-preferences.hbm.xml"/>
+    <mapping resource="mailsender.hbm.xml"/>
+  mysql:
+    properties:
+      connection.url: "jdbc:mysql://replacecontainer/replacedatabasereplacejdbcparams"
+      connection.driver_class: com.mysql.cj.jdbc.Driver
+      dbcp.poolPreparedStatements: true
+      dbcp.maxOpenPreparedStatements: 20
+    extraConfig: {}
+  mariadb:
+    properties:
+      connection.url: "jdbc:mariadb://replacecontainer/replacedatabasereplacejdbcparams"
+      connection.driver_class: org.mariadb.jdbc.Driver
+    extraConfig: {}
+  postgresql:
+    properties:
+      connection.url: "jdbc:postgresql://replacecontainer/replacedatabasereplacejdbcparams"
+      connection.driver_class: org.postgresql.Driver
+      jdbc.use_streams_for_binary: false
+      xwiki.virtual_mode: schema
+    extraConfig: |
+      <mapping resource="xwiki.postgresql.hbm.xml"/>
