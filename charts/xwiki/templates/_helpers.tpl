@@ -201,12 +201,17 @@ Init Containers for secrets
     - name: {{ $keySanitised | upper }}
       valueFrom:
         secretKeyRef:
-          {{- if index $value "secret" }}
-          key: {{ $value.secret.key | default $keySanitised |quote }}
+          {{- if hasKey $value "secret" }}
+          {{- if and $value.secret.name $value.secret.key }}
           name: {{ $value.secret.name | default $fullName | quote }}
+          key: {{ $value.secret.key | default $keySanitised |quote }}
           {{- else }}
-          key: {{ $keySanitised | quote }}
           name: {{ $fullName | quote }}
+          key: {{ $keySanitised | quote }}
+          {{- end }}
+          {{- else }}
+          name: {{ $fullName | quote }}
+          key: {{ $keySanitised | quote }}
           {{- end }}
   {{- end }}
   {{- range $_, $values := .Values.customConfigsSecrets }}
@@ -215,12 +220,17 @@ Init Containers for secrets
     - name: {{ $keySanitised | upper }}
       valueFrom:
         secretKeyRef:
-          {{- if index $value "secret" }}
-          key: {{ $value.secret.key | default $keySanitised |quote }}
+          {{- if hasKey $value "secret" }}
+          {{- if and $value.secret.name $value.secret.key }}
           name: {{ $value.secret.name | default $fullName | quote }}
+          key: {{ $value.secret.key | default $keySanitised |quote }}
           {{- else }}
-          key: {{ $keySanitised | quote }}
           name: {{ $fullName | quote }}
+          key: {{ $keySanitised | quote }}
+          {{- end }}
+          {{- else }}
+          name: {{ $fullName | quote }}
+          key: {{ $keySanitised | quote }}
           {{- end }}
     {{- end }}
   {{- end }}
