@@ -204,7 +204,7 @@ Init Containers for secrets
           {{- if hasKey $value "secret" }}
           {{- if and $value.secret.name $value.secret.key }}
           name: {{ $value.secret.name | default $fullName | quote }}
-          key: {{ $value.secret.key | default $keySanitised |quote }}
+          key: {{ $value.secret.key | default $keySanitised | quote }}
           {{- else }}
           name: {{ $fullName | quote }}
           key: {{ $keySanitised | quote }}
@@ -223,7 +223,7 @@ Init Containers for secrets
           {{- if hasKey $value "secret" }}
           {{- if and $value.secret.name $value.secret.key }}
           name: {{ $value.secret.name | default $fullName | quote }}
-          key: {{ $value.secret.key | default $keySanitised |quote }}
+          key: {{ $value.secret.key | default $keySanitised | quote }}
           {{- else }}
           name: {{ $fullName | quote }}
           key: {{ $keySanitised | quote }}
