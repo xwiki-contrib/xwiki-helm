@@ -126,6 +126,11 @@ spec:
               mountPath: /usr/local/xwiki/data
             - name: configmaps
               mountPath: /configmaps
+            {{- if and .Values.propertiesSecret.name .Values.propertiesSecret.key }}
+            - name: secretproperties
+              mountPath: /secretproperties
+              readOnly: true
+            {{- end }}
             - name: entrypoint
               mountPath: /entrypoint
               readOnly: true
@@ -167,6 +172,11 @@ spec:
         - name: secrets
           secret:
             secretName: {{ include "xwiki.initScripts" . }}
+        {{- if and .Values.propertiesSecret.name .Values.propertiesSecret.key }}
+        - name: secretproperties
+          secret:
+            secretName: {{ .Values.propertiesSecret.name }}
+        {{- end }}
         - name: entrypoint
           emptyDir:
             sizeLimit: 1Mi
