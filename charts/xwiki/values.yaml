@@ -432,6 +432,17 @@ customConfigsSecrets:
 properties:
   # "key": "value"
 
+# Name of a secret that contains a file listing properties and their value separated by '=' line by line.
+# Those values will be prefixed by '-D' and depending on the used software/version appended to the environment
+# variable 'JAVA_OPTS' or a file that holds properties and get loaded later on.
+# The following example shows a single line how it is expected to be formatted:
+# property:xwiki:Mail.MailConfig^Mail.SendMailConfigClass.password="<password>"
+propertiesSecret:
+  # -- Name of the Kubernetes secret that contains the properties file
+  name: ""
+  # -- Key inside the Kubernetes secret that contains the properties file
+  key: ""
+
 # Init containers for the xwiki deployment/statefullSet
 initContainers:
   database:
