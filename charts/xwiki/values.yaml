@@ -270,6 +270,8 @@ solr:
     # - name: FOO
     #   value: "bar"
   resources: {}
+  downloadCores:
+    enabled: true
   service:
     annotations: {}
     portName: solr-node

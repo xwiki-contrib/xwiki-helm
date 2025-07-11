@@ -26,6 +26,7 @@ spec:
         {{ .Values.solr.podAnnotations | toYaml | indent 4 }}
         {{- end }}
     spec:
+      {{- if .Values.solr.downloadCores.enabled }}
       initContainers:
         - name: download-cores
           image: curlimages/curl
@@ -52,6 +53,7 @@ spec:
               unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_events
               unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_extension_index
               unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_ratings
+      {{- end }}
       containers:
         - name: {{ printf "%s-solr" .Chart.Name }}
           image: {{ .Values.solr.image }}
