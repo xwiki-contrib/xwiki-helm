@@ -12,8 +12,6 @@ cluster:
 
 commonAnnotations: {}
 
-podAnnotations: {}
-
 image:
   name: xwiki
   pullPolicy: IfNotPresent
@@ -41,6 +39,8 @@ resources: {}
 #  requests:
 #    cpu: 500m
 #    memory: 768Mi
+
+podAnnotations: {}
 
 javaOpts: []
 #  - "-Xmx1024m"
