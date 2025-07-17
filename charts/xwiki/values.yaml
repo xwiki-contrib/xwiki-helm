@@ -12,6 +12,8 @@ cluster:
 
 commonAnnotations: {}
 
+podAnnotations: {}
+
 image:
   name: xwiki
   pullPolicy: IfNotPresent
