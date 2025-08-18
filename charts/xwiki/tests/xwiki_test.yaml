@@ -176,3 +176,13 @@ tests:
       - matchSnapshot:
           path: spec.template.spec.initContainers[1]
         template: xwiki.yaml
+  - it: should support use custom volume nfs
+    set:
+      persistence.enabled: true
+      persistence.customVolume.nfs.server: "server"
+      persistence.customVolume.nfs.path: "/volume"
+      persistence.customVolume.nfs.readOnly: "false"
+    asserts:
+      - matchSnapshot:
+          path: spec.template.spec.volumes
+        template: xwiki.yaml

@@ -355,6 +355,7 @@ persistence:
   labels: {}
   selector: {}
   dataSource: {}
+  customVolume: {}
 
 ## Read about PostDistribution budget at https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
 ## Use only on a clustered setup

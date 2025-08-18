@@ -195,6 +195,23 @@ should create an external db init container for mysql:
     image: mysql:latest
     name: wait-for-db
     resources: {}
+should support use custom volume nfs:
+  1: |
+    - configMap:
+        name: RELEASE-NAME-xwiki-init-scripts
+      name: configmaps
+    - name: secrets
+      secret:
+        secretName: RELEASE-NAME-xwiki-init-scripts
+    - emptyDir:
+        medium: Memory
+        sizeLimit: 1Mi
+      name: entrypoint
+    - name: xwiki-data
+      nfs:
+        path: /volume
+        readOnly: "false"
+        server: server
 should use custom DB password secret:
   1: |
     - name: DB_PASSWORD

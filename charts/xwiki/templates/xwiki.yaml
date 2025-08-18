@@ -185,6 +185,8 @@ spec:
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
           persistentVolumeClaim:
             claimName: {{ tpl .Values.persistence.existingClaim $ }}
+  {{- else if and .Values.persistence.enabled .Values.persistence.customVolume }}
+          {{- .Values.persistence.customVolume | toYaml | nindent 10 }}
   {{- else if not .Values.persistence.enabled }}
           emptyDir: {}
   {{- else if and .Values.workloadStateful (not .Values.cluster.enabled) }}
