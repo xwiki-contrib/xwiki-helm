@@ -311,6 +311,31 @@ solr:
   nodeSelector: {}
   affinity: {}
   tolerations: {}
+  probes:
+    customLiveness: {}
+    customReadiness: {}
+    customStartup: {}
+    liveness:
+      enabled: true
+      initialDelaySeconds: 40
+      periodSeconds: 10
+      timeoutSeconds: 15
+      failureThreshold: 6
+      successThreshold: 1
+    readiness:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 15
+      failureThreshold: 6
+      successThreshold: 1
+    startup:
+      enabled: true
+      initialDelaySeconds: 40
+      periodSeconds: 10
+      timeoutSeconds: 15
+      failureThreshold: 15
+      successThreshold: 1
 
 # To use ingress for routing set ingress.enabled value to true and istio.enabled value to false
 ingress:

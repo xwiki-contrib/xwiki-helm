@@ -89,7 +89,7 @@ Istio gateway name to be used
 {{- end }}
 
 {{/*
-Define which image to use
+Define which image to use on XWiki
 */}}
 {{- define "xwiki.imageName" -}}
 {{- if .Values.image.tag }}
@@ -101,6 +101,23 @@ Define which image to use
 {{- else }}
 {{- .Values.image.name -}}
 {{- end }}
+{{- end }}
+
+{{/*
+Define which image to use on Solr
+*/}}
+{{- define "solr.imageName" -}}
+{{- $separator := ":" -}}
+{{- $selector := .Values.solr.image.tag | toString -}}
+{{- if .Values.solr.image.digest }}
+    {{- $separator = "@" -}}
+    {{- $selector = .Values.solr.image.digest | toString -}}
+{{- end -}}
+{{- if .Values.solr.image.registry }}
+    {{- printf "%s/%s%s%s" .Values.solr.image.registry .Values.solr.image.repository $separator $selector -}}
+{{- else -}}
+    {{- printf "%s%s%s"  .Values.solr.image.repository $separator $selector -}}
+{{- end -}}
 {{- end }}
 
 

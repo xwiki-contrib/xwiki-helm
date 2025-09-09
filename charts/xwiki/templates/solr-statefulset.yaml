@@ -63,6 +63,30 @@ spec:
           imagePullPolicy: {{ .Values.solr.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.solr.service.internalPort }}
+        {{- if .Values.solr.probes.customLiveness }}
+          livenessProbe: {{- .Values.solr.probes.customLiveness | toYaml | nindent 12 }}
+        {{- else if .Values.solr.probes.liveness.enabled }}
+          livenessProbe: {{- omit .Values.solr.probes.liveness "enabled" | toYaml | nindent 12 }}
+            httpGet:
+              path: "/solr/admin/info/system"
+              port: {{ .Values.solr.service.internalPort }}
+         {{- end }}
+        {{- if .Values.solr.probes.customReadiness }}
+          readinessProbe: {{- .Values.solr.probes.customReadiness | toYaml | nindent 12 }}
+        {{- else if .Values.solr.probes.readiness.enabled }}
+          readinessProbe: {{- omit .Values.solr.probes.readiness "enabled" | toYaml | nindent 12 }}
+            httpGet:
+              path: "/api/node/health"
+              port: {{ .Values.solr.service.internalPort }}
+        {{- end }}
+        {{- if .Values.solr.probes.customStartup }}
+          startupProbe: {{- .Values.solr.probes.customStartup | toYaml | nindent 12 }}
+        {{- else if .Values.solr.probes.startup.enabled }}
+          startupProbe: {{- omit .Values.solr.probes.startup "enabled" | toYaml | nindent 12 }}
+            httpGet:
+              path: "/api/node/health"
+              port: {{ .Values.solr.service.internalPort }}
+        {{- end }}
           resources:
             {{- toYaml .Values.solr.resources | nindent 12 }}
           volumeMounts:
