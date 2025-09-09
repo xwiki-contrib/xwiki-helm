@@ -63,7 +63,7 @@ spec:
           ports:
             - containerPort: {{ .Values.solr.service.internalPort }}
           resources:
-            {{ toYaml .Values.solr.resources | indent 12 }}
+            {{- toYaml .Values.solr.resources | nindent 12 }}
           volumeMounts:
             - name: xwiki-solr-data
               mountPath: /var/solr/
