@@ -56,10 +56,10 @@ spec:
       {{- end }}
       containers:
         - name: {{ printf "%s-solr" .Chart.Name }}
-          image: {{ .Values.solr.image }}
+          image: {{ include "solr.imageName" . }}
           securityContext:
             allowPrivilegeEscalation: false
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.solr.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.solr.service.internalPort }}
           resources:

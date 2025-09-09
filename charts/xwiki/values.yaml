@@ -265,7 +265,12 @@ solr:
   # If set to false mount an internal Solr instance
   enabled: false
   replicaCount: 1
-  image: solr:8.11.4-slim
+  image: 
+    registry: ""
+    repository: solr
+    tag: 8.11.4-slim
+    digest: ""
+    pullPolicy: IfNotPresent
   extraEnvVars: []
     # - name: FOO
     #   value: "bar"
