@@ -57,8 +57,9 @@ spec:
       containers:
         - name: {{ printf "%s-solr" .Chart.Name }}
           image: {{ include "solr.imageName" . }}
-          securityContext:
-            allowPrivilegeEscalation: false
+          {{- if .Values.solr.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.solr.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
           imagePullPolicy: {{ .Values.solr.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.solr.service.internalPort }}
