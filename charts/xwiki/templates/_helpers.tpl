@@ -314,7 +314,7 @@ Init Containers
     - -ec
     - |
       for i in $(seq 1 30); do
-        if curl --silent --connect-timeout "15000" $SOLR_BASEURL/admin/info/system | grep '\"status\":0'
+        if curl --silent --connect-timeout "15000" $SOLR_BASEURL/admin/info/system | grep '\"status\":0'; then
           echo "Solr is ready!"
           exit 0
         fi
