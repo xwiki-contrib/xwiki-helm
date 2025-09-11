@@ -149,7 +149,7 @@ should create a solr init container:
           configMapKeyRef:
             key: SOLR_BASEURL
             name: RELEASE-NAME-xwiki
-    image: alpine/curl:8.9.0
+    image: xwiki:lts-mysql-tomcat
     name: wait-for-solr
     resources: {}
 should create an external db init container for mysql:
