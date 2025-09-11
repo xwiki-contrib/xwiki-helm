@@ -308,7 +308,11 @@ Init Containers
   {{- end }}
   {{- if .Values.initContainers.solr.enabled }}
 - name: wait-for-solr
-  image: "alpine/curl:8.9.0"
+  {{- if .Values.initContainers.solr.image }}
+  image: {{ .Values.initContainers.solr.image }}
+  {{- else }}
+  image: {{ (include "xwiki.imageName" .) }}
+  {{- end }}
   command:
     - /bin/sh
     - -ec

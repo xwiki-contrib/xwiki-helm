@@ -502,6 +502,7 @@ initContainers:
         type: "RuntimeDefault"
   solr:
     enabled: false
+    image: ""
     containerSecurityContext:
       enabled: false
       runAsUser: 0
