@@ -106,6 +106,12 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+    {{- if .Values.solr.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.solr.imagePullSecrets }}
+        - name: "{{ . }}"
+      {{- end }}
+    {{- end }}
       volumes:
         - name: xwiki-solr-data
           {{- if and .Values.solr.persistence.enabled .Values.solr.persistence.existingClaim }}

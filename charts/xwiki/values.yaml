@@ -271,6 +271,7 @@ solr:
     tag: 8.11.4-slim
     digest: ""
     pullPolicy: IfNotPresent
+  imagePullSecrets: []
   extraEnvVars: []
     # - name: FOO
     #   value: "bar"
