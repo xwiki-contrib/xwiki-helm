@@ -30,8 +30,8 @@ spec:
         checksum/initialization-configmaps: {{ include (print $.Template.BasePath "/initialization-configmaps.yaml") . | sha256sum }}
         checksum/initialization-secrets: {{ include (print $.Template.BasePath "/initialization-secrets.yaml") . | sha256sum }}
         {{- if .Values.podAnnotations }}
-        {{ .Values.podAnnotations | toYaml}}
-        {{- end }}  
+        {{-  .Values.podAnnotations | toYaml | nindent 8 }}
+        {{- end }}
       labels:
         {{- include "xwiki.labels" . | nindent 8 }}
     spec:
