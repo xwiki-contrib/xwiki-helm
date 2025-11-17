@@ -1,6 +1,12 @@
 # Default values for node.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+
+global:
+  security:
+    # Temporary solution for https://jira.xwiki.org/browse/HELM-103
+    allowInsecureImages: true
+
 cluster:
   enabled: false
   replicas: 1
@@ -100,6 +106,9 @@ volumePermissions:
 mysql:
  ## Whether to deploy a mysql server. Set false for a different database.
   enabled: true
+  image:
+    # Temporary solution for https://jira.xwiki.org/browse/HELM-103
+    repository: bitnamilegacy/mysql
   auth:
     rootPassword: "xwiki"
     username: "xwiki"
@@ -160,6 +169,9 @@ mysql:
 mariadb:
  ## Whether to deploy a mysql server. Set false for a different database.
   enabled: false
+  image:
+    # Temporary solution for https://jira.xwiki.org/browse/HELM-103
+    repository: bitnamilegacy/mariadb
   auth:
     rootPassword: "xwiki"
     username: "xwiki"
@@ -231,6 +243,9 @@ mariadb:
 postgresql:
  ## Whether to deploy a postgresql server. Set false for a different database.
   enabled: false
+  image:
+    # Temporary solution for https://jira.xwiki.org/browse/HELM-103
+    repository: bitnamilegacy/postgresql
   auth:
     postgresPassword: "xwiki"
     username: "xwiki"
