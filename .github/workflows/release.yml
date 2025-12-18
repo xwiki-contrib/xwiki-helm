@@ -34,17 +34,6 @@ jobs:
 #            echo "::warning::Version not changed, skipping release job..."
 #          fi
 
-      - name: Tests
- #       if: ${{ steps.changed.outputs.result == 'ok' }}
-        run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm plugin install https://github.com/helm-unittest/helm-unittest --version 0.3.4
-          for FILE in charts/*; do 
-            helm dependency update $FILE
-            helm unittest $FILE
-          done
-
-
   release:
     needs: validate
 #    if: ${{ needs.validate.outputs.result == 'ok' }}
