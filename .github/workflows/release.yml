@@ -58,11 +58,6 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
 
-      - name: Add repos
-        run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm plugin install https://github.com/helm-unittest/helm-unittest --version 0.3.4
-
       - name: Prepare GPG key
         run: |
           gpg_dir=.cr-gpg
