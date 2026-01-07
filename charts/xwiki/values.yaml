@@ -253,7 +253,7 @@ postgresql:
     database: "xwiki"
   primary:
     initdb:
-      args: "--encoding=UTF8 --locale-provider=builtin --locale=C.UTF-8" 
+      args: "--encoding=UTF8 --locale-provider=builtin --locale=C.UTF-8"
   # persistence:
   #  size: 8Gi
 
@@ -282,7 +282,7 @@ solr:
   # If set to false mount an internal Solr instance
   enabled: false
   replicaCount: 1
-  image: 
+  image:
     registry: ""
     repository: solr
     tag: 8.11.4-slim
@@ -463,6 +463,11 @@ hostAliases: []
 #    hostnames:
 #    - "foo.remote"
 #    - "bar.remote"
+
+# Allow to disable configurations files in data directory.
+# By default, helm will copy configuration files from image to have always
+# most up-to-date configuration files.
+overrideDataConfigs: true
 
 # Custom configuration files for xwiki
 customConfigs:
