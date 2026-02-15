@@ -1,0 +1,44 @@
+{
+    "branches": [
+        "master",
+        "next"
+    ],
+    "tagFormat": "xwiki-helm-${version}",
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "mkdir -p .cr-release-packages && sed -i \"s/^version: .*/version: ${nextRelease.version}/\" charts/xwiki/Chart.yaml && helm dependency update charts/xwiki && helm package charts/xwiki --destination .cr-release-packages --sign --key 'XWiki SAS' --keyring $CR_KEYRING --passphrase-file $CR_PASSPHRASE_FILE",
+                "publishCmd": "helm push .cr-release-packages/xwiki-${nextRelease.version}.tgz oci://git.xwikisas.com:5050/xwikisas/swp/xwiki/contrib-xwiki-helm && ./scripts/publish-gh-pages.sh"
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "assets": [
+                    "charts/xwiki/Chart.yaml"
+                ],
+                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+            }
+        ],
+        [
+            "@semantic-release/github",
+            {
+                "assets": [
+                    {
+                        "path": ".cr-release-packages/*.tgz",
+                        "label": "Helm Chart"
+                    },
+                    {
+                        "path": ".cr-release-packages/*.prov",
+                        "label": "Provenance File"
+                    }
+                ],
+                "successComment": false,
+                "failComment": false
+            }
+        ]
+    ]
+}
