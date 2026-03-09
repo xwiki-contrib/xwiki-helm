@@ -19,6 +19,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end }}
 
 {{/*
+SAML Auth Proxy fullname
+*/}}
+{{- define "xwiki.samlAuthProxy.fullname" -}}
+{{- printf "%s-saml-auth-proxy" (include "common.names.fullname" .) }}
+{{- end }}
+
+{{/*
 Solr Common labels
 */}}
 {{- define "solr.labels" -}}

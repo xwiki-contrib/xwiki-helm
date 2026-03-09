@@ -682,3 +682,34 @@ customJdbc:
       xwiki.virtual_mode: schema
     extraConfig: |
       <mapping resource="xwiki.postgresql.hbm.xml"/>
+
+authentication:
+  samlAuthProxy:
+    enabled: false
+    image:
+      repository: "itzg/saml-auth-proxy"
+      tag: "1.17.6"
+      pullPolicy: IfNotPresent
+    replicaCount: 1
+    service:
+      type: ClusterIP
+      port: 8080
+    resources: {}
+    env:
+      SAML_PROXY_NAME_ID_MAPPING: REMOTE_USER
+      SAML_PROXY_ATTRIBUTE_HEADER_MAPPINGS: "uid=REMOTE_USER,mail=EMAIL,firstName=FIRST_NAME,lastName=LAST_NAME"
+      #SAML_PROXY_IDP_CA_PATH: ""
+      #SAML_PROXY_IDP_METADATA_URL: ""
+      #SAML_PROXY_SP_CERT_PATH: ""
+      #SAML_PROXY_SP_KEY_PATH: ""
+    extraVolumes: []
+    extraVolumeMounts: []
+  # Helper settings to already preconfigure XWiki for this authentication method
+  authclass: "org.xwiki.contrib.authentication.XWikiTrustedAuthenticator"
+  trusted:
+    adapterHint: headers
+    id_field: remote_user
+    auth_field: REMOTE_USER
+    create_user: true
+    propertiesMapping: "email=EMAIL|first_name=FIRST_NAME|last_name=LAST_NAME"
+    persistenceStoreHint: cookie

@@ -1,0 +1,48 @@
+{{- if .Values.authentication.samlAuthProxy.enabled -}}
+{{- $fullName := include "xwiki.fullname" . -}}
+{{- $svcPort := .Values.service.externalPort -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "xwiki.samlAuthProxy.fullname" . }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ include "xwiki.samlAuthProxy.fullname" . }}
+spec:
+  replicas: {{ .Values.authentication.samlAuthProxy.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "xwiki.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: {{ include "xwiki.samlAuthProxy.fullname" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "xwiki.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: {{ include "xwiki.samlAuthProxy.fullname" . }}
+    spec:
+      containers:
+        - name: {{ include "xwiki.samlAuthProxy.fullname" . }}
+          image: "{{ .Values.authentication.samlAuthProxy.image.repository }}:{{ .Values.authentication.samlAuthProxy.image.tag }}"
+          imagePullPolicy: {{ .Values.authentication.samlAuthProxy.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: "SAML_PROXY_BACKEND_URL"
+              value: "http://{{ $fullName }}:{{ $svcPort }}"
+            {{- range $key, $value := .Values.authentication.samlAuthProxy.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- if .Values.authentication.samlAuthProxy.extraVolumeMounts }}
+          volumeMounts:
+            {{- .Values.authentication.samlAuthProxy.extraVolumeMounts | toYaml | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.authentication.samlAuthProxy.resources | nindent 12 }}
+      {{- if .Values.authentication.samlAuthProxy.extraVolumes }}
+      volumes:
+        {{- .Values.authentication.samlAuthProxy.extraVolumes | toYaml | nindent 8 }}
+      {{- end }}
+{{- end -}}

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "xwiki.samlAuthProxy.fullname" . }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+    app.kubernetes.io/component: saml-auth-proxy
+spec:
+  type: {{ .Values.authentication.samlAuthProxy.service.type }}
+  ports:
+    - port: {{ .Values.authentication.samlAuthProxy.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "xwiki.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ include "xwiki.samlAuthProxy.fullname" . }}

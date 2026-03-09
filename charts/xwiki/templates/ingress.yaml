@@ -52,12 +52,12 @@ spec:
               backend:
                 {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
                 service:
-                  name: {{ $fullName }}
+                  name: {{ if $.Values.authentication.samlAuthProxy.enabled }}{{ include "xwiki.samlAuthProxy.fullname" $ }}{{ else }}{{ $fullName }}{{ end }}
                   port:
-                    number: {{ $svcPort }}
+                    number: {{ if $.Values.authentication.samlAuthProxy.enabled }}{{ $.Values.authentication.samlAuthProxy.service.port }}{{ else }}{{ $svcPort }}{{ end }}
                 {{- else }}
-                serviceName: {{ $fullName }}
-                servicePort: {{ $svcPort }}
+                serviceName: {{ if $.Values.authentication.samlAuthProxy.enabled }}{{ include "xwiki.samlAuthProxy.fullname" $ }}{{ else }}{{ $fullName }}{{ end }}
+                servicePort: {{ if $.Values.authentication.samlAuthProxy.enabled }}{{ $.Values.authentication.samlAuthProxy.service.port }}{{ else }}{{ $svcPort }}{{ end }}
                 {{- end }}
           {{- end }}
     {{- end }}
