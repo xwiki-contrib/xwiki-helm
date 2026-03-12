@@ -17,8 +17,8 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{/*
 Create a default fully qualified app name for Remote Chrome.
 */}}
-{{- define "chromeHeadless.fullname" -}}
-{{- printf "%s-%s" (include "xwiki.fullname" .) "chromeheadless" | trunc 63 | trimSuffix "-" -}}
+{{- define "chrome.fullname" -}}
+{{- printf "%s-%s" (include "xwiki.fullname" .) "chrome" | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
 {{- define "solr.fullname" -}}
@@ -89,7 +89,7 @@ Istio gateway name to be used
 {{- define "xwiki.istio.gatewayName" -}}
 {{- $gatewayName := .Values.istio.externalGatewayName }}
 {{- if $gatewayName }}
-{{- printf "%s" (tpl $gatewayName $) -}}}
+{{- printf "%s" (tpl $gatewayName $) -}}
 {{- else }}
 {{- printf "%s-gateway" (include "xwiki.fullname" .) }}
 {{- end }}
@@ -124,6 +124,18 @@ Define which image to use on Solr
     {{- printf "%s/%s%s%s" .Values.solr.image.registry .Values.solr.image.repository $separator $selector -}}
 {{- else -}}
     {{- printf "%s%s%s"  .Values.solr.image.repository $separator $selector -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Define which image to use on Chrome
+*/}}
+{{- define "chrome.imageName" -}}
+{{- $registry := .Values.chrome.image.registry | default "docker.io" -}}
+{{- if .Values.chrome.image.digest -}}
+{{- printf "%s/%s@%s" $registry .Values.chrome.image.repository .Values.chrome.image.digest -}}
+{{- else -}}
+{{- printf "%s/%s:%s" $registry .Values.chrome.image.repository .Values.chrome.image.tag -}}
 {{- end -}}
 {{- end }}
 

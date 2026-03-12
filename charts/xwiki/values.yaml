@@ -624,12 +624,28 @@ chrome:
   replicaCount: 1
   image:
     registry: ""
-    repository: zenika/alpine-chrome
+    repository: femtopixel/google-chrome-headless
     tag: "147.0.7719.3"
     digest: ""
     pullPolicy: IfNotPresent
   imagePullSecrets: []
   extraEnvVars: []
+
+  # Default arguments passed to the Chrome container.
+  # If you are using a custom seccomp profile, you can override these to remove `--no-sandbox`
+  # NOTE: When overriding args, ensure you keep `--headless` and `--disable-gpu` otherwise Chrome will crash!
+  args:
+    - "--headless"
+    - "--no-sandbox"
+    - "--disable-setuid-sandbox"
+    - "--disable-dev-shm-usage"
+    - "--disable-gpu"
+    - "--no-zygote"
+    - "--single-process"
+    - "--remote-debugging-address=0.0.0.0"
+    - "--remote-allow-origins=*"
+    - "--user-data-dir=/tmp/chrome-data"
+
   resources: {}
     # limits:
     #   cpu: 1000m
@@ -639,16 +655,12 @@ chrome:
     #   memory: 512Mi
 
   containerSecurityContext:
-    enabled: true
-    runAsUser: 1000
-    runAsNonRoot: true
+    enabled: false
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
+    readOnlyRootFilesystem: false
     capabilities:
       drop:
       - ALL
-    seccompProfile:
-      type: RuntimeDefault
 
   service:
     annotations: {}
@@ -684,6 +696,11 @@ chrome:
                 - 10.0.0.0/8
                 - 172.16.0.0/12
                 - 192.168.0.0/16
+        ports:
+          - protocol: TCP
+            port: 80
+          - protocol: TCP
+            port: 443
 
   podAnnotations: {}
   nodeSelector: {}

@@ -6,10 +6,6 @@ metadata:
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
     app.kubernetes.io/component: chrome
-  {{- if .Values.chrome.podAnnotations }}
-  annotations:
-    {{- toYaml .Values.chrome.podAnnotations | nindent 4 }}
-  {{- end }}
 spec:
   {{- if not .Values.chrome.autoscaling.enabled }}
   replicas: {{ .Values.chrome.replicaCount }}
@@ -23,6 +19,10 @@ spec:
       labels:
         {{- include "xwiki.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: chrome
+      {{- if .Values.chrome.podAnnotations }}
+      annotations:
+        {{- toYaml .Values.chrome.podAnnotations | nindent 8 }}
+      {{- end }}
     spec:
       {{- if .Values.chrome.imagePullSecrets }}
       imagePullSecrets:
@@ -30,25 +30,22 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      securityContext: {}
       containers:
         - name: remote-chrome
-          {{- if .Values.chrome.image.digest }}
-          image: "{{ .Values.chrome.image.registry | default "docker.io" }}/{{ .Values.chrome.image.repository }}@{{ .Values.chrome.image.digest }}"
-          {{- else }}
-          image: "{{ .Values.chrome.image.registry | default "docker.io" }}/{{ .Values.chrome.image.repository }}:{{ .Values.chrome.image.tag }}"
-          {{- end }}
+          image: {{ include "chrome.imageName" . }}
           imagePullPolicy: {{ .Values.chrome.image.pullPolicy }}
           args:
-            - --no-sandbox
-            - --disable-setuid-sandbox
-            - --disable-dev-shm-usage
-            - --remote-debugging-address=0.0.0.0
+            {{- toYaml .Values.chrome.args | nindent 12 }}
             - --remote-debugging-port={{ .Values.chrome.service.port }}
           ports:
             - name: {{ .Values.chrome.service.portName }}
               containerPort: {{ .Values.chrome.service.port }}
               protocol: TCP
+          volumeMounts:
+            - name: tmp-dir
+              mountPath: /tmp
+            - name: dshm
+              mountPath: /dev/shm
           {{- if .Values.chrome.extraEnvVars }}
           env:
             {{- toYaml .Values.chrome.extraEnvVars | nindent 12 }}
@@ -73,4 +70,11 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: tmp-dir
+          emptyDir: {}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 256Mi
 {{- end }}
