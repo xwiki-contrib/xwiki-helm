@@ -1,0 +1,23 @@
+{{- if .Values.chrome.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "chrome.fullname" . }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+    app.kubernetes.io/component: chrome
+  {{- if .Values.chrome.service.annotations }}
+  annotations:
+    {{- toYaml .Values.chrome.service.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.chrome.service.type }}
+  ports:
+    - port: {{ .Values.chrome.service.port }}
+      targetPort: {{ .Values.chrome.service.port }}
+      protocol: TCP
+      name: {{ .Values.chrome.service.portName }}
+  selector:
+    {{- include "xwiki.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: chrome
+{{- end }}

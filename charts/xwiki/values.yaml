@@ -618,6 +618,78 @@ probes:
     failureThreshold: 10
     successThreshold: 1
 
+chrome:
+  # Enable a headless Chrome sidecar/service for PDF export
+  enabled: false
+  replicaCount: 1
+  image:
+    registry: ""
+    repository: zenika/alpine-chrome
+    tag: "147.0.7719.3"
+    digest: ""
+    pullPolicy: IfNotPresent
+  imagePullSecrets: []
+  extraEnvVars: []
+  resources: {}
+    # limits:
+    #   cpu: 1000m
+    #   memory: 2Gi
+    # requests:
+    #   cpu: 100m
+    #   memory: 512Mi
+
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1000
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+      - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
+  service:
+    annotations: {}
+    portName: http
+    type: ClusterIP
+    port: 9222
+
+  # Enable Autoscaling for the remote chrome deployment
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 95
+    targetMemoryUtilizationPercentage: 95
+
+  # Restrict outbound traffic of this sidecar
+  networkPolicy:
+    enabled: true
+    # By default, denies all Egress, and explicitly allows Egress to Internet and Ingress from XWiki
+    # You can override these egress rules here if needed
+    egress:
+      # Allow DNS resolution
+      - ports:
+          - port: 53
+            protocol: UDP
+          - port: 53
+            protocol: TCP
+      # Allow outbound internet traffic, blocking cluster local IPs
+      - to:
+          - ipBlock:
+              cidr: 0.0.0.0/0
+              except:
+                - 10.0.0.0/8
+                - 172.16.0.0/12
+                - 192.168.0.0/16
+
+  podAnnotations: {}
+  nodeSelector: {}
+  affinity: {}
+  tolerations: {}
+
 infinispan:
   enabled: false
   customConfig: ""

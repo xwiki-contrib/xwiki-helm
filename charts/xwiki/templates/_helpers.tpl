@@ -14,6 +14,13 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- include "common.names.fullname" . }}
 {{- end }}
 
+{{/*
+Create a default fully qualified app name for Remote Chrome.
+*/}}
+{{- define "chromeHeadless.fullname" -}}
+{{- printf "%s-%s" (include "xwiki.fullname" .) "chromeheadless" | trunc 63 | trimSuffix "-" -}}
+{{- end }}
+
 {{- define "solr.fullname" -}}
 {{- printf "%s-solr" (include "common.names.fullname" .) }}
 {{- end }}

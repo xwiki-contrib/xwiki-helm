@@ -1,0 +1,76 @@
+{{- if .Values.chrome.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chrome.fullname" . }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+    app.kubernetes.io/component: chrome
+  {{- if .Values.chrome.podAnnotations }}
+  annotations:
+    {{- toYaml .Values.chrome.podAnnotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not .Values.chrome.autoscaling.enabled }}
+  replicas: {{ .Values.chrome.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "xwiki.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: chrome
+  template:
+    metadata:
+      labels:
+        {{- include "xwiki.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: chrome
+    spec:
+      {{- if .Values.chrome.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.chrome.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      securityContext: {}
+      containers:
+        - name: remote-chrome
+          {{- if .Values.chrome.image.digest }}
+          image: "{{ .Values.chrome.image.registry | default "docker.io" }}/{{ .Values.chrome.image.repository }}@{{ .Values.chrome.image.digest }}"
+          {{- else }}
+          image: "{{ .Values.chrome.image.registry | default "docker.io" }}/{{ .Values.chrome.image.repository }}:{{ .Values.chrome.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.chrome.image.pullPolicy }}
+          args:
+            - --no-sandbox
+            - --disable-setuid-sandbox
+            - --disable-dev-shm-usage
+            - --remote-debugging-address=0.0.0.0
+            - --remote-debugging-port={{ .Values.chrome.service.port }}
+          ports:
+            - name: {{ .Values.chrome.service.portName }}
+              containerPort: {{ .Values.chrome.service.port }}
+              protocol: TCP
+          {{- if .Values.chrome.extraEnvVars }}
+          env:
+            {{- toYaml .Values.chrome.extraEnvVars | nindent 12 }}
+          {{- end }}
+          {{- if .Values.chrome.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.chrome.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.chrome.resources }}
+          resources:
+            {{- toYaml .Values.chrome.resources | nindent 12 }}
+          {{- end }}
+      {{- with .Values.chrome.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.chrome.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.chrome.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

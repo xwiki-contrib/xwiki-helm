@@ -1,0 +1,30 @@
+{{- if and .Values.chrome.enabled .Values.chrome.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "chrome.fullname" . }}
+  labels:
+    {{- include "xwiki.labels" . | nindent 4 }}
+    app.kubernetes.io/component: chrome
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "xwiki.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: chrome
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow incoming traffic only from xwiki pods
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "xwiki.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.chrome.service.port }}
+  egress:
+    {{- with .Values.chrome.networkPolicy.egress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}
