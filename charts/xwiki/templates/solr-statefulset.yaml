@@ -39,6 +39,7 @@ spec:
           volumeMounts:
             - name: xwiki-solr-data
               mountPath: /tmp/cores
+              subPath: data
           securityContext:
             runAsGroup: 1001
             runAsUser: 1001
