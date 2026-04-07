@@ -331,8 +331,13 @@ Init Containers
   securityContext:
     {{- omit .Values.initContainers.solr.containerSecurityContext "enabled" | toYaml | nindent 4 }}
   {{- end }}
+  {{- if .Values.initContainers.solr.resources }}
+  resources:
+    {{- toYaml .Values.initContainers.solr.resources | nindent 4 }}
+  {{- else }}
   resources:
     {{- toYaml .Values.resources | nindent 4 }}
+  {{- end }}
   env:
     - name: SOLR_BASEURL
       valueFrom:

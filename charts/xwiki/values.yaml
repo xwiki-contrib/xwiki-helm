@@ -526,6 +526,9 @@ initContainers:
   solr:
     enabled: false
     image: ""
+    # Resource requests/limits for the wait-for-solr init container.
+    # If not set, inherits from the main XWiki container resources.
+    resources: {}
     containerSecurityContext:
       enabled: false
       runAsUser: 0
