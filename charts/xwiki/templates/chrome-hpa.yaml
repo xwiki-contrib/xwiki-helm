@@ -4,8 +4,7 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "chrome.fullname" . }}
   labels:
-    {{- include "xwiki.labels" . | nindent 4 }}
-    app.kubernetes.io/component: chrome
+    {{- include "chrome.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

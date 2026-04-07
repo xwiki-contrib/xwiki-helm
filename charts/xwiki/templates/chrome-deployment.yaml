@@ -4,21 +4,18 @@ kind: Deployment
 metadata:
   name: {{ include "chrome.fullname" . }}
   labels:
-    {{- include "xwiki.labels" . | nindent 4 }}
-    app.kubernetes.io/component: chrome
+    {{- include "chrome.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.chrome.autoscaling.enabled }}
   replicas: {{ .Values.chrome.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "xwiki.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: chrome
+      {{- include "chrome.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "xwiki.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: chrome
+        {{- include "chrome.selectorLabels" . | nindent 8 }}
       {{- if .Values.chrome.podAnnotations }}
       annotations:
         {{- toYaml .Values.chrome.podAnnotations | nindent 8 }}
@@ -35,12 +32,26 @@ spec:
           image: {{ include "chrome.imageName" . }}
           imagePullPolicy: {{ .Values.chrome.image.pullPolicy }}
           args:
+            {{- if .Values.chrome.nginx.enabled }}
+            - "--remote-debugging-address=127.0.0.1"
+            - "--remote-debugging-port={{ .Values.chrome.internalPort }}"
+            {{- range .Values.chrome.args }}
+            {{- if not (or (hasPrefix "--remote-debugging-address" .) (hasPrefix "--remote-debugging-port" .)) }}
+            - {{ . | quote }}
+            {{- end }}
+            {{- end }}
+            {{- else }}
             {{- toYaml .Values.chrome.args | nindent 12 }}
             - --remote-debugging-port={{ .Values.chrome.service.port }}
+            {{- end }}
           ports:
+            {{- if .Values.chrome.nginx.enabled }}
+            - name: chrome-internal
+              containerPort: {{ .Values.chrome.internalPort }}
+            {{- else }}
             - name: {{ .Values.chrome.service.portName }}
               containerPort: {{ .Values.chrome.service.port }}
-              protocol: TCP
+            {{- end }}
           volumeMounts:
             - name: tmp-dir
               mountPath: /tmp
@@ -58,6 +69,23 @@ spec:
           resources:
             {{- toYaml .Values.chrome.resources | nindent 12 }}
           {{- end }}
+        {{- if .Values.chrome.nginx.enabled }}
+        - name: nginx
+          image: "{{ .Values.chrome.nginx.image.registry }}/{{ .Values.chrome.nginx.image.repository }}:{{ .Values.chrome.nginx.image.tag }}"
+          imagePullPolicy: {{ .Values.chrome.nginx.image.pullPolicy }}
+          ports:
+            - name: {{ .Values.chrome.service.portName }}
+              containerPort: {{ .Values.chrome.service.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+          {{- if .Values.chrome.nginx.resources }}
+          resources:
+            {{- toYaml .Values.chrome.nginx.resources | nindent 12 }}
+          {{- end }}
+        {{- end }}
       {{- with .Values.chrome.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -77,4 +105,9 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 256Mi
+        {{- if .Values.chrome.nginx.enabled }}
+        - name: nginx-config
+          configMap:
+            name: {{ include "chrome.fullname" . }}-nginx
+        {{- end }}
 {{- end }}

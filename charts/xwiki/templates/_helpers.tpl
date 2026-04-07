@@ -21,6 +21,26 @@ Create a default fully qualified app name for Remote Chrome.
 {{- printf "%s-%s" (include "xwiki.fullname" .) "chrome" | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 
+{{/*
+Chrome Common labels
+*/}}
+{{- define "chrome.labels" -}}
+helm.sh/chart: {{ include "common.names.chart" . }}
+{{ include "chrome.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Chrome Selector labels
+*/}}
+{{- define "chrome.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "common.names.name" . }}-chrome
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
 {{- define "solr.fullname" -}}
 {{- printf "%s-solr" (include "common.names.fullname" .) }}
 {{- end }}

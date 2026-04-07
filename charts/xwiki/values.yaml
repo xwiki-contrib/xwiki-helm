@@ -630,22 +630,30 @@ chrome:
     pullPolicy: IfNotPresent
   imagePullSecrets: []
   extraEnvVars: []
-
   # Default arguments passed to the Chrome container.
   # If you are using a custom seccomp profile, you can override these to remove `--no-sandbox`
-  # NOTE: When overriding args, ensure you keep `--headless` and `--disable-gpu` otherwise Chrome will crash!
+  # NOTE: --single-process and --no-zygote are intentionally omitted: they are deprecated since
+  # Chrome 112 and cause Chrome to crash silently, preventing the remote debugging port from binding.
   args:
     - "--headless"
+    - "--hide-scrollbars"
     - "--no-sandbox"
     - "--disable-setuid-sandbox"
     - "--disable-dev-shm-usage"
     - "--disable-gpu"
-    - "--no-zygote"
-    - "--single-process"
     - "--remote-debugging-address=0.0.0.0"
     - "--remote-allow-origins=*"
     - "--user-data-dir=/tmp/chrome-data"
-
+    - "--disable-background-networking"
+    - "--disable-client-side-phishing-detection"
+    - "--disable-default-apps"
+    - "--disable-extensions"
+    - "--disable-sync"
+    - "--disable-translate"
+    - "--disable-notifications"
+    - "--disable-component-update"
+    - "--no-first-run"
+    - "--metrics-recording-only"
   resources: {}
     # limits:
     #   cpu: 1000m
@@ -653,21 +661,41 @@ chrome:
     # requests:
     #   cpu: 100m
     #   memory: 512Mi
-
   containerSecurityContext:
     enabled: false
     allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: false
     capabilities:
-      drop:
-      - ALL
-
+      add:
+      - SYS_ADMIN
+      - SYS_RESOURCE 
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
   service:
     annotations: {}
     portName: http
     type: ClusterIP
     port: 9222
-
+    # When haproxy.enabled, the Service uses ClientIP session affinity so that
+    # all requests from the same client (XWiki pod) reach the same Chrome pod.
+    # This value controls the sticky session timeout in seconds (default: 3h).
+    sessionAffinityTimeoutSeconds: 10800
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: ""
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chrome-tls
+    #    hosts:
+    #      - chrome.local
   # Enable Autoscaling for the remote chrome deployment
   autoscaling:
     enabled: false
@@ -675,11 +703,15 @@ chrome:
     maxReplicas: 3
     targetCPUUtilizationPercentage: 95
     targetMemoryUtilizationPercentage: 95
-
-  # Restrict outbound traffic of this sidecar
+  # Restrict network traffic of this sidecar
   networkPolicy:
-    enabled: true
-    # By default, denies all Egress, and explicitly allows Egress to Internet and Ingress from XWiki
+    enabled: false
+    # By default, explicitly allows Ingress from XWiki and Egress to Internet
+    # You can add custom ingress rules here (e.g. specific IP blocks)
+    ingress: []
+      # - from:
+      #   - ipBlock:
+      #       cidr: 10.0.0.0/8
     # You can override these egress rules here if needed
     egress:
       # Allow DNS resolution
@@ -701,7 +733,29 @@ chrome:
             port: 80
           - protocol: TCP
             port: 443
-
+  # Internal port Chrome listens on when the nginx sidecar is enabled.
+  # nginx will accept traffic on chrome.service.port and proxy it to this port on localhost.
+  internalPort: 9223
+  # nginx sidecar acting as a reverse proxy in front of Chrome.
+  # When enabled, Chrome binds only on 127.0.0.1:internalPort and nginx accepts
+  # external connections on chrome.service.port, enforcing a connection limit and
+  # rewriting webSocketDebuggerUrl responses so XWiki can reach the proxy by service name.
+  nginx:
+    enabled: true
+    image:
+      registry: docker.io
+      repository: nginx
+      tag: "1.27-alpine"
+      pullPolicy: IfNotPresent
+    # Maximum number of simultaneous connections nginx will accept.
+    maxConnections: 5
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 64Mi
+      # requests:
+      #   cpu: 10m
+      #   memory: 32Mi
   podAnnotations: {}
   nodeSelector: {}
   affinity: {}
