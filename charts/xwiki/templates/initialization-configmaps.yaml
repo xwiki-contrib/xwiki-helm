@@ -144,8 +144,6 @@ data:
         <FRAG2 frag_size="60K"  />
         <!--RSVP resend_interval="2000" timeout="10000"/-->
         <pbcast.STATE_TRANSFER/>
-        <CENTRAL_LOCK />
-        <COUNTER/>
     </config>
   {{- end }}
 
