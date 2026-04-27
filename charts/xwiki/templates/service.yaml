@@ -6,10 +6,10 @@ metadata:
     {{- include "xwiki.labels" . | nindent 4 }}
   annotations:
     {{- if .Values.service.annotations }}
-    {{ .Values.service.annotations | toYaml | indent 4 }}
+    {{- toYaml .Values.service.annotations | nindent 4 }}
     {{- end }}
     {{- if .Values.commonAnnotations }}
-    {{ .Values.commonAnnotations | toYaml | indent 4 }}
+    {{- toYaml .Values.commonAnnotations | nindent 4 }}
     {{- end }}
 spec:
   type: {{ .Values.service.type }}
