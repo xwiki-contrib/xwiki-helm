@@ -187,6 +187,29 @@ PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
 {{- end }}
 
 {{/*
+Volume mounts used by the main XWiki container. Reused by extra init
+containers so they see the same data/config/entrypoint volumes (including
+any user-defined extraVolumeMounts).
+*/}}
+{{- define "xwiki.volumeMounts" -}}
+- name: xwiki-data
+  mountPath: /usr/local/xwiki/data
+- name: configmaps
+  mountPath: /configmaps
+{{- if and .Values.propertiesSecret.name .Values.propertiesSecret.key }}
+- name: secretproperties
+  mountPath: /secretproperties
+  readOnly: true
+{{- end }}
+- name: entrypoint
+  mountPath: /entrypoint
+  readOnly: true
+{{- with .Values.extraVolumeMounts }}
+{{ toYaml . }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Init Containers for secrets
 */}}
 {{- define "xwiki.initContainersSecrets" -}}
@@ -359,8 +382,8 @@ Extra user-defined init containers.
   {{- if $spec.securityContext }}
   securityContext:
     {{- toYaml $spec.securityContext | nindent 4 }}
-  {{- else if .Values.securityContext.enabled }}
-      securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 4 }}
+  {{- else if $.Values.securityContext.enabled }}
+      securityContext: {{- omit $.Values.securityContext "enabled" | toYaml | nindent 4 }}
   {{- end }}
   {{- if $spec.script }}
   command:
