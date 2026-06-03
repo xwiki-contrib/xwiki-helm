@@ -346,3 +346,65 @@ Init Containers
           key: SOLR_BASEURL
   {{- end }}
 {{- end }}
+
+{{/*
+Extra user-defined init containers.
+*/}}
+{{- define "xwiki.extraInitContainers" -}}
+{{- range $name, $spec := .Values.extraInitContainers }}
+{{- if $spec.enabled }}
+- name: {{ $name }}
+  image: {{ $spec.image | default (include "xwiki.imageName" $) | quote }}
+  imagePullPolicy: {{ $spec.imagePullPolicy | default $.Values.image.pullPolicy }}
+  {{- if $spec.securityContext }}
+  securityContext:
+    {{- toYaml $spec.securityContext | nindent 4 }}
+  {{- else if .Values.securityContext.enabled }}
+      securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if $spec.script }}
+  command:
+    - /bin/sh
+    - -ec
+  args:
+    - |
+      {{- $spec.script | nindent 6 }}
+  {{- else }}
+  {{- with $spec.command }}
+  command:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $spec.args }}
+  args:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if or $spec.env $spec.includeDatabaseEnv }}
+  env:
+    {{- if $spec.includeDatabaseEnv }}
+    {{- include "xwiki.database.env" $ | nindent 4 }}
+    {{- end }}
+    {{- with $spec.env }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- with $spec.envFrom }}
+  envFrom:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if $spec.resources }}
+  resources:
+    {{- toYaml $spec.resources | nindent 4 }}
+  {{- else }}
+  resources:
+    {{- toYaml $.Values.resources | nindent 4 }}
+  {{- end }}
+  volumeMounts:
+    {{- if $spec.volumeMounts }}
+    {{- toYaml $spec.volumeMounts | nindent 4 }}
+    {{- else }}
+    {{- include "xwiki.volumeMounts" $ | nindent 4 }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end -}}

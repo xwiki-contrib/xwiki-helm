@@ -535,6 +535,9 @@ initContainers:
       seccompProfile:
         type: "RuntimeDefault"
 
+# Additional user-defined init containers for the XWiki pod.
+extraInitContainers: {}
+
 glowroot:
   enabled: false
   version: 0.14.0

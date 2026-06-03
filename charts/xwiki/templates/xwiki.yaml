@@ -38,6 +38,7 @@ spec:
       serviceAccountName: {{ $fullName }}-sa
       initContainers:
         {{- include "xwiki.initContainersSecrets" . | nindent 8 }}
+        {{- include "xwiki.extraInitContainers" . | nindent 8 }}
       {{- if or .Values.initContainers.database.enabled .Values.initContainers.solr.enabled (and .Values.volumePermissions.enabled .Values.persistence.enabled) }}
         {{- include "xwiki.initContainers" . | nindent 8 }}
       {{- end }}
@@ -125,21 +126,7 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - name: xwiki-data
-              mountPath: /usr/local/xwiki/data
-            - name: configmaps
-              mountPath: /configmaps
-            {{- if and .Values.propertiesSecret.name .Values.propertiesSecret.key }}
-            - name: secretproperties
-              mountPath: /secretproperties
-              readOnly: true
-            {{- end }}
-            - name: entrypoint
-              mountPath: /entrypoint
-              readOnly: true
-            {{- if .Values.extraVolumeMounts }}
-            {{- .Values.extraVolumeMounts | toYaml | nindent 12 }}
-            {{- end }}
+            {{- include "xwiki.volumeMounts" . | nindent 12 }}
     {{- if .Values.securityContext.enabled }}
       securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 8 }}
     {{- end }}
