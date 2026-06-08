@@ -534,6 +534,19 @@ initContainers:
       runAsUser: 0
       seccompProfile:
         type: "RuntimeDefault"
+  # Copy WEB-INF config files from the image into a writable emptyDir volume and
+  # mount them over the read-only paths. Use when running with readOnlyRootFilesystem
+  # or other environments where the application server layer cannot be modified.
+  supportReadonly:
+    enabled: false
+    contextPath: ROOT
+    as: tomcat
+    containerSecurityContext:
+      enabled: false
+      runAsUser: 0
+      seccompProfile:
+        type: "RuntimeDefault"
+    resources: {}
 
 # Additional user-defined init containers for the XWiki pod.
 extraInitContainers: {}
