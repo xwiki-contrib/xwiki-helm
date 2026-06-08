@@ -37,6 +37,7 @@ spec:
     spec:
       serviceAccountName: {{ $fullName }}-sa
       initContainers:
+        {{- include "xwiki.initSupportReadonly" . | nindent 8 }}
         {{- include "xwiki.initContainersSecrets" . | nindent 8 }}
         {{- include "xwiki.extraInitContainers" . | nindent 8 }}
       {{- if or .Values.initContainers.database.enabled .Values.initContainers.solr.enabled (and .Values.volumePermissions.enabled .Values.persistence.enabled) }}
@@ -127,6 +128,18 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             {{- include "xwiki.volumeMounts" . | nindent 12 }}
+            {{- if .Values.containerSecurityContext.readOnlyRootFilesystem }}
+            - name: tomcat-logs
+              mountPath: /usr/local/tomcat/logs
+            - name: tomcat-work
+              mountPath: /usr/local/tomcat/work
+            - name: tomcat-temp
+              mountPath: /usr/local/tomcat/temp
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /.cache
+            {{- end }}
     {{- if .Values.securityContext.enabled }}
       securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 8 }}
     {{- end }}
@@ -171,6 +184,22 @@ spec:
           emptyDir:
             sizeLimit: 1Mi
             medium: Memory
+        {{- if .Values.initContainers.supportReadonly.enabled }}
+        - name: webinf-configs
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.containerSecurityContext.readOnlyRootFilesystem }}
+        - name: tomcat-logs
+          emptyDir: {}
+        - name: tomcat-work
+          emptyDir: {}
+        - name: tomcat-temp
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+        {{- end }}
         - name: xwiki-data
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
           persistentVolumeClaim:

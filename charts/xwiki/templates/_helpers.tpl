@@ -187,6 +187,51 @@ PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
 {{- end }}
 
 {{/*
+Application server base path (tomcat or jetty).
+*/}}
+{{- define "xwiki.asPath" -}}
+{{- if eq .Values.initContainers.supportReadonly.as "jetty" -}}
+/var/lib/jetty
+{{- else -}}
+/usr/local/tomcat
+{{- end -}}
+{{- end -}}
+
+{{/*
+WEB-INF base path used for writable config volume mounts.
+*/}}
+{{- define "xwiki.webInfBasePath" -}}
+{{- printf "%s/webapps/%s/WEB-INF" (include "xwiki.asPath" .) .Values.initContainers.supportReadonly.contextPath -}}
+{{- end -}}
+
+{{/*
+Volume mounts for writable WEB-INF config files copied by the supportReadonly init container.
+*/}}
+{{- define "xwiki.webInfConfigVolumeMounts" -}}
+{{- if .Values.initContainers.supportReadonly.enabled }}
+{{- $base := include "xwiki.webInfBasePath" . }}
+- name: webinf-configs
+  mountPath: {{ $base }}/xwiki.cfg
+  subPath: xwiki.cfg
+- name: webinf-configs
+  mountPath: {{ $base }}/xwiki.properties
+  subPath: xwiki.properties
+- name: webinf-configs
+  mountPath: {{ $base }}/hibernate.cfg.xml
+  subPath: hibernate.cfg.xml
+- name: webinf-configs
+  mountPath: {{ $base }}/web.xml
+  subPath: web.xml
+- name: webinf-configs
+  mountPath: {{ $base }}/classes/logback.xml
+  subPath: classes/logback.xml
+- name: webinf-configs
+  mountPath: {{ $base }}/observation/remote/jgroups
+  subPath: observation/remote/jgroups
+{{- end }}
+{{- end -}}
+
+{{/*
 Volume mounts used by the main XWiki container. Reused by extra init
 containers so they see the same data/config/entrypoint volumes (including
 any user-defined extraVolumeMounts).
@@ -204,9 +249,19 @@ any user-defined extraVolumeMounts).
 - name: entrypoint
   mountPath: /entrypoint
   readOnly: true
+{{ include "xwiki.webInfConfigVolumeMounts" . }}
 {{- with .Values.extraVolumeMounts }}
 {{ toYaml . }}
 {{- end }}
+{{- end -}}
+
+{{/*
+Log markers for init container execution start/end.
+Use at the beginning of init container shell scripts.
+*/}}
+{{- define "xwiki.initContainer.execLog" -}}
+echo "Starting init container: {{ . }}"
+trap 'echo "Finished init container: {{ . }}"' EXIT
 {{- end -}}
 
 {{/*
@@ -220,6 +275,7 @@ Init Containers for secrets
   command: ["/bin/sh", "-c"]
   args:
     - |
+        {{ include "xwiki.initContainer.execLog" "xwiki-secrets" | nindent 8 }}
         cp /secrets/entrypoint /entrypoint/start.sh
         chmod 0550 /entrypoint/start.sh
       {{- range $key, $value := .Values.javaOptsSecrets }}
@@ -282,6 +338,56 @@ Init Containers for secrets
 {{- end }}
 
 {{/*
+Init container that seeds writable WEB-INF config files from the image layer.
+*/}}
+{{- define "xwiki.initSupportReadonly" -}}
+{{- if .Values.initContainers.supportReadonly.enabled }}
+- name: xwiki-webinf-configs
+  image: {{ include "xwiki.imageName" . }}
+  imagePullPolicy: {{ .Values.image.pullPolicy }}
+  command: ["/bin/bash", "-ec"]
+  args:
+    - |
+      {{ include "xwiki.initContainer.execLog" "xwiki-webinf-configs" | nindent 6 }}
+      WEBINF="{{ include "xwiki.asPath" . | quote }}/webapps/{{ .Values.initContainers.supportReadonly.contextPath }}/WEB-INF"
+      DEST="/webinf-configs"
+
+      mkdir -p "${DEST}/classes" "${DEST}/observation/remote/jgroups"
+
+      cp "${WEBINF}/xwiki.cfg"          "${DEST}/xwiki.cfg"
+      cp "${WEBINF}/xwiki.properties"   "${DEST}/xwiki.properties"
+      cp "${WEBINF}/hibernate.cfg.xml"  "${DEST}/hibernate.cfg.xml"
+      cp "${WEBINF}/web.xml"            "${DEST}/web.xml"
+
+      if [ -f "${WEBINF}/classes/logback.xml" ]; then
+        cp "${WEBINF}/classes/logback.xml" "${DEST}/classes/logback.xml"
+      fi
+
+      if [ -d "${WEBINF}/observation/remote/jgroups" ]; then
+        cp -a "${WEBINF}/observation/remote/jgroups/." "${DEST}/observation/remote/jgroups/"
+      fi
+      echo "Listing all loaded configs from WEB-INF directory"
+      ls ${DEST}/*
+  {{- if .Values.initContainers.supportReadonly.containerSecurityContext.enabled }}
+  securityContext:
+    {{- omit .Values.initContainers.supportReadonly.containerSecurityContext "enabled" | toYaml | nindent 4 }}
+  {{- else if .Values.volumePermissions.containerSecurityContext.enabled }}
+  securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if .Values.initContainers.supportReadonly.resources }}
+  resources:
+    {{- toYaml .Values.initContainers.supportReadonly.resources | nindent 4 }}
+  {{- else }}
+  resources:
+    {{- toYaml .Values.resources | nindent 4 }}
+  {{- end }}
+  volumeMounts:
+    - name: webinf-configs
+      mountPath: /webinf-configs
+{{- end }}
+{{- end }}
+
+{{/*
 Init Containers
 */}}
 {{- define "xwiki.initContainers" -}}
@@ -292,7 +398,10 @@ Init Containers
   command:
     - /bin/sh
     - -ec
-    - chown -R "{{ .Values.containerSecurityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }}" /usr/local/xwiki/data
+  args:
+    - |
+      {{ include "xwiki.initContainer.execLog" "xwiki-data-permissions" | nindent 6 }}
+      chown -R "{{ .Values.containerSecurityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }}" /usr/local/xwiki/data
   securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 4 }}
   resources:
     {{- toYaml .Values.resources | nindent 4 }}
@@ -391,6 +500,7 @@ Extra user-defined init containers.
     - -ec
   args:
     - |
+{{ include "xwiki.initContainer.execLog" $name | nindent 6 }}
       {{- $spec.script | nindent 6 }}
   {{- else }}
   {{- with $spec.command }}
