@@ -421,21 +421,30 @@ Init Containers
     {{- include "xwiki.database.env" . | nindent 4 }}
     - name: CHECK_DB
       value: {{ include "xwiki.initContainer.database.command" . | trim | quote }}
+    - name: DB_CHECK_RETRIES
+      value: {{ .Values.initContainers.database.retries | default 30 | quote }}
+    - name: DB_CHECK_INTERVAL
+      value: {{ .Values.initContainers.database.retryInterval | default 1 | quote }}
+    - name: DB_CHECK_TIMEOUT
+      value: {{ .Values.initContainers.database.timeout | default 5 | quote }}
   image: {{ include "xwiki.initContainer.database.image" . | trim | quote }}
   command:
     - /bin/sh
-    - -ec
+    - -c
   args:
     - |
-      for i in $(seq 1 30); do
-        if eval $CHECK_DB; then
+      echo "Starting init container: wait-for-db"
+      for i in $(seq 1 "${DB_CHECK_RETRIES:-30}"); do
+        if timeout "${DB_CHECK_TIMEOUT:-5}" sh -c "$CHECK_DB"; then
           echo "Database is ready!"
+          echo "Finished init container: wait-for-db"
           exit 0
         fi
-        echo "Waiting for database..."
-        sleep 1
+        echo "Waiting for database... (attempt $i)"
+        sleep "${DB_CHECK_INTERVAL:-1}"
       done
       echo "Database is not ready!"
+      echo "Finished init container: wait-for-db"
       exit 1
   {{- end }}
   {{- if .Values.initContainers.solr.enabled }}
@@ -447,17 +456,20 @@ Init Containers
   {{- end }}
   command:
     - /bin/sh
-    - -ec
+    - -c
     - |
+      echo "Starting init container: wait-for-solr"
       for i in $(seq 1 30); do
-        if curl --silent --connect-timeout "15000" $SOLR_BASEURL/admin/info/system | grep '\"status\":0'; then
+        if curl --silent --connect-timeout "15000" "$SOLR_BASEURL/admin/info/system" | grep '"status":0'; then
           echo "Solr is ready!"
+          echo "Finished init container: wait-for-solr"
           exit 0
         fi
         echo "Waiting for Solr..."
         sleep 1
       done
       echo "Solr is not ready!"
+      echo "Finished init container: wait-for-solr"
       exit 1
   {{- if .Values.initContainers.solr.containerSecurityContext.enabled }}
   securityContext:
@@ -500,7 +512,7 @@ Extra user-defined init containers.
     - -ec
   args:
     - |
-{{ include "xwiki.initContainer.execLog" $name | nindent 6 }}
+      {{ include "xwiki.initContainer.execLog" $name | nindent 6 }}
       {{- $spec.script | nindent 6 }}
   {{- else }}
   {{- with $spec.command }}

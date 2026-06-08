@@ -514,6 +514,9 @@ propertiesSecret:
 initContainers:
   database:
     enabled: false
+    retries: 30
+    retryInterval: 1
+    timeout: 5
     # Custom command to be executed in the init container
     # command: ''
     # To set when using externalDB
