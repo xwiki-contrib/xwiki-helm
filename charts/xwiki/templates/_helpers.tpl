@@ -200,34 +200,46 @@ Application server base path (tomcat or jetty).
 {{/*
 WEB-INF base path used for writable config volume mounts.
 */}}
-{{- define "xwiki.webInfBasePath" -}}
+{{- define "xwiki.changeableConfigsBasePath" -}}
 {{- printf "%s/webapps/%s/WEB-INF" (include "xwiki.asPath" .) .Values.initContainers.supportReadonly.contextPath -}}
 {{- end -}}
 
 {{/*
-Volume mounts for writable WEB-INF config files copied by the supportReadonly init container.
+Whether server.xml is seeded and mounted by the supportReadonly init container.
 */}}
-{{- define "xwiki.webInfConfigVolumeMounts" -}}
+{{- define "xwiki.customTomcatServer.supportReadonly" -}}
+{{- if and .Values.initContainers.supportReadonly.enabled .Values.customTomcatServer.enabled (ne .Values.initContainers.supportReadonly.as "jetty") -}}true{{- end -}}
+{{- end -}}
+
+{{/*
+Volume mounts for writable config files copied by the supportReadonly init container.
+*/}}
+{{- define "xwiki.changeableConfigsVolumeMounts" -}}
 {{- if .Values.initContainers.supportReadonly.enabled }}
-{{- $base := include "xwiki.webInfBasePath" . }}
-- name: webinf-configs
+{{- $base := include "xwiki.changeableConfigsBasePath" . }}
+- name: changeable-configs
   mountPath: {{ $base }}/xwiki.cfg
   subPath: xwiki.cfg
-- name: webinf-configs
+- name: changeable-configs
   mountPath: {{ $base }}/xwiki.properties
   subPath: xwiki.properties
-- name: webinf-configs
+- name: changeable-configs
   mountPath: {{ $base }}/hibernate.cfg.xml
   subPath: hibernate.cfg.xml
-- name: webinf-configs
+- name: changeable-configs
   mountPath: {{ $base }}/web.xml
   subPath: web.xml
-- name: webinf-configs
+- name: changeable-configs
   mountPath: {{ $base }}/classes/logback.xml
   subPath: classes/logback.xml
-- name: webinf-configs
+- name: changeable-configs
   mountPath: {{ $base }}/observation/remote/jgroups
   subPath: observation/remote/jgroups
+{{- if eq (include "xwiki.customTomcatServer.supportReadonly" .) "true" }}
+- name: changeable-configs
+  mountPath: {{ include "xwiki.asPath" . }}/conf/server.xml
+  subPath: conf/server.xml
+{{- end }}
 {{- end }}
 {{- end -}}
 
@@ -249,7 +261,7 @@ any user-defined extraVolumeMounts).
 - name: entrypoint
   mountPath: /entrypoint
   readOnly: true
-{{ include "xwiki.webInfConfigVolumeMounts" . }}
+{{ include "xwiki.changeableConfigsVolumeMounts" . }}
 {{- with .Values.extraVolumeMounts }}
 {{ toYaml . }}
 {{- end }}
@@ -338,19 +350,19 @@ Init Containers for secrets
 {{- end }}
 
 {{/*
-Init container that seeds writable WEB-INF config files from the image layer.
+Init container that seeds writable config files from the image layer.
 */}}
 {{- define "xwiki.initSupportReadonly" -}}
 {{- if .Values.initContainers.supportReadonly.enabled }}
-- name: xwiki-webinf-configs
+- name: xwiki-changeable-configs
   image: {{ include "xwiki.imageName" . }}
   imagePullPolicy: {{ .Values.image.pullPolicy }}
   command: ["/bin/bash", "-ec"]
   args:
     - |
-      {{ include "xwiki.initContainer.execLog" "xwiki-webinf-configs" | nindent 6 }}
+      {{ include "xwiki.initContainer.execLog" "xwiki-changeable-configs" | nindent 6 }}
       WEBINF="{{ include "xwiki.asPath" . | quote }}/webapps/{{ .Values.initContainers.supportReadonly.contextPath }}/WEB-INF"
-      DEST="/webinf-configs"
+      DEST="/changeable-configs"
 
       mkdir -p "${DEST}/classes" "${DEST}/observation/remote/jgroups"
 
@@ -366,7 +378,12 @@ Init container that seeds writable WEB-INF config files from the image layer.
       if [ -d "${WEBINF}/observation/remote/jgroups" ]; then
         cp -a "${WEBINF}/observation/remote/jgroups/." "${DEST}/observation/remote/jgroups/"
       fi
-      echo "Listing all loaded configs from WEB-INF directory"
+      {{- if eq (include "xwiki.customTomcatServer.supportReadonly" .) "true" }}
+      AS_PATH="{{ include "xwiki.asPath" . }}"
+      mkdir -p "${DEST}/conf"
+      cp "${AS_PATH}/conf/server.xml" "${DEST}/conf/server.xml"
+      {{- end }}
+      echo "Listing all loaded configs from changeable-configs directory"
       ls ${DEST}/*
   {{- if .Values.initContainers.supportReadonly.containerSecurityContext.enabled }}
   securityContext:
@@ -382,8 +399,8 @@ Init container that seeds writable WEB-INF config files from the image layer.
     {{- toYaml .Values.resources | nindent 4 }}
   {{- end }}
   volumeMounts:
-    - name: webinf-configs
-      mountPath: /webinf-configs
+    - name: changeable-configs
+      mountPath: /changeable-configs
 {{- end }}
 {{- end }}
 
