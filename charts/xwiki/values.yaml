@@ -554,6 +554,32 @@ initContainers:
 # Additional user-defined init containers for the XWiki pod.
 extraInitContainers: {}
 
+# Tomcat server.xml customization (Tomcat images only).
+customTomcatServer:
+  enabled: false
+  connector:
+    maxParameterCount: 10000
+    maxHttpHeaderSize: 8192
+    compression: "off"
+    compressionMinSize: "2048"
+    compressibleMimeType: "text/html,text/xml,text/css,text/javascript,application/json"
+  #valvesEngine:
+  #  org.apache.catalina.valves.RemoteIpValve:
+  #    internalProxies: "*"
+  #    remoteIpHeader: "x-forwarded-for"
+  #    requestAttributesEnabled: "true"
+  #    protocolHeader: "x-forwarded-proto"
+  #    protocolHeaderHttpsValue: "https"
+  #valvesHost:
+  #  org.apache.catalina.valves.ErrorReportValve:
+  #    showReport: "false"
+  #    showServerInfo: "false"
+  #  org.apache.catalina.valves.AccessLogValve:
+  #    directory: "logs"
+  #    prefix: "access"
+  #    suffix: ".log"
+  #    pattern: '%a host=%{Host}i fproto=%{X-Forwarded-Proto}i fhost=%{X-Forwarded-Host}i ffor=%{X-Forwarded-For}i &quot;%r&quot; %s'
+
 glowroot:
   enabled: false
   version: 0.14.0

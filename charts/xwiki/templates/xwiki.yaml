@@ -185,7 +185,7 @@ spec:
             sizeLimit: 1Mi
             medium: Memory
         {{- if .Values.initContainers.supportReadonly.enabled }}
-        - name: webinf-configs
+        - name: changeable-configs
           emptyDir: {}
         {{- end }}
         {{- if .Values.containerSecurityContext.readOnlyRootFilesystem }}
