@@ -636,34 +636,32 @@ probes:
   startup:
     enabled: true
     httpGet:
-      enabled: false
-      path: /
-    initialDelaySeconds: 120
-    timeoutSeconds: 60
-    periodSeconds: 30
-    failureThreshold: 5
+      enabled: true
+      path: /rest
+    initialDelaySeconds: 20
+    timeoutSeconds: 5
+    periodSeconds: 5
+    failureThreshold: 120
     successThreshold: 1
   liveness:
     enabled: true
     httpGet:
       enabled: true
       path: /rest
-    initialDelaySeconds: 30
-    timeoutSeconds: 3
-    periodSeconds: 30
-    # 5 minutes
-    failureThreshold: 10
+    initialDelaySeconds: 0
+    timeoutSeconds: 5
+    periodSeconds: 15
+    failureThreshold: 6
     successThreshold: 1
   readiness:
     enabled: true
     httpGet:
       enabled: true
       path: /rest/wikis/xwiki/spaces
-    initialDelaySeconds: 30
-    timeoutSeconds: 3
-    periodSeconds: 30
-    # 5 minutes
-    failureThreshold: 10
+    initialDelaySeconds: 0
+    timeoutSeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
     successThreshold: 1
 
 infinispan:
