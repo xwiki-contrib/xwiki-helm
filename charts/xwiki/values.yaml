@@ -563,14 +563,14 @@ customTomcatServer:
     compression: "off"
     compressionMinSize: "2048"
     compressibleMimeType: "text/html,text/xml,text/css,text/javascript,application/json"
-  #valvesEngine:
+  # valvesEngine:
   #  org.apache.catalina.valves.RemoteIpValve:
   #    internalProxies: "*"
   #    remoteIpHeader: "x-forwarded-for"
   #    requestAttributesEnabled: "true"
   #    protocolHeader: "x-forwarded-proto"
   #    protocolHeaderHttpsValue: "https"
-  #valvesHost:
+  # valvesHost:
   #  org.apache.catalina.valves.ErrorReportValve:
   #    showReport: "false"
   #    showServerInfo: "false"
