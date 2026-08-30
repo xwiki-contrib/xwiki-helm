@@ -41,8 +41,8 @@ spec:
               mountPath: /tmp/cores
               subPath: data
           securityContext:
-            runAsGroup: 1001
-            runAsUser: 1001
+            runAsGroup: {{ .Values.solr.securityContext.fsGroup }}
+            runAsUser: {{ .Values.solr.securityContext.fsGroup }}
           args:
             - |
               SOLR_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core/15.5/xwiki-platform-search-solr-server-core-15.5.jar"
@@ -93,8 +93,9 @@ spec:
           volumeMounts:
             - name: xwiki-solr-data
               mountPath: /var/solr/
-      securityContext:
-        fsGroup: 1001
+      {{- if .Values.solr.securityContext.enabled }}
+      securityContext: {{- omit .Values.solr.securityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
     {{- with .Values.solr.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
