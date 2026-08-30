@@ -306,6 +306,12 @@ solr:
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
+  # Pod-level fsGroup, also applied to the download-cores init container's
+  # runAsUser/runAsGroup so it can write into the fsGroup-owned cores dir.
+  # Mirrors the top-level securityContext.fsGroup convention.
+  securityContext:
+    enabled: true
+    fsGroup: 1001
   service:
     annotations: {}
     portName: solr-node
