@@ -2,6 +2,53 @@ apiVersion: v1
 entries:
   xwiki:
   - apiVersion: v2
+    created: "2026-09-04T18:30:09.69161627Z"
+    dependencies:
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      tags:
+      - bitnami-common
+      version: 2.30.0
+    - condition: mysql.enabled
+      name: mysql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 12.3.2
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 20.4.2
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 16.5.6
+    description: XWiki is a free wiki software platform written in Java with a design
+      emphasis on extensibility. XWiki is an enterprise wiki. It includes WYSIWYG
+      editing, OpenDocument based document import/export, semantic annotations and
+      tagging, and advanced permissions management.
+    digest: 501f6e17358b8f782ece28ae60dfae0a1180770379b1b4ef85d40051f20e6681
+    home: http://xwiki.org
+    icon: https://www.xwiki.org/xwiki/bin/download/Main/Logo/logo-x.png
+    keywords:
+    - xwiki
+    maintainers:
+    - email: sharma.ashish960@gmail.com
+      name: Ashish Sharma
+    - email: ludovic@xwiki.com
+      name: Ludovic Dubost
+    - email: guilherme.sautner@xwiki.com
+      name: Guilherme Sautner
+    - email: arsene.fougerouse@xwiki.com
+      name: Arsène Fougerouse
+    - email: martin.moreira@xwiki.com
+      name: Martin Moreira de Jesus
+    name: xwiki
+    sources:
+    - https://github.com/xwiki-contrib/docker-xwiki
+    type: application
+    urls:
+    - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-helm-1.7.2-Beta-0/xwiki-1.7.2-Beta-0.tgz
+    version: 1.7.2-Beta-0
+  - apiVersion: v2
     created: "2026-08-04T23:03:45.991016315Z"
     dependencies:
     - name: common
@@ -2788,4 +2835,4 @@ entries:
     urls:
     - https://github.com/xwiki-contrib/xwiki-helm/releases/download/xwiki-1.0.0-Beta.0/xwiki-1.0.0-Beta.0.tgz
     version: 1.0.0-Beta.0
-generated: "2026-08-04T23:03:45.991277564Z"
+generated: "2026-09-04T18:30:09.6919172Z"
