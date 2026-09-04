@@ -239,7 +239,7 @@ data:
   {{- end }}
 {{- end }}
 
-{{- if (.Values.customJdbc.enabled) }}
+{{- if (.Values.customJdbc).enabled }}
   hibernate.cfg.xml: |
     <?xml version="1.0" encoding="UTF-8"?>
 
