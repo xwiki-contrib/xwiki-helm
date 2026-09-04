@@ -290,6 +290,24 @@ trap 'echo "Finished init container: {{ . }}"' EXIT
 {{- end -}}
 
 {{/*
+Security context of the init containers that run the XWiki image and only write
+to emptyDir volumes consumed by the main container (xwiki-secrets,
+xwiki-changeable-configs). They must run as the same user as the main container,
+otherwise the files they produce may not be readable/executable by it, so its
+security context is used when defined. Falls back to the volumePermissions one.
+*/}}
+{{- define "xwiki.initContainer.securityContext" -}}
+{{- if .Values.containerSecurityContext.enabled -}}
+{{- omit .Values.containerSecurityContext "enabled" | toYaml -}}
+{{- else if .Values.volumePermissions.containerSecurityContext.enabled -}}
+{{- /* Those containers never change file ownership, so the capabilities needed
+       by the xwiki-data-permissions container are not granted to them. */ -}}
+{{- $fallback := omit .Values.volumePermissions.containerSecurityContext "enabled" "capabilities" -}}
+{{- toYaml (merge $fallback (dict "capabilities" (dict "drop" (list "ALL")))) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Init Containers for secrets
 */}}
 {{- define "xwiki.initContainersSecrets" -}}
@@ -313,7 +331,10 @@ Init Containers for secrets
         sed --in-place "s/{{ $keySanitised | upper }}/${ {{- $keySanitised | upper -}} }/g" /entrypoint/start.sh
       {{- end }}
       {{- end }}
-  securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 4 }}
+  {{- with (include "xwiki.initContainer.securityContext" .) }}
+  securityContext:
+    {{- . | nindent 4 }}
+  {{- end }}
   resources:
     {{- toYaml .Values.resources | nindent 4 }}
   env:
@@ -408,8 +429,11 @@ Init container that seeds writable config files from the image layer.
   {{- if .Values.initContainers.supportReadonly.containerSecurityContext.enabled }}
   securityContext:
     {{- omit .Values.initContainers.supportReadonly.containerSecurityContext "enabled" | toYaml | nindent 4 }}
-  {{- else if .Values.volumePermissions.containerSecurityContext.enabled }}
-  securityContext: {{- omit .Values.volumePermissions.containerSecurityContext "enabled" | toYaml | nindent 4 }}
+  {{- else }}
+  {{- with (include "xwiki.initContainer.securityContext" .) }}
+  securityContext:
+    {{- . | nindent 4 }}
+  {{- end }}
   {{- end }}
   {{- if .Values.initContainers.supportReadonly.resources }}
   resources:

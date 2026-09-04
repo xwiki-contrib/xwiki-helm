@@ -87,13 +87,30 @@ containerSecurityContext:
   enabled: false
   runAsUser: 100
   runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  privileged: false
+  capabilities:
+    drop:
+    - ALL
   seccompProfile:
     type: "RuntimeDefault"
 
 volumePermissions:
+  # Security context of the xwiki-data-permissions init container. It runs
+  # 'chown' on the data volume, so it needs to run as root and to keep the
+  # CHOWN capability (DAC_OVERRIDE is needed to traverse directories that are
+  # not world readable).
   containerSecurityContext:
     enabled: true
     runAsUser: 0
+    allowPrivilegeEscalation: false
+    privileged: false
+    capabilities:
+      drop:
+      - ALL
+      add:
+      - CHOWN
+      - DAC_OVERRIDE
     seccompProfile:
       type: "RuntimeDefault"
   enabled: false
