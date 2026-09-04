@@ -212,6 +212,14 @@ Whether server.xml is seeded and mounted by the supportReadonly init container.
 {{- end -}}
 
 {{/*
+Whether the jetty start.d directory is seeded and mounted by the supportReadonly
+init container.
+*/}}
+{{- define "xwiki.jetty.supportReadonly" -}}
+{{- if and .Values.initContainers.supportReadonly.enabled (eq .Values.initContainers.supportReadonly.as "jetty") -}}true{{- end -}}
+{{- end -}}
+
+{{/*
 Volume mounts for writable config files copied by the supportReadonly init container.
 */}}
 {{- define "xwiki.changeableConfigsVolumeMounts" -}}
@@ -239,6 +247,11 @@ Volume mounts for writable config files copied by the supportReadonly init conta
 - name: changeable-configs
   mountPath: {{ include "xwiki.asPath" . }}/conf/server.xml
   subPath: conf/server.xml
+{{- end }}
+{{- if eq (include "xwiki.jetty.supportReadonly" .) "true" }}
+- name: changeable-configs
+  mountPath: {{ include "xwiki.asPath" . }}/start.d
+  subPath: start.d
 {{- end }}
 {{- end }}
 {{- end -}}
@@ -382,6 +395,13 @@ Init container that seeds writable config files from the image layer.
       AS_PATH="{{ include "xwiki.asPath" . }}"
       mkdir -p "${DEST}/conf"
       cp "${AS_PATH}/conf/server.xml" "${DEST}/conf/server.xml"
+      {{- end }}
+      {{- if eq (include "xwiki.jetty.supportReadonly" .) "true" }}
+      AS_PATH="{{ include "xwiki.asPath" . }}"
+      mkdir -p "${DEST}/start.d"
+      if [ -d "${AS_PATH}/start.d" ]; then
+        cp -a "${AS_PATH}/start.d/." "${DEST}/start.d/"
+      fi
       {{- end }}
       echo "Listing all loaded configs from changeable-configs directory"
       ls ${DEST}/*

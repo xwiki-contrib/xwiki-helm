@@ -60,6 +60,10 @@ spec:
             - containerPort: {{ .Values.prometheus.javaagent.port }}
           {{- end }}
           env:
+          {{- if and .Values.containerSecurityContext.readOnlyRootFilesystem (eq .Values.initContainers.supportReadonly.as "jetty") }}
+            - name: JETTY_START
+              value: /tmp/jetty.start
+          {{- end }}
           {{- if .Values.javaOpts }}
             - name: JAVA_OPTS
               value: {{ .Values.javaOpts | join " " | quote }}
@@ -129,12 +133,17 @@ spec:
           volumeMounts:
             {{- include "xwiki.volumeMounts" . | nindent 12 }}
             {{- if .Values.containerSecurityContext.readOnlyRootFilesystem }}
+            {{- if eq .Values.initContainers.supportReadonly.as "jetty" }}
+            - name: jetty-logs
+              mountPath: {{ include "xwiki.asPath" . }}/logs
+            {{- else }}
             - name: tomcat-logs
-              mountPath: /usr/local/tomcat/logs
+              mountPath: {{ include "xwiki.asPath" . }}/logs
             - name: tomcat-work
-              mountPath: /usr/local/tomcat/work
+              mountPath: {{ include "xwiki.asPath" . }}/work
             - name: tomcat-temp
-              mountPath: /usr/local/tomcat/temp
+              mountPath: {{ include "xwiki.asPath" . }}/temp
+            {{- end }}
             - name: tmp
               mountPath: /tmp
             - name: cache
@@ -189,12 +198,17 @@ spec:
           emptyDir: {}
         {{- end }}
         {{- if .Values.containerSecurityContext.readOnlyRootFilesystem }}
+        {{- if eq .Values.initContainers.supportReadonly.as "jetty" }}
+        - name: jetty-logs
+          emptyDir: {}
+        {{- else }}
         - name: tomcat-logs
           emptyDir: {}
         - name: tomcat-work
           emptyDir: {}
         - name: tomcat-temp
           emptyDir: {}
+        {{- end }}
         - name: tmp
           emptyDir: {}
         - name: cache
