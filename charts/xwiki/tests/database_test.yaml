@@ -1,0 +1,106 @@
+suite: test database
+templates:
+  - database-secret.yaml
+  - database-configmap.yaml
+  - database-service.yaml
+  - database-statefulset.yaml
+release:
+  name: release
+tests:
+  - it: should deploy the official mysql image by default
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.name
+          value: release-mysql
+        documentSelector:
+          path: kind
+          value: Service
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: mysql:8.4
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
+          value: /var/lib/mysql
+        documentSelector:
+          path: kind
+          value: StatefulSet
+  - it: should allow to choose the mariadb version
+    set:
+      mysql.enabled: false
+      mariadb.enabled: true
+      mariadb.image.tag: "11.8"
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: mariadb:11.8
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: MARIADB_AUTO_UPGRADE
+            value: "1"
+        documentSelector:
+          path: kind
+          value: StatefulSet
+  - it: should deploy postgresql without root password nor init scripts
+    set:
+      mysql.enabled: false
+      postgresql.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 0
+        template: database-configmap.yaml
+      - notExists:
+          path: data.root-password
+        documentSelector:
+          path: kind
+          value: Secret
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: postgres:17
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PGDATA
+            value: /var/lib/postgresql/data
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - equal:
+          path: spec.ports[0].port
+          value: 5432
+        documentSelector:
+          path: kind
+          value: Service
+  - it: should support disabling the persistence and using a sub path
+    set:
+      mysql.persistence.enabled: false
+      mysql.persistence.subPath: data
+    asserts:
+      - notExists:
+          path: spec.volumeClaimTemplates
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].subPath
+          value: data
+        documentSelector:
+          path: kind
+          value: StatefulSet
+  - it: should not deploy anything with an external database
+    set:
+      mysql.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0

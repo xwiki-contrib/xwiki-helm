@@ -13,10 +13,10 @@ metadata:
 spec:
   scaleTargetRef:
     {{- if .Values.workloadStateful }}
-    apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
+    apiVersion: apps/v1
     kind: StatefulSet
     {{- else }}
-    apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+    apiVersion: apps/v1
     kind: Deployment
     {{- end }}
     name: {{ $fullName }}

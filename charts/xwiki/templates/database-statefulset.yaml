@@ -1,0 +1,136 @@
+{{- $type := include "xwiki.database.type" . -}}
+{{- if $type }}
+{{- $db := index .Values $type -}}
+{{- $fullName := include "xwiki.database.fullname" . -}}
+{{- $isPostgresql := eq $type "postgresql" -}}
+{{- /* Prefix of the environment variables understood by the official image */ -}}
+{{- $envPrefix := ternary "POSTGRES" (upper $type) $isPostgresql -}}
+{{- $probeCommand := include "xwiki.database.probeCommand" . -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "xwiki.database.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  serviceName: {{ $fullName }}
+  selector:
+    matchLabels:
+      {{- include "xwiki.database.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "xwiki.database.labels" . | nindent 8 }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.imagePullSecrets }}
+        - name: "{{ . }}"
+      {{- end }}
+      {{- end }}
+      {{- with $db.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $type }}
+          image: {{ include "xwiki.database.image" . | quote }}
+          imagePullPolicy: {{ $db.image.pullPolicy }}
+          {{- with $db.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with $db.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: {{ $envPrefix }}_USER
+              value: {{ $db.auth.username | quote }}
+            - name: {{ $envPrefix }}_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $fullName }}
+                  key: password
+            {{- if $isPostgresql }}
+            - name: POSTGRES_DB
+              value: {{ $db.auth.database | quote }}
+            {{- with $db.initdbArgs }}
+            - name: POSTGRES_INITDB_ARGS
+              value: {{ . | quote }}
+            {{- end }}
+            # Keep the data in a sub directory of the volume, whatever the layout expected by the major version of the image
+            - name: PGDATA
+              value: /var/lib/postgresql/data
+            {{- else }}
+            - name: {{ $envPrefix }}_DATABASE
+              value: {{ $db.auth.database | quote }}
+            - name: {{ $envPrefix }}_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $fullName }}
+                  key: root-password
+            {{- if eq $type "mariadb" }}
+            - name: MARIADB_AUTO_UPGRADE
+              value: "1"
+            {{- end }}
+            {{- end }}
+          ports:
+            - name: {{ $type }}
+              containerPort: {{ include "xwiki.database.port" . }}
+          startupProbe:
+            exec:
+              command: ["/bin/sh", "-c", {{ $probeCommand | quote }}]
+            periodSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            exec:
+              command: ["/bin/sh", "-c", {{ $probeCommand | quote }}]
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command: ["/bin/sh", "-c", {{ $probeCommand | quote }}]
+            periodSeconds: 10
+            timeoutSeconds: 5
+          {{- with $db.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ ternary "/var/lib/postgresql" "/var/lib/mysql" $isPostgresql }}
+              {{- with $db.persistence.subPath }}
+              subPath: {{ . }}
+              {{- end }}
+            {{- if $db.initdbScripts }}
+            - name: initdb
+              mountPath: /docker-entrypoint-initdb.d
+            {{- end }}
+      {{- if or $db.initdbScripts (not $db.persistence.enabled) }}
+      volumes:
+        {{- if $db.initdbScripts }}
+        - name: initdb
+          configMap:
+            name: {{ $fullName }}-initdb
+        {{- end }}
+        {{- if not $db.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+      {{- end }}
+  {{- if $db.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          {{- toYaml $db.persistence.accessModes | nindent 10 }}
+        resources:
+          requests:
+            storage: {{ $db.persistence.size | quote }}
+        {{- include "xwiki.storageClass" (dict "persistence" $db.persistence "global" .Values.global) | nindent 8 }}
+  {{- end }}
+{{- end }}

@@ -1,6 +1,6 @@
 {{- if .Values.solr.enabled }}
 {{- $fullName := include "solr.fullname" . -}}
-apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ $fullName }}
@@ -130,10 +130,10 @@ spec:
     - metadata:
         name: xwiki-solr-data
         {{- if .Values.solr.persistence.annotations }}
-        annotations: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.annotations "context" $) | nindent 10 }}
+        annotations: {{- include "xwiki.tplvalues.render" (dict "value" .Values.solr.persistence.annotations "context" $) | nindent 10 }}
         {{- end }}
         {{- if .Values.solr.persistence.labels }}
-        labels: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.labels "context" $) | nindent 10 }}
+        labels: {{- include "xwiki.tplvalues.render" (dict "value" .Values.solr.persistence.labels "context" $) | nindent 10 }}
         {{- end }}
       spec:
         accessModes:
@@ -141,14 +141,14 @@ spec:
           - {{ . | quote }}
         {{- end }}
         {{- if .Values.solr.persistence.dataSource }}
-        dataSource: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.dataSource "context" $) | nindent 10 }}
+        dataSource: {{- include "xwiki.tplvalues.render" (dict "value" .Values.solr.persistence.dataSource "context" $) | nindent 10 }}
         {{- end }}
         resources:
           requests:
             storage: {{ .Values.solr.persistence.size | quote }}
         {{- if .Values.solr.persistence.selector }}
-        selector: {{- include "common.tplvalues.render" (dict "value" .Values.solr.persistence.selector "context" $) | nindent 10 }}
+        selector: {{- include "xwiki.tplvalues.render" (dict "value" .Values.solr.persistence.selector "context" $) | nindent 10 }}
         {{- end }}
-        {{- include "common.storage.class" (dict "persistence" .Values.solr.persistence "global" .Values.global) | nindent 8 }}
+        {{- include "xwiki.storageClass" (dict "persistence" .Values.solr.persistence "global" .Values.global) | nindent 8 }}
   {{- end }}
 {{- end }}

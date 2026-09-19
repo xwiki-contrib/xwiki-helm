@@ -1,0 +1,19 @@
+{{- $type := include "xwiki.database.type" . -}}
+{{- if $type }}
+{{- $db := index .Values $type -}}
+{{- $fullName := include "xwiki.database.fullname" . -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "xwiki.database.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: {{ $type }}
+      port: {{ include "xwiki.database.port" . }}
+      targetPort: {{ $type }}
+  selector:
+    {{- include "xwiki.database.selectorLabels" . | nindent 4 }}
+{{- end }}

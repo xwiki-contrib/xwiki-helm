@@ -1,0 +1,15 @@
+{{- $type := include "xwiki.database.type" . -}}
+{{- if $type }}
+{{- $db := index .Values $type -}}
+{{- if $db.initdbScripts }}
+{{- $fullName := include "xwiki.database.fullname" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-initdb
+  labels:
+    {{- include "xwiki.database.labels" . | nindent 4 }}
+data:
+  {{- toYaml $db.initdbScripts | nindent 2 }}
+{{- end }}
+{{- end }}

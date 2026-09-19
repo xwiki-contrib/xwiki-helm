@@ -2,11 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-global:
-  security:
-    # Temporary solution for https://jira.xwiki.org/browse/HELM-103
-    allowInsecureImages: true
-
 cluster:
   enabled: false
   replicas: 1
@@ -116,163 +111,156 @@ volumePermissions:
   enabled: false
 
 ##
-## MySql chart configuration
+## MySQL configuration, deployed from the official image
 ##
-## https://github.com/bitnami/charts/tree/main/bitnami/mysql
+## https://hub.docker.com/_/mysql
 ##
 mysql:
  ## Whether to deploy a mysql server. Set false for a different database.
   enabled: true
   image:
-    # Temporary solution for https://jira.xwiki.org/browse/HELM-103
-    repository: bitnamilegacy/mysql
+    repository: mysql
+    # The tag controls the version in use: a floating "major.minor" tag follows the patch releases of that series,
+    # use a full version to pin it.
+    # MySQL upgrades the data directory by itself when started with a newer version, downgrades are not supported.
+    tag: "8.4"
+    pullPolicy: IfNotPresent
   auth:
     rootPassword: "xwiki"
     username: "xwiki"
     password: "xwiki"
     database: "xwiki"
+  # Extra arguments for the server, see https://hub.docker.com/_/xwiki
+  args:
+    - --character-set-server=utf8mb4
+    - --collation-server=utf8mb4_bin
+    - --explicit-defaults-for-timestamp=1
+  # Scripts executed the first time the database is initialized
   initdbScripts:
     00-init.sql: |
       grant all privileges on *.* to xwiki@'%'
-  primary:
-    # Changed to use UTF8mb4, check future versions if this was already changed.
-    # TODO: review explicit_defaults_for_timestamp
-    configuration: |-
-      [mysqld]
-      authentication_policy='{{- .Values.auth.authenticationPolicy | default "* ,," }}'
-      skip-name-resolve
-      explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mysql
-      plugin_dir=/opt/bitnami/mysql/lib/plugin
-      port={{ .Values.primary.containerPorts.mysql }}
-      mysqlx={{ ternary 1 0 .Values.primary.enableMySQLX }}
-      mysqlx_port={{ .Values.primary.containerPorts.mysqlx }}
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      datadir=/bitnami/mysql/data
-      tmpdir=/opt/bitnami/mysql/tmp
-      max_allowed_packet=16M
-      bind-address=*
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-      log-error=/opt/bitnami/mysql/logs/mysqld.log
-      character-set-server=utf8mb4
-      collation-server=utf8mb4_bin
-      mysql_native_password=ON
-      slow_query_log=0
-      long_query_time=10.0
-      {{- if .Values.tls.enabled }}
-      ssl_cert=/opt/bitnami/mysql/certs/{{ .Values.tls.certFilename }}
-      ssl_key=/opt/bitnami/mysql/certs/{{ .Values.tls.certKeyFilename }}
-      {{- if (include "mysql.tlsCACert" .) }}
-      ssl_ca={{ include "mysql.tlsCACert" . }}
-      {{- end }}
-      {{- end }}
-
-      [client]
-      port={{ .Values.primary.containerPorts.mysql }}
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=utf8mb4
-      plugin_dir=/opt/bitnami/mysql/lib/plugin
-
-      [manager]
-      port={{ .Values.primary.containerPorts.mysql }}
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    # Sub path of the volume holding the data directory (e.g. "data" to reuse a volume created by the Bitnami charts)
+    subPath: ""
+  resources: {}
+  # The official images run with uid/gid 999
+  podSecurityContext:
+    fsGroup: 999
+  containerSecurityContext:
+    runAsUser: 999
+    runAsGroup: 999
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: "RuntimeDefault"
 
 ##
-## MariaDB chart configuration
+## MariaDB configuration, deployed from the official image
 ##
-## https://github.com/bitnami/charts/tree/main/bitnami/mariadb
+## https://hub.docker.com/_/mariadb
 ##
 mariadb:
- ## Whether to deploy a mysql server. Set false for a different database.
+ ## Whether to deploy a mariadb server. Set false for a different database.
   enabled: false
   image:
-    # Temporary solution for https://jira.xwiki.org/browse/HELM-103
-    repository: bitnamilegacy/mariadb
+    repository: mariadb
+    # The tag controls the version in use: a floating "major.minor" tag follows the patch releases of that series,
+    # use a full version to pin it.
+    # The data directory is upgraded by the image (MARIADB_AUTO_UPGRADE) when started with a newer version, downgrades are not supported.
+    tag: "11.4"
+    pullPolicy: IfNotPresent
   auth:
     rootPassword: "xwiki"
     username: "xwiki"
     password: "xwiki"
     database: "xwiki"
+  # Extra arguments for the server, see https://hub.docker.com/_/xwiki
+  args:
+    - --character-set-server=utf8mb4
+    - --collation-server=utf8mb4_bin
+    - --explicit-defaults-for-timestamp=1
+  # Scripts executed the first time the database is initialized
   initdbScripts:
     00-init.sql: |
       grant all privileges on *.* to xwiki@'%'
-  primary:
-    # Changed to use UTF8mb4, check future versions if this was already changed.
-    # TODO: review explicit_defaults_for_timestamp
-    configuration: |-
-      [mysqld]
-      skip-name-resolve
-      explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mariadb
-      datadir=/bitnami/mariadb/data
-      plugin_dir=/opt/bitnami/mariadb/plugin
-      port={{ .Values.primary.containerPorts.mysql }}
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      tmpdir=/opt/bitnami/mariadb/tmp
-      max_allowed_packet=16M
-      bind-address=*
-      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-      log-error=/opt/bitnami/mariadb/logs/mysqld.log
-      character-set-server=UTF8MB4
-      collation-server=utf8mb4_general_ci
-      slow_query_log=0
-      long_query_time=10.0
-      binlog_expire_logs_seconds=2592000
-      {{- if .Values.tls.enabled }}
-      ssl_cert=/opt/bitnami/mariadb/certs/{{ .Values.tls.certFilename }}
-      ssl_key=/opt/bitnami/mariadb/certs/{{ .Values.tls.certKeyFilename }}
-      {{- if (include "mariadb.tlsCACert" .) }}
-      ssl_ca={{ include "mariadb.tlsCACert" . }}
-      {{- end }}
-      {{- end }}
-      {{- if .Values.tde.enabled }}
-      plugin_load_add=file_key_management
-      file_key_management_filename=/opt/bitnami/mariadb/tde/{{ .Values.tde.encryptedKeyFilename }}
-      file_key_management_filekey=FILE:/opt/bitnami/mariadb/tde/{{ .Values.tde.randomKeyFilename }}
-      file_key_management_encryption_algorithm={{ .Values.tde.fileKeyManagementEncryptionAlgorithm }}
-      innodb_encrypt_tables={{ .Values.tde.innodbEncryptTables }}
-      innodb_encrypt_log={{ .Values.tde.innodbEncryptLog }}
-      innodb_encrypt_temporary_tables={{ .Values.tde.innodbEncryptTemporaryTables }}
-      innodb_encryption_threads={{ .Values.tde.innodbEncryptionThreads }}
-      encrypt_tmp_disk_tables={{ .Values.tde.encryptTmpDiskTables }}
-      encrypt_tmp_files={{ .Values.tde.encryptTmpTiles }}
-      encrypt_binlog={{ .Values.tde.encryptBINLOG }}
-      aria_encrypt_tables={{ .Values.tde.ariaEncryptTables }}
-      {{- end }}
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    # Sub path of the volume holding the data directory (e.g. "data" to reuse a volume created by the Bitnami charts)
+    subPath: ""
+  resources: {}
+  # The official images run with uid/gid 999
+  podSecurityContext:
+    fsGroup: 999
+  containerSecurityContext:
+    runAsUser: 999
+    runAsGroup: 999
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: "RuntimeDefault"
 
-      [client]
-      port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      default-character-set=utf8mb4
-
-      plugin_dir=/opt/bitnami/mariadb/plugin
-
-      [manager]
-      port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
 ##
-## PostgreSQL chart configuration
+## PostgreSQL configuration, deployed from the official image
 ##
-## https://github.com/helm/charts/tree/master/stable/postgresql
+## https://hub.docker.com/_/postgres
 ##
 postgresql:
  ## Whether to deploy a postgresql server. Set false for a different database.
   enabled: false
   image:
-    # Temporary solution for https://jira.xwiki.org/browse/HELM-103
-    repository: bitnamilegacy/postgresql
+    repository: postgres
+    # The tag controls the version in use: a floating major tag follows the minor releases of that major,
+    # use a full version to pin it.
+    # PostgreSQL does NOT upgrade the data directory between majors: changing the major on an existing volume
+    # requires a dump/restore (or pg_upgrade) and the server refuses to start otherwise.
+    tag: "17"
+    pullPolicy: IfNotPresent
   auth:
-    postgresPassword: "xwiki"
+    # The user is created as superuser of the instance
     username: "xwiki"
     password: "xwiki"
     database: "xwiki"
-  primary:
-    initdb:
-      args: "--encoding=UTF8 --locale-provider=builtin --locale=C.UTF-8"
-  # persistence:
-  #  size: 8Gi
+  args: []
+  initdbArgs: "--encoding=UTF8 --locale-provider=builtin --locale=C.UTF-8"
+  # Scripts executed the first time the database is initialized
+  initdbScripts: {}
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    # Sub path of the volume holding the data directory (e.g. "data" to reuse a volume created by the Bitnami charts)
+    subPath: ""
+  resources: {}
+  # The official images run with uid/gid 999
+  podSecurityContext:
+    fsGroup: 999
+  containerSecurityContext:
+    runAsUser: 999
+    runAsGroup: 999
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: "RuntimeDefault"
 
 ##
 ## For custom mysql and postgres database. Use externalDB.
@@ -310,6 +298,7 @@ solr:
     # - name: FOO
     #   value: "bar"
   resources: {}
+  # Init container (using the XWiki image) installing the Solr cores bundled with the version of XWiki in use
   downloadCores:
     enabled: true
   containerSecurityContext:

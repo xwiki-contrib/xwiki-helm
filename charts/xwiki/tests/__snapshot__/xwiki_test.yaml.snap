@@ -2,25 +2,28 @@ should create a mariadb init container:
   1: |
     args:
       - |
-        for i in $(seq 1 30); do
-          if eval $CHECK_DB; then
+        echo "Starting init container: wait-for-db"
+        for i in $(seq 1 "${DB_CHECK_RETRIES:-30}"); do
+          if timeout "${DB_CHECK_TIMEOUT:-5}" sh -c "$CHECK_DB"; then
             echo "Database is ready!"
+            echo "Finished init container: wait-for-db"
             exit 0
           fi
-          echo "Waiting for database..."
-          sleep 1
+          echo "Waiting for database... (attempt $i)"
+          sleep "${DB_CHECK_INTERVAL:-1}"
         done
         echo "Database is not ready!"
+        echo "Finished init container: wait-for-db"
         exit 1
     command:
       - /bin/sh
-      - -ec
+      - -c
     env:
       - name: DB_PASSWORD
         valueFrom:
           secretKeyRef:
-            key: DB_PASSWORD
-            name: RELEASE-NAME
+            key: password
+            name: RELEASE-NAME-mariadb
       - name: DB_HOST
         valueFrom:
           configMapKeyRef:
@@ -37,7 +40,13 @@ should create a mariadb init container:
             key: DB_DATABASE
             name: RELEASE-NAME-xwiki
       - name: CHECK_DB
-        value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+        value: mariadb-admin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+      - name: DB_CHECK_RETRIES
+        value: "30"
+      - name: DB_CHECK_INTERVAL
+        value: "1"
+      - name: DB_CHECK_TIMEOUT
+        value: "5"
     image: mariadb:latest
     name: wait-for-db
     resources: {}
@@ -45,24 +54,27 @@ should create a mysql init container:
   1: |
     args:
       - |
-        for i in $(seq 1 30); do
-          if eval $CHECK_DB; then
+        echo "Starting init container: wait-for-db"
+        for i in $(seq 1 "${DB_CHECK_RETRIES:-30}"); do
+          if timeout "${DB_CHECK_TIMEOUT:-5}" sh -c "$CHECK_DB"; then
             echo "Database is ready!"
+            echo "Finished init container: wait-for-db"
             exit 0
           fi
-          echo "Waiting for database..."
-          sleep 1
+          echo "Waiting for database... (attempt $i)"
+          sleep "${DB_CHECK_INTERVAL:-1}"
         done
         echo "Database is not ready!"
+        echo "Finished init container: wait-for-db"
         exit 1
     command:
       - /bin/sh
-      - -ec
+      - -c
     env:
       - name: DB_PASSWORD
         valueFrom:
           secretKeyRef:
-            key: mysql-password
+            key: password
             name: RELEASE-NAME-mysql
       - name: DB_HOST
         valueFrom:
@@ -81,6 +93,12 @@ should create a mysql init container:
             name: RELEASE-NAME-xwiki
       - name: CHECK_DB
         value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+      - name: DB_CHECK_RETRIES
+        value: "30"
+      - name: DB_CHECK_INTERVAL
+        value: "1"
+      - name: DB_CHECK_TIMEOUT
+        value: "5"
     image: mysql:latest
     name: wait-for-db
     resources: {}
@@ -88,19 +106,22 @@ should create a postgres init container:
   1: |
     args:
       - |
-        for i in $(seq 1 30); do
-          if eval $CHECK_DB; then
+        echo "Starting init container: wait-for-db"
+        for i in $(seq 1 "${DB_CHECK_RETRIES:-30}"); do
+          if timeout "${DB_CHECK_TIMEOUT:-5}" sh -c "$CHECK_DB"; then
             echo "Database is ready!"
+            echo "Finished init container: wait-for-db"
             exit 0
           fi
-          echo "Waiting for database..."
-          sleep 1
+          echo "Waiting for database... (attempt $i)"
+          sleep "${DB_CHECK_INTERVAL:-1}"
         done
         echo "Database is not ready!"
+        echo "Finished init container: wait-for-db"
         exit 1
     command:
       - /bin/sh
-      - -ec
+      - -c
     env:
       - name: DB_PASSWORD
         valueFrom:
@@ -124,6 +145,12 @@ should create a postgres init container:
             name: RELEASE-NAME-xwiki
       - name: CHECK_DB
         value: PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
+      - name: DB_CHECK_RETRIES
+        value: "30"
+      - name: DB_CHECK_INTERVAL
+        value: "1"
+      - name: DB_CHECK_TIMEOUT
+        value: "5"
     image: postgres:latest
     name: wait-for-db
     resources: {}
@@ -131,17 +158,20 @@ should create a solr init container:
   1: |
     command:
       - /bin/sh
-      - -ec
+      - -c
       - |
+        echo "Starting init container: wait-for-solr"
         for i in $(seq 1 30); do
-          if curl --silent --connect-timeout "15000" $SOLR_BASEURL/admin/info/system | grep '\"status\":0'; then
+          if curl --silent --connect-timeout "15000" "$SOLR_BASEURL/admin/info/system" | grep '"status":0'; then
             echo "Solr is ready!"
+            echo "Finished init container: wait-for-solr"
             exit 0
           fi
           echo "Waiting for Solr..."
           sleep 1
         done
         echo "Solr is not ready!"
+        echo "Finished init container: wait-for-solr"
         exit 1
     env:
       - name: SOLR_BASEURL
@@ -156,19 +186,22 @@ should create an external db init container for mysql:
   1: |
     args:
       - |
-        for i in $(seq 1 30); do
-          if eval $CHECK_DB; then
+        echo "Starting init container: wait-for-db"
+        for i in $(seq 1 "${DB_CHECK_RETRIES:-30}"); do
+          if timeout "${DB_CHECK_TIMEOUT:-5}" sh -c "$CHECK_DB"; then
             echo "Database is ready!"
+            echo "Finished init container: wait-for-db"
             exit 0
           fi
-          echo "Waiting for database..."
-          sleep 1
+          echo "Waiting for database... (attempt $i)"
+          sleep "${DB_CHECK_INTERVAL:-1}"
         done
         echo "Database is not ready!"
+        echo "Finished init container: wait-for-db"
         exit 1
     command:
       - /bin/sh
-      - -ec
+      - -c
     env:
       - name: DB_PASSWORD
         valueFrom:
@@ -192,6 +225,12 @@ should create an external db init container for mysql:
             name: RELEASE-NAME-xwiki
       - name: CHECK_DB
         value: mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+      - name: DB_CHECK_RETRIES
+        value: "30"
+      - name: DB_CHECK_INTERVAL
+        value: "1"
+      - name: DB_CHECK_TIMEOUT
+        value: "5"
     image: mysql:latest
     name: wait-for-db
     resources: {}
@@ -261,7 +300,7 @@ should use mysql lts image:
     - name: DB_PASSWORD
       valueFrom:
         secretKeyRef:
-          key: mysql-password
+          key: password
           name: RELEASE-NAME-mysql
     - name: DB_HOST
       valueFrom:

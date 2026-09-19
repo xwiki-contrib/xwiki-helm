@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "xwiki.name" -}}
-{{- include "common.names.name" . }}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end -}}
 
 {{/*
@@ -11,11 +11,27 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "xwiki.fullname" -}}
-{{- include "common.names.fullname" . }}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "xwiki.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{- define "solr.fullname" -}}
-{{- printf "%s-solr" (include "common.names.fullname" .) }}
+{{- printf "%s-solr" (include "xwiki.fullname" .) }}
 {{- end }}
 
 {{/*
@@ -36,15 +52,48 @@ run: solr
 Common labels
 */}}
 {{- define "xwiki.labels" -}}
-{{- include "common.labels.standard" . }}
+app.kubernetes.io/name: {{ include "xwiki.name" . }}
+helm.sh/chart: {{ include "xwiki.chart" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with .Chart.AppVersion }}
+app.kubernetes.io/version: {{ . | quote }}
+{{- end }}
 {{- end }}
 
 {{/*
 Selector labels
 */}}
 {{- define "xwiki.selectorLabels" -}}
-{{- include "common.labels.matchLabels" . }}
+app.kubernetes.io/name: {{ include "xwiki.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Renders a value that contains template.
+Usage: {{ include "xwiki.tplvalues.render" (dict "value" .Values.path.to.the.Value "context" $) }}
+*/}}
+{{- define "xwiki.tplvalues.render" -}}
+{{- $value := typeIs "string" .value | ternary .value (.value | toYaml) }}
+{{- if contains "{{" (toJson .value) }}
+{{- tpl $value .context }}
+{{- else }}
+{{- $value }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Storage class of a volume claim, "-" disables the dynamic provisioning.
+Usage: {{ include "xwiki.storageClass" (dict "persistence" .Values.path.to.the.persistence "global" .Values.global) }}
+*/}}
+{{- define "xwiki.storageClass" -}}
+{{- $storageClass := (.global).storageClass | default .persistence.storageClass | default (.global).defaultStorageClass | default "" -}}
+{{- if eq "-" $storageClass -}}
+storageClassName: ""
+{{- else if $storageClass -}}
+storageClassName: {{ $storageClass }}
+{{- end -}}
+{{- end -}}
 
 {{/*
 Create the name of the service account to use
@@ -94,6 +143,8 @@ Define which image to use on XWiki
 {{- define "xwiki.imageName" -}}
 {{- if .Values.image.tag }}
 {{- printf "%s:%s" .Values.image.name .Values.image.tag -}}
+{{- else if .Values.mariadb.enabled }}
+{{- printf "%s:lts-mariadb-tomcat" .Values.image.name -}}
 {{- else if .Values.mysql.enabled }}
 {{- printf "%s:lts-mysql-tomcat" .Values.image.name -}}
 {{- else if .Values.postgresql.enabled }}
@@ -122,6 +173,70 @@ Define which image to use on Solr
 
 
 {{/*
+Type of the database deployed by the chart (mariadb, mysql or postgresql), empty when an external one is used
+*/}}
+{{- define "xwiki.database.type" -}}
+{{- if .Values.mariadb.enabled -}}
+mariadb
+{{- else if .Values.mysql.enabled -}}
+mysql
+{{- else if .Values.postgresql.enabled -}}
+postgresql
+{{- end -}}
+{{- end }}
+
+{{/*
+Name of the resources (and so the host) of the database deployed by the chart
+*/}}
+{{- define "xwiki.database.fullname" -}}
+{{- printf "%s-%s" .Release.Name (include "xwiki.database.type" .) }}
+{{- end }}
+
+{{/*
+Image of the database deployed by the chart
+*/}}
+{{- define "xwiki.database.image" -}}
+{{- with (index .Values (include "xwiki.database.type" .)).image }}
+{{- printf "%s:%s" .repository (.tag | toString) }}
+{{- end }}
+{{- end }}
+
+{{/*
+Port of the database deployed by the chart
+*/}}
+{{- define "xwiki.database.port" -}}
+{{- ternary 5432 3306 (eq (include "xwiki.database.type" .) "postgresql") }}
+{{- end }}
+
+{{/*
+Command used by the probes of the database deployed by the chart
+*/}}
+{{- define "xwiki.database.probeCommand" -}}
+{{- $type := include "xwiki.database.type" . -}}
+{{- if eq $type "postgresql" -}}
+pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+{{- else if eq $type "mariadb" -}}
+mariadb-admin ping -h 127.0.0.1 -uroot -p"$MARIADB_ROOT_PASSWORD"
+{{- else -}}
+mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD"
+{{- end -}}
+{{- end }}
+
+{{/*
+Database labels
+*/}}
+{{- define "xwiki.database.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "xwiki.database.type" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{- define "xwiki.database.labels" -}}
+{{ include "xwiki.database.selectorLabels" . }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+helm.sh/chart: {{ include "xwiki.chart" . }}
+{{- end }}
+
+{{/*
 Database env vars
 */}}
 {{- define "xwiki.database.env" }}
@@ -131,11 +246,8 @@ Database env vars
     {{- if and .Values.externalDB.customKeyRef .Values.externalDB.customKeyRef.enabled }}
       name: {{ .Values.externalDB.customKeyRef.name | quote }}
       key:  {{ .Values.externalDB.customKeyRef.key  | quote }}
-    {{- else if .Values.mysql.enabled }}
-      name: "{{ .Release.Name }}-mysql"
-      key: mysql-password
-    {{- else if .Values.postgresql.enabled }}
-      name: "{{ .Release.Name }}-postgresql"
+    {{- else if include "xwiki.database.type" . }}
+      name: {{ include "xwiki.database.fullname" . | quote }}
       key: password
     {{- else }}
       name: {{ .Release.Name | quote }}
@@ -164,12 +276,8 @@ Image for the database init container
 {{- define "xwiki.initContainer.database.image" -}}
   {{- if .Values.initContainers.database.image }}
 {{ .Values.initContainers.database.image }}
-  {{- else if .Values.mysql.enabled }}
-{{ printf "%s:%s" .Values.mysql.image.repository .Values.mysql.image.tag }}
-  {{- else if .Values.postgresql.enabled }}
-{{ printf "%s:%s" .Values.postgresql.image.repository .Values.postgresql.image.tag }}
-  {{- else if .Values.mariadb.enabled }}
-{{ printf "%s:%s" .Values.mariadb.image.repository .Values.mariadb.image.tag }}
+  {{- else if include "xwiki.database.type" . }}
+{{ include "xwiki.database.image" . }}
   {{- end }}
 {{- end }}
 
@@ -179,7 +287,9 @@ Command for the database init container
 {{- define "xwiki.initContainer.database.command" -}}
   {{- if .Values.initContainers.database.command }}
 {{ .Values.initContainers.database.command }}
-  {{- else if or .Values.mysql.enabled .Values.mariadb.enabled (eq .Values.externalDB.type "mysql") (eq .Values.externalDB.type "mariadb") }}
+  {{- else if or (eq (include "xwiki.database.type" .) "mariadb") (and (not (include "xwiki.database.type" .)) (eq .Values.externalDB.type "mariadb")) }}
+mariadb-admin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
+  {{- else if or .Values.mysql.enabled (eq .Values.externalDB.type "mysql") }}
 mysqladmin ping -h $DB_HOST -u $DB_USER -p$DB_PASSWORD
   {{- else if or .Values.postgresql.enabled (eq .Values.externalDB.type "postgresql") }}
 PGPASSWORD=$DB_PASSWORD pg_isready -h $DB_HOST -U $DB_USER -d $DB_DATABASE
