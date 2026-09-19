@@ -26,16 +26,67 @@ spec:
         {{ .Values.solr.podAnnotations | toYaml | indent 4 }}
         {{- end }}
     spec:
-      {{- if .Values.solr.downloadCores.enabled }}
+      {{- if .Values.solr.loadCores.enabled }}
       initContainers:
-        - name: download-cores
-          image: curlimages/curl
+        - name: load-cores
+          # Run by default in the XWiki image to install the cores bundled with the version of XWiki it contains
+          image: {{ include "solr.loadCores.imageName" . }}
+          imagePullPolicy: {{ .Values.solr.loadCores.image.pullPolicy | default .Values.image.pullPolicy }}
           env:
           {{- range .Values.solr.extraEnvVars }}
             - name: {{ .name  }}
               value: {{ .value | quote }}
           {{- end }}
-          command: ['/bin/sh', '-c']
+            - name: SOLR_MAJOR_VERSION
+              value: {{ include "solr.majorVersion" . | quote }}
+          {{- if or .Values.solr.loadCores.command .Values.solr.loadCores.args }}
+          {{- with .Values.solr.loadCores.command }}
+          command: {{- include "xwiki.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- with .Values.solr.loadCores.args }}
+          args: {{- include "xwiki.tplvalues.render" (dict "value" . "context" $) | nindent 12 }}
+          {{- end }}
+          {{- else }}
+          command: ['/bin/sh', '-ec']
+          args:
+            - |
+              # XWiki bundles the cores used by the embedded Solr in one of its Solr jars (which one depends on the version)
+              MINIMAL_CORE="xwiki-platform-search-solr-server-core-minimal.zip"
+              for jar in {{ include "xwiki.asPath" . }}/webapps/*/WEB-INF/lib/xwiki-platform-search-solr-*.jar; do
+                if unzip -l "$jar" "$MINIMAL_CORE" > /dev/null 2>&1; then
+                  CORES_JAR="$jar"
+                  break
+                fi
+              done
+              if [ -z "$CORES_JAR" ]; then
+                echo "Failed to find the Solr cores in the XWiki image"
+                exit 1
+              fi
+              VERSION=$(unzip -p "$CORES_JAR" META-INF/MANIFEST.MF | sed -n 's/^Implementation-Version: *//p' | tr -d '\r')
+              echo "Installing the Solr cores of XWiki $VERSION found in $CORES_JAR"
+
+              cd /tmp
+              # Solr runs with a different user and writes in the cores through the group of the volume
+              umask 002
+              # The search core was renamed in XWiki 16.2.0
+              SEARCH_CORE="xwiki-platform-search-solr-server-core-search.zip"
+              if unzip -l "$CORES_JAR" "$SEARCH_CORE" > /dev/null 2>&1; then
+                # Since then, XWiki also expects the cores (search one included) to be suffixed with the major version of Solr 9+
+                if [ "${SOLR_MAJOR_VERSION:-8}" -ge 9 ]; then
+                  SEARCH_CORE_NAME="xwiki_search_$SOLR_MAJOR_VERSION"
+                  SUFFIX="_$SOLR_MAJOR_VERSION"
+                fi
+              else
+                SEARCH_CORE="xwiki-platform-search-solr-server-core.zip"
+              fi
+              unzip -qqo "$CORES_JAR" "$SEARCH_CORE" "$MINIMAL_CORE" -d .
+
+              unzip -qqo "./$SEARCH_CORE" -d "./cores/${SEARCH_CORE_NAME:-xwiki}"
+              for core in events extension_index ratings; do
+                unzip -qqo "./$MINIMAL_CORE" -d "./cores/xwiki_${core}${SUFFIX}"
+              done
+              find ./cores -user "$(id -u)" -exec chmod g+rwX {} +
+          {{- end }}
           volumeMounts:
             - name: xwiki-solr-data
               mountPath: /tmp/cores
@@ -43,17 +94,6 @@ spec:
           securityContext:
             runAsGroup: {{ .Values.solr.securityContext.fsGroup }}
             runAsUser: {{ .Values.solr.securityContext.fsGroup }}
-          args:
-            - |
-              SOLR_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core/15.5/xwiki-platform-search-solr-server-core-15.5.jar"
-              SOLR_MINIMAL_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core-minimal/15.5/xwiki-platform-search-solr-server-core-minimal-15.5.zip"
-              cd /tmp
-              curl $SOLR_CORE_URL -o ./xwiki-server-core.zip && \
-              curl $SOLR_MINIMAL_CORE_URL -o ./xwiki-minimal-core.zip
-              unzip -qqo ./xwiki-server-core.zip  -d ./cores/xwiki
-              unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_events
-              unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_extension_index
-              unzip -qqo ./xwiki-minimal-core.zip -d ./cores/xwiki_ratings
       {{- end }}
       containers:
         - name: {{ printf "%s-solr" .Chart.Name }}
@@ -62,6 +102,27 @@ spec:
           securityContext: {{- omit .Values.solr.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           imagePullPolicy: {{ .Values.solr.image.pullPolicy }}
+          {{- if ge (include "solr.majorVersion" . | int) 10 }}
+          # Solr 10+ starts in SolrCloud mode by default, which cannot load the XWiki cores
+          args: ["solr-foreground", "--user-managed"]
+          {{- end }}
+          {{- $extraEnvVarNames := list }}
+          {{- range .Values.solr.extraEnvVars }}
+          {{- $extraEnvVarNames = append $extraEnvVarNames .name }}
+          {{- end }}
+          {{- $enableModules := and (ge (include "solr.majorVersion" . | int) 9) (not (has "SOLR_MODULES" $extraEnvVarNames)) }}
+          {{- if or $enableModules .Values.solr.extraEnvVars }}
+          env:
+          {{- if $enableModules }}
+            # The search core of XWiki needs analyzers which are not part of Solr core anymore since Solr 9
+            - name: SOLR_MODULES
+              value: analysis-extras
+          {{- end }}
+          {{- range .Values.solr.extraEnvVars }}
+            - name: {{ .name  }}
+              value: {{ .value | quote }}
+          {{- end }}
+          {{- end }}
           ports:
             - containerPort: {{ .Values.solr.service.internalPort }}
         {{- if .Values.solr.probes.customLiveness }}
@@ -110,9 +171,14 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- if .Values.solr.imagePullSecrets }}
+    {{- /* The load-cores init container uses the XWiki image by default */}}
+    {{- $imagePullSecrets := .Values.solr.imagePullSecrets | default list }}
+    {{- if .Values.solr.loadCores.enabled }}
+    {{- $imagePullSecrets = concat $imagePullSecrets (.Values.imagePullSecrets | default list) | uniq }}
+    {{- end }}
+    {{- if $imagePullSecrets }}
       imagePullSecrets:
-      {{- range .Values.solr.imagePullSecrets }}
+      {{- range $imagePullSecrets }}
         - name: "{{ . }}"
       {{- end }}
     {{- end }}

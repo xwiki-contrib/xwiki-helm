@@ -171,6 +171,33 @@ Define which image to use on Solr
 {{- end -}}
 {{- end }}
 
+{{/*
+Image of the init container loading the Solr cores, the XWiki image by default
+*/}}
+{{- define "solr.loadCores.imageName" -}}
+{{- with .Values.solr.loadCores.image -}}
+{{- if .repository -}}
+    {{- $name := .repository -}}
+    {{- if .registry -}}
+        {{- $name = printf "%s/%s" .registry .repository -}}
+    {{- end -}}
+    {{- if .digest -}}
+        {{- printf "%s@%s" $name .digest -}}
+    {{- else -}}
+        {{- printf "%s:%s" $name (.tag | default "latest" | toString) -}}
+    {{- end -}}
+{{- else -}}
+    {{- include "xwiki.imageName" $ -}}
+{{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Major version of Solr, found in the tag of the image by default
+*/}}
+{{- define "solr.majorVersion" -}}
+{{- .Values.solr.majorVersion | default (regexFind "^[0-9]+" (.Values.solr.image.tag | toString)) }}
+{{- end }}
 
 {{/*
 Type of the database deployed by the chart (mariadb, mysql or postgresql), empty when an external one is used

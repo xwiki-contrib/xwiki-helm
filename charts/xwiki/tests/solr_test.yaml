@@ -14,6 +14,8 @@ tests:
       - equal:
           path: spec.template.spec.volumes
           value:
+            - name: xwiki-solr-tmp
+              emptyDir: {}
             - name: xwiki-solr-data
         template: solr-statefulset.yaml
       - equal:
@@ -31,6 +33,8 @@ tests:
       - equal:
           path: spec.template.spec.volumes
           value:
+            - name: xwiki-solr-tmp
+              emptyDir: {}
             - name: xwiki-solr-data
         template: solr-statefulset.yaml
   - it: change service values
@@ -71,7 +75,7 @@ tests:
       solr.persistence.enabled: true
     asserts:
       - equal:
-          path: spec.template.spec.volumes[0]
+          path: spec.template.spec.volumes[1]
           value:
             name: xwiki-solr-data
         template: solr-statefulset.yaml
@@ -86,9 +90,126 @@ tests:
       - equal:
           path: spec.template.spec.volumes
           value:
+            - name: xwiki-solr-tmp
+              emptyDir: {}
             - name: xwiki-solr-data
               persistentVolumeClaim:
                 claimName: my-claim
+        template: solr-statefulset.yaml
+  - it: should install the cores from the XWiki image
+    set:
+      solr.enabled: true
+      solr.image.tag: 9.8.1
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: xwiki:lts-mysql-tomcat
+        template: solr-statefulset.yaml
+      - contains:
+          path: spec.template.spec.initContainers[0].env
+          content:
+            name: SOLR_MAJOR_VERSION
+            value: "9"
+        template: solr-statefulset.yaml
+  - it: should use the custom XWiki image and its pull secrets to install the cores
+    set:
+      solr.enabled: true
+      image.tag: custom
+      imagePullSecrets:
+        - xwiki-registry
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: xwiki:custom
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.template.spec.imagePullSecrets
+          value:
+            - name: xwiki-registry
+        template: solr-statefulset.yaml
+  - it: should allow to load the cores with a custom image and command
+    set:
+      solr.enabled: true
+      solr.loadCores.image.registry: registry.example.com
+      solr.loadCores.image.repository: tools/xwiki-cores
+      solr.loadCores.image.tag: "1.0"
+      solr.loadCores.image.pullPolicy: Always
+      solr.loadCores.command: ["/bin/load-cores"]
+      solr.loadCores.args: ["--solr-version", '{{ include "solr.majorVersion" . }}']
+    asserts:
+      - equal:
+          path: spec.template.spec.initContainers[0].image
+          value: registry.example.com/tools/xwiki-cores:1.0
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].imagePullPolicy
+          value: Always
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].command
+          value: ["/bin/load-cores"]
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.template.spec.initContainers[0].args
+          value: ["--solr-version", "9"]
+        template: solr-statefulset.yaml
+  - it: should not load the cores when disabled
+    set:
+      solr.enabled: true
+      solr.loadCores.enabled: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.initContainers
+        template: solr-statefulset.yaml
+  - it: should not customize the start of Solr 8
+    set:
+      solr.enabled: true
+      solr.image.tag: 8.11.4-slim
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].args
+        template: solr-statefulset.yaml
+      - notExists:
+          path: spec.template.spec.containers[0].env
+        template: solr-statefulset.yaml
+  - it: should enable the analysis-extras module with Solr 9
+    set:
+      solr.enabled: true
+      solr.image.tag: 9.10.1
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].args
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: SOLR_MODULES
+              value: analysis-extras
+        template: solr-statefulset.yaml
+  - it: should start Solr 10 in user managed mode
+    set:
+      solr.enabled: true
+      solr.image.tag: custom
+      solr.majorVersion: 10
+      solr.extraEnvVars:
+        - name: SOLR_MODULES
+          value: analysis-extras,langid
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].args
+          value: ["solr-foreground", "--user-managed"]
+        template: solr-statefulset.yaml
+      - equal:
+          path: spec.template.spec.containers[0].env
+          value:
+            - name: SOLR_MODULES
+              value: analysis-extras,langid
+        template: solr-statefulset.yaml
+      - contains:
+          path: spec.template.spec.initContainers[0].env
+          content:
+            name: SOLR_MAJOR_VERSION
+            value: "10"
         template: solr-statefulset.yaml
   - it: test affinity, selector and tolerations
     set:

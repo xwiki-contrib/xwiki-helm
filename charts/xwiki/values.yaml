@@ -290,17 +290,35 @@ solr:
   image:
     registry: ""
     repository: solr
-    tag: 8.11.4-slim
+    # With Solr 9+ use the full image: the "slim" one does not contain the "analysis-extras" module needed by XWiki
+    # (automatically enabled through SOLR_MODULES). Solr 10+ (supported since XWiki 18.5.0) is started in user managed mode.
+    tag: 9.4.1
     digest: ""
     pullPolicy: IfNotPresent
+  # Major version of Solr (it impacts the name of the cores and how Solr is started), found in image.tag by default
+  majorVersion: ""
   imagePullSecrets: []
   extraEnvVars: []
     # - name: FOO
     #   value: "bar"
   resources: {}
-  # Init container (using the XWiki image) installing the Solr cores bundled with the version of XWiki in use
-  downloadCores:
+  # Init container installing the Solr cores. By default it runs in the XWiki image and installs the cores bundled
+  # with the version of XWiki in use.
+  loadCores:
     enabled: true
+    # Image in which the cores are loaded, the XWiki image (see "image") when no repository is set
+    image:
+      registry: ""
+      repository: ""
+      tag: ""
+      digest: ""
+      # The pull policy of the XWiki image by default
+      pullPolicy: ""
+    # Custom command and/or args (templates are supported) replacing the default script. The cores must be installed
+    # in /tmp/cores (the "data" folder of the Solr volume) and the init container gets the env variables of
+    # solr.extraEnvVars and SOLR_MAJOR_VERSION.
+    command: []
+    args: []
   containerSecurityContext:
     enabled: true
     allowPrivilegeEscalation: false
@@ -312,7 +330,7 @@ solr:
     runAsNonRoot: true
     seccompProfile:
       type: RuntimeDefault
-  # Pod-level fsGroup, also applied to the download-cores init container's
+  # Pod-level fsGroup, also applied to the load-cores init container's
   # runAsUser/runAsGroup so it can write into the fsGroup-owned cores dir.
   # Mirrors the top-level securityContext.fsGroup convention.
   securityContext:
