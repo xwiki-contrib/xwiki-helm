@@ -145,7 +145,7 @@ mysql:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    # Sub path of the volume holding the data directory (e.g. "data" to reuse a volume created by the Bitnami charts)
+    # Sub path of the volume to mount
     subPath: ""
   resources: {}
   # The official images run with uid/gid 999
@@ -197,7 +197,7 @@ mariadb:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    # Sub path of the volume holding the data directory (e.g. "data" to reuse a volume created by the Bitnami charts)
+    # Sub path of the volume to mount
     subPath: ""
   resources: {}
   # The official images run with uid/gid 999
@@ -226,9 +226,14 @@ postgresql:
     repository: postgres
     # The tag controls the version in use: a floating major tag follows the minor releases of that major,
     # use a full version to pin it.
-    # PostgreSQL does NOT upgrade the data directory between majors: changing the major on an existing volume
-    # requires a dump/restore (or pg_upgrade) and the server refuses to start otherwise.
+    # PostgreSQL does NOT upgrade the data directory between majors by itself: when the major of the tag changes on an
+    # existing volume, the migration 0003-postgresql-major-upgrade upgrades the data with pg_upgrade before the
+    # upgrade of the release (see files/migrations and migrations.enabled). Downgrades are not supported.
     tag: "17"
+    # Major version of the image, found from the tag when empty. Set it when the tag does not start with the major
+    # (e.g. "latest"): it is the directory of the data in the volume (/var/lib/postgresql/<major>/docker, the layout
+    # of the official image since PostgreSQL 18) and the target of the upgrades of the data.
+    majorVersion: ""
     pullPolicy: IfNotPresent
   auth:
     # The user is created as superuser of the instance
@@ -245,7 +250,7 @@ postgresql:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    # Sub path of the volume holding the data directory (e.g. "data" to reuse a volume created by the Bitnami charts)
+    # Sub path of the volume to mount
     subPath: ""
   resources: {}
   # The official images run with uid/gid 999
@@ -261,6 +266,47 @@ postgresql:
         - ALL
     seccompProfile:
       type: "RuntimeDefault"
+
+##
+## Migrations executed by a job before upgrading the release (pre-upgrade hook), to apply automatically the changes
+## between versions of the chart that "helm upgrade" cannot apply by itself (e.g. immutable fields of a StatefulSet,
+## owner of the files of a volume). Each migration checks the state of the release and is skipped when not needed.
+## Helm waits for the job during "helm upgrade", within its timeout (5m by default): use a higher "--timeout" for the
+## upgrades that migrate a lot of data. See files/migrations for the migrations.
+##
+migrations:
+  # Whether to run the migrations. When unset (null), they run only when the database is deployed by the chart
+  # (mariadb, mysql or postgresql enabled): with an external database there is nothing to migrate. Set to true or false
+  # to override.
+  enabled: null
+  # Identifiers of the migrations to skip (name of their file without ".sh")
+  skip: []
+  # Image of the job, it needs a shell and kubectl
+  image:
+    registry: docker.io
+    repository: alpine/kubectl
+    tag: "1.37.1"
+    digest: ""
+    pullPolicy: IfNotPresent
+  # Maximum duration of the job, and of each of its steps (e.g. waiting for a pod)
+  activeDeadlineSeconds: 3600
+  stepTimeoutSeconds: 900
+  # Resources of the job and of the pods it starts
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  podSecurityContext:
+    runAsUser: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    seccompProfile:
+      type: "RuntimeDefault"
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
 
 ##
 ## For custom mysql and postgres database. Use externalDB.

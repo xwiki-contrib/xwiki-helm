@@ -6,6 +6,12 @@
 {{- /* Prefix of the environment variables understood by the official image */ -}}
 {{- $envPrefix := ternary "POSTGRES" (upper $type) $isPostgresql -}}
 {{- $probeCommand := include "xwiki.database.probeCommand" . -}}
+{{- $pgMajor := "" -}}
+{{- if $isPostgresql -}}
+{{- $pgMajor = include "xwiki.postgresql.major" . -}}
+{{- end -}}
+{{- /* Up to PostgreSQL 17 the image declares /var/lib/postgresql/data as a volume, inside the volume of the data */ -}}
+{{- $pgMaskImageVolume := and $isPostgresql (lt (int $pgMajor) 18) -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -41,9 +47,17 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with $db.args }}
+          {{- if not $isPostgresql }}
           args:
+            # Keep the data in a sub directory of the volume, like PostgreSQL (see PGDATA) and the Bitnami charts used
+            # by the previous versions of the chart
+            - --datadir=/var/lib/mysql/data
+            {{- with $db.args }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- else if $db.args }}
+          args:
+            {{- toYaml $db.args | nindent 12 }}
           {{- end }}
           env:
             - name: {{ $envPrefix }}_USER
@@ -60,9 +74,12 @@ spec:
             - name: POSTGRES_INITDB_ARGS
               value: {{ . | quote }}
             {{- end }}
-            # Keep the data in a sub directory of the volume, whatever the layout expected by the major version of the image
+            # The layout of the official image since PostgreSQL 18, for all the versions: a directory per major version
+            # in the volume, so that the clusters of two majors coexist during an upgrade with pg_upgrade (see
+            # files/migrations). As a sub directory of the volume, it also avoids the lost+found and the permissions of
+            # the root of a volume.
             - name: PGDATA
-              value: /var/lib/postgresql/data
+              value: {{ include "xwiki.postgresql.dataDir" . }}
             {{- else }}
             - name: {{ $envPrefix }}_DATABASE
               value: {{ $db.auth.database | quote }}
@@ -105,16 +122,26 @@ spec:
               {{- with $db.persistence.subPath }}
               subPath: {{ . }}
               {{- end }}
+            {{- if $pgMaskImageVolume }}
+            - name: image-volume-mask
+              # Up to PostgreSQL 17 the image declares this path as a volume: without a mount exactly there, the
+              # container runtime (e.g. containerd) mounts an ephemeral volume on it, inside the volume of the data
+              mountPath: /var/lib/postgresql/data
+            {{- end }}
             {{- if $db.initdbScripts }}
             - name: initdb
               mountPath: /docker-entrypoint-initdb.d
             {{- end }}
-      {{- if or $db.initdbScripts (not $db.persistence.enabled) }}
+      {{- if or $db.initdbScripts (not $db.persistence.enabled) $pgMaskImageVolume }}
       volumes:
         {{- if $db.initdbScripts }}
         - name: initdb
           configMap:
             name: {{ $fullName }}-initdb
+        {{- end }}
+        {{- if $pgMaskImageVolume }}
+        - name: image-volume-mask
+          emptyDir: {}
         {{- end }}
         {{- if not $db.persistence.enabled }}
         - name: data

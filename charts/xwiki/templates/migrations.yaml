@@ -1,0 +1,144 @@
+{{- /*
+Migrations executed before upgrading the release, see files/migrations/run.sh. All the resources are hooks, so that
+they exist before the resources of the release are upgraded, and are deleted once the migrations succeeded (they are
+kept for investigation otherwise).
+*/ -}}
+{{- if include "xwiki.migrations.enabled" . }}
+{{- $fullName := include "xwiki.migrations.fullname" . -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "xwiki.migrations.labels" . | nindent 4 }}
+  annotations:
+    {{- include "xwiki.migrations.hookAnnotations" (dict "weight" -10) | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "xwiki.migrations.labels" . | nindent 4 }}
+  annotations:
+    {{- include "xwiki.migrations.hookAnnotations" (dict "weight" -10) | nindent 4 }}
+rules:
+  - apiGroups: ["apps"]
+    resources: ["statefulsets", "controllerrevisions"]
+    verbs: ["get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/log", "events"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "xwiki.migrations.labels" . | nindent 4 }}
+  annotations:
+    {{- include "xwiki.migrations.hookAnnotations" (dict "weight" -10) | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ $fullName }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ $fullName }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "xwiki.migrations.labels" . | nindent 4 }}
+  annotations:
+    {{- include "xwiki.migrations.hookAnnotations" (dict "weight" -10) | nindent 4 }}
+data:
+  {{- range $path, $_ := .Files.Glob "files/migrations/*.sh" }}
+  {{ base $path }}: |
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}
+  {{- if include "xwiki.database.type" . }}
+  # Template of the pods running scripts in the image of the database, as root, with its volume mounted on /volume
+  database-pod.yaml: |
+    {{- include "xwiki.migrations.databasePod" . | nindent 4 }}
+  {{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "xwiki.migrations.labels" . | nindent 4 }}
+  annotations:
+    {{- include "xwiki.migrations.hookAnnotations" (dict "weight" 0) | nindent 4 }}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: {{ .Values.migrations.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "xwiki.migrations.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ $fullName }}
+      restartPolicy: Never
+      {{- include "xwiki.migrations.podSpec" . | nindent 6 }}
+      {{- with .Values.migrations.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: migrations
+          image: {{ include "xwiki.migrations.image" . | quote }}
+          imagePullPolicy: {{ .Values.migrations.image.pullPolicy }}
+          command: ["/bin/sh", "/migrations/run.sh"]
+          env:
+            - name: RELEASE_NAME
+              value: {{ .Release.Name | quote }}
+            - name: NAMESPACE
+              value: {{ .Release.Namespace | quote }}
+            - name: FULLNAME
+              value: {{ include "xwiki.fullname" . | quote }}
+            - name: CHART_VERSION
+              value: {{ .Chart.Version | quote }}
+            - name: DB_TYPE
+              value: {{ include "xwiki.database.type" . | quote }}
+            - name: DB_FULLNAME
+              value: {{ ternary (include "xwiki.database.fullname" .) "" (ne (include "xwiki.database.type" .) "") | quote }}
+            - name: DB_MAJOR
+              value: {{ ternary (include "xwiki.postgresql.major" .) "" (eq (include "xwiki.database.type" .) "postgresql") | quote }}
+            - name: SKIP
+              value: {{ join " " .Values.migrations.skip | quote }}
+            - name: STEP_TIMEOUT
+              value: {{ .Values.migrations.stepTimeoutSeconds | quote }}
+            # kubectl caches data in the home directory
+            - name: HOME
+              value: /tmp
+          {{- with .Values.migrations.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.migrations.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: migrations
+              mountPath: /migrations
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: migrations
+          configMap:
+            name: {{ $fullName }}
+        - name: tmp
+          emptyDir: {}
+{{- end }}

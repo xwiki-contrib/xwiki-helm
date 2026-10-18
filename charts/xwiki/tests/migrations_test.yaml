@@ -1,0 +1,181 @@
+suite: test migrations
+templates:
+  - migrations.yaml
+release:
+  name: release
+  namespace: wiki
+tests:
+  - it: should run the migrations as pre-upgrade hooks
+    asserts:
+      - hasDocuments:
+          count: 5
+      - equal:
+          path: metadata.name
+          value: release-xwiki-migrations
+      - equal:
+          path: metadata.annotations["helm.sh/hook"]
+          value: pre-upgrade
+      - equal:
+          path: metadata.annotations["helm.sh/hook-delete-policy"]
+          value: before-hook-creation,hook-succeeded
+      - equal:
+          path: metadata.annotations["helm.sh/hook-weight"]
+          value: "0"
+        documentSelector:
+          path: kind
+          value: Job
+      - equal:
+          path: metadata.annotations["helm.sh/hook-weight"]
+          value: "-10"
+        documentSelector:
+          path: kind
+          value: ConfigMap
+  - it: should configure the job for the database of the chart
+    set:
+      migrations.skip:
+        - 0001-database-bitnami-to-official-image
+    documentSelector:
+      path: kind
+      value: Job
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: docker.io/alpine/kubectl:1.37.1
+      - equal:
+          path: spec.template.spec.serviceAccountName
+          value: release-xwiki-migrations
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_TYPE
+            value: mysql
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_FULLNAME
+            value: release-mysql
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_MAJOR
+            value: ""
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: SKIP
+            value: 0001-database-bitnami-to-official-image
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: NAMESPACE
+            value: wiki
+  - it: should include the scripts and the template of the database pods
+    set:
+      mysql.enabled: false
+      postgresql.enabled: true
+      imagePullSecrets:
+        - registry
+    documentSelector:
+      path: kind
+      value: ConfigMap
+    asserts:
+      - exists:
+          path: data["run.sh"]
+      - exists:
+          path: data["lib.sh"]
+      - exists:
+          path: data["0001-database-bitnami-to-official-image.sh"]
+      - exists:
+          path: data["0002-postgresql-data-layout.sh"]
+      - exists:
+          path: data["0003-postgresql-major-upgrade.sh"]
+      - exists:
+          path: data["postgresql-major-upgrade.sh"]
+      - matchRegex:
+          path: data["database-pod.yaml"]
+          pattern: 'image: "postgres:17"'
+      - matchRegex:
+          path: data["database-pod.yaml"]
+          pattern: 'claimName: __CLAIM__'
+      - matchRegex:
+          path: data["database-pod.yaml"]
+          pattern: 'name: "registry"'
+      - matchRegex:
+          path: data["database-pod.yaml"]
+          pattern: 'name: DB_UID\s+value: "999"'
+      - matchRegex:
+          path: data["database-pod.yaml"]
+          pattern: 'name: DB_MAJOR\s+value: "17"'
+      - matchRegex:
+          path: data["database-pod.yaml"]
+          pattern: '- SETUID'
+  - it: should pass the major version of postgresql to the job and mount the sub path in the database pods
+    set:
+      mysql.enabled: false
+      postgresql.enabled: true
+      postgresql.image.tag: "18"
+      postgresql.persistence.subPath: pg
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_MAJOR
+            value: "18"
+        documentSelector:
+          path: kind
+          value: Job
+      - matchRegex:
+          path: data["database-pod.yaml"]
+          pattern: 'claimName: __CLAIM__'
+        documentSelector:
+          path: kind
+          value: ConfigMap
+      - matchRegex:
+          path: data["database-pod.yaml"]
+          pattern: 'mountPath: /volume\s+subPath: pg'
+        documentSelector:
+          path: kind
+          value: ConfigMap
+  - it: should not run by default with an external database
+    set:
+      mysql.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should run with an external database when enabled explicitly
+    set:
+      mysql.enabled: false
+      migrations.enabled: true
+    asserts:
+      - notExists:
+          path: data["database-pod.yaml"]
+        documentSelector:
+          path: kind
+          value: ConfigMap
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_TYPE
+            value: ""
+        documentSelector:
+          path: kind
+          value: Job
+  - it: should not run when disabled explicitly
+    set:
+      migrations.enabled: false
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should run with the database of the chart when enabled is an empty string
+    set:
+      migrations.enabled: ""
+    asserts:
+      - hasDocuments:
+          count: 5
+  - it: should run with postgresql when enabled is unset
+    set:
+      mysql.enabled: false
+      postgresql.enabled: true
+    asserts:
+      - hasDocuments:
+          count: 5

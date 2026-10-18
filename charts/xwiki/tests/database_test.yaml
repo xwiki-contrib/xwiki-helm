@@ -29,6 +29,12 @@ tests:
         documentSelector:
           path: kind
           value: StatefulSet
+      - equal:
+          path: spec.template.spec.containers[0].args[0]
+          value: --datadir=/var/lib/mysql/data
+        documentSelector:
+          path: kind
+          value: StatefulSet
   - it: should allow to choose the mariadb version
     set:
       mysql.enabled: false
@@ -72,7 +78,34 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: PGDATA
-            value: /var/lib/postgresql/data
+            value: /var/lib/postgresql/17/docker
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
+          value: /var/lib/postgresql
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: image-volume-mask
+            mountPath: /var/lib/postgresql/data
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: image-volume-mask
+            emptyDir: {}
+        documentSelector:
+          path: kind
+          value: StatefulSet
+      - notExists:
+          path: spec.template.spec.containers[0].args
         documentSelector:
           path: kind
           value: StatefulSet
@@ -82,6 +115,51 @@ tests:
         documentSelector:
           path: kind
           value: Service
+  - it: should use the layout of the image since postgresql 18 without masking its volume
+    set:
+      mysql.enabled: false
+      postgresql.enabled: true
+      postgresql.image.tag: "18.1-alpine"
+    documentSelector:
+      path: kind
+      value: StatefulSet
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PGDATA
+            value: /var/lib/postgresql/18/docker
+      - notContains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: image-volume-mask
+            mountPath: /var/lib/postgresql/data
+      - notExists:
+          path: spec.template.spec.volumes
+  - it: should require the major version of postgresql when the tag does not give it
+    set:
+      mysql.enabled: false
+      postgresql.enabled: true
+      postgresql.image.tag: latest
+    template: database-statefulset.yaml
+    asserts:
+      - failedTemplate:
+          errorPattern: postgresql.image.majorVersion is required
+  - it: should use the major version of postgresql set explicitly
+    set:
+      mysql.enabled: false
+      postgresql.enabled: true
+      postgresql.image.tag: latest
+      postgresql.image.majorVersion: 18
+    documentSelector:
+      path: kind
+      value: StatefulSet
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: PGDATA
+            value: /var/lib/postgresql/18/docker
   - it: should support disabling the persistence and using a sub path
     set:
       mysql.persistence.enabled: false

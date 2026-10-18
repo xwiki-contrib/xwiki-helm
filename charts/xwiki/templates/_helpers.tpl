@@ -229,6 +229,29 @@ Image of the database deployed by the chart
 {{- end }}
 
 {{/*
+Major version of the PostgreSQL image deployed by the chart: postgresql.image.majorVersion, else the number starting the
+tag. It is the name of the directory of the data in the volume, so it is required.
+*/}}
+{{- define "xwiki.postgresql.major" -}}
+{{- with .Values.postgresql.image -}}
+{{- $major := .majorVersion | default "" | toString | default (regexFind "^[0-9]+" (.tag | toString)) -}}
+{{- if not $major -}}
+{{- fail (printf "postgresql.image.majorVersion is required: the major version cannot be found from the tag %q" (.tag | toString)) -}}
+{{- end -}}
+{{- $major -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Directory of the data of PostgreSQL in the volume (mounted on /var/lib/postgresql): the layout of the official image
+since PostgreSQL 18, used for all the versions so that the volume holds the clusters of two majors during an upgrade
+with pg_upgrade (see files/migrations/0003-postgresql-major-upgrade.sh)
+*/}}
+{{- define "xwiki.postgresql.dataDir" -}}
+{{- printf "/var/lib/postgresql/%s/docker" (include "xwiki.postgresql.major" .) -}}
+{{- end }}
+
+{{/*
 Port of the database deployed by the chart
 */}}
 {{- define "xwiki.database.port" -}}
@@ -751,3 +774,148 @@ Extra user-defined init containers.
 {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Name of the resources running the migrations
+*/}}
+{{- define "xwiki.migrations.fullname" -}}
+{{- printf "%s-migrations" (include "xwiki.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Whether the migrations run: migrations.enabled when set, otherwise only when the chart deploys the database
+(returns "true" or "")
+*/}}
+{{- define "xwiki.migrations.enabled" -}}
+{{- $enabled := .Values.migrations.enabled -}}
+{{- if or (kindIs "invalid" $enabled) (and (kindIs "string" $enabled) (eq $enabled "")) -}}
+{{- if include "xwiki.database.type" . -}}true{{- end -}}
+{{- else if $enabled -}}
+true
+{{- end -}}
+{{- end }}
+
+{{/*
+Labels of the resources running the migrations
+*/}}
+{{- define "xwiki.migrations.labels" -}}
+{{ include "xwiki.labels" . }}
+app.kubernetes.io/component: migrations
+{{- end }}
+
+{{/*
+Annotations making a resource of the migrations a pre-upgrade hook
+Usage: {{ include "xwiki.migrations.hookAnnotations" (dict "weight" 0) }}
+*/}}
+{{- define "xwiki.migrations.hookAnnotations" -}}
+helm.sh/hook: pre-upgrade
+helm.sh/hook-weight: {{ .weight | quote }}
+helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+{{- end }}
+
+{{/*
+Image of the job running the migrations
+*/}}
+{{- define "xwiki.migrations.image" -}}
+{{- with .Values.migrations.image -}}
+{{- $name := ternary (printf "%s/%s" .registry .repository) .repository (ne (.registry | default "") "") -}}
+{{- if .digest -}}
+{{- printf "%s@%s" $name .digest -}}
+{{- else -}}
+{{- printf "%s:%s" $name (.tag | toString) -}}
+{{- end -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Scheduling and image pull settings of the pods of the migrations
+*/}}
+{{- define "xwiki.migrations.podSpec" -}}
+{{- with .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range . }}
+  - name: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .Values.migrations.nodeSelector }}
+nodeSelector:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- with .Values.migrations.tolerations }}
+tolerations:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+
+{{/*
+Template of the pods of the migrations running a script in the image of the database, as root (e.g. to change the owner
+of the files), with the volume of the database mounted on /volume. See run_pod in files/migrations/lib.sh.
+*/}}
+{{- define "xwiki.migrations.databasePod" -}}
+{{- $type := include "xwiki.database.type" . -}}
+{{- $db := index .Values $type -}}
+{{- $securityContext := $db.containerSecurityContext | default dict -}}
+{{- $isPostgresql := eq $type "postgresql" -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: __NAME__
+  labels:
+    {{- include "xwiki.migrations.labels" . | nindent 4 }}
+spec:
+  restartPolicy: Never
+  {{- include "xwiki.migrations.podSpec" . | nindent 2 }}
+  containers:
+    - name: migration
+      image: {{ include "xwiki.database.image" . | quote }}
+      imagePullPolicy: {{ $db.image.pullPolicy }}
+      command: ["/bin/sh", "/migrations/__SCRIPT__"]
+      env:
+        - name: DB_TYPE
+          value: {{ $type | quote }}
+        - name: DB_UID
+          value: {{ $securityContext.runAsUser | default 999 | quote }}
+        - name: DB_GID
+          value: {{ $securityContext.runAsGroup | default ($db.podSecurityContext | default dict).fsGroup | default 999 | quote }}
+        {{- if $isPostgresql }}
+        - name: DB_MAJOR
+          value: {{ include "xwiki.postgresql.major" . | quote }}
+        {{- end }}
+      securityContext:
+        runAsUser: 0
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+          add:
+            # To change the owner of the files, to run commands as the user of the database and to install the binaries
+            # of the previous major version of PostgreSQL (pg_upgrade)
+            - CHOWN
+            - DAC_OVERRIDE
+            - FOWNER
+            - FSETID
+            - SETUID
+            - SETGID
+        seccompProfile:
+          type: RuntimeDefault
+      {{- with .Values.migrations.resources }}
+      resources:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumeMounts:
+        - name: volume
+          mountPath: /volume
+          {{- with $db.persistence.subPath }}
+          subPath: {{ . }}
+          {{- end }}
+        - name: migrations
+          mountPath: /migrations
+  volumes:
+    - name: volume
+      persistentVolumeClaim:
+        claimName: __CLAIM__
+    - name: migrations
+      configMap:
+        name: {{ include "xwiki.migrations.fullname" . }}
+{{- end }}
