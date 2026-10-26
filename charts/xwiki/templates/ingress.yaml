@@ -18,6 +18,9 @@ metadata:
   name: {{ include "xwiki.fullname" . }}
   labels:
     {{- include "xwiki.labels" . | nindent 4 }}
+    {{- with .Values.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   annotations:
     {{- if .Values.ingress.annotations }}
 {{ toYaml .Values.ingress.annotations | indent 4 }}
