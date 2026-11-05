@@ -312,6 +312,9 @@ solr:
   resources: {}
   downloadCores:
     enabled: true
+    image: "curlimages/curl"
+    coreUrl: "https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core/15.5/xwiki-platform-search-solr-server-core-15.5.jar"
+    minimalCoreUrl: "https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core-minimal/15.5/xwiki-platform-search-solr-server-core-minimal-15.5.zip"
   containerSecurityContext:
     enabled: true
     allowPrivilegeEscalation: false

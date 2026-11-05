@@ -29,8 +29,12 @@ spec:
       {{- if .Values.solr.downloadCores.enabled }}
       initContainers:
         - name: download-cores
-          image: curlimages/curl
+          image: {{ .Values.solr.downloadCores.image | quote }}
           env:
+            - name: SOLR_CORE_URL
+              value: {{ tpl .Values.solr.downloadCores.coreUrl $ | quote }}
+            - name: SOLR_MINIMAL_CORE_URL
+              value: {{ tpl .Values.solr.downloadCores.minimalCoreUrl $ | quote }}
           {{- range .Values.solr.extraEnvVars }}
             - name: {{ .name  }}
               value: {{ .value | quote }}
@@ -45,8 +49,6 @@ spec:
             runAsUser: {{ .Values.solr.securityContext.fsGroup }}
           args:
             - |
-              SOLR_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core/15.5/xwiki-platform-search-solr-server-core-15.5.jar"
-              SOLR_MINIMAL_CORE_URL="https://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-search-solr-server-core-minimal/15.5/xwiki-platform-search-solr-server-core-minimal-15.5.zip"
               cd /tmp
               curl $SOLR_CORE_URL -o ./xwiki-server-core.zip && \
               curl $SOLR_MINIMAL_CORE_URL -o ./xwiki-minimal-core.zip
