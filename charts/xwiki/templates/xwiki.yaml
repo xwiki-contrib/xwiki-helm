@@ -214,13 +214,15 @@ spec:
         - name: cache
           emptyDir: {}
         {{- end }}
-        - name: xwiki-data
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
+        - name: xwiki-data
           persistentVolumeClaim:
             claimName: {{ tpl .Values.persistence.existingClaim $ }}
   {{- else if and .Values.persistence.enabled .Values.persistence.customVolume }}
+        - name: xwiki-data
           {{- .Values.persistence.customVolume | toYaml | nindent 10 }}
   {{- else if not .Values.persistence.enabled }}
+        - name: xwiki-data
           emptyDir: {}
   {{- else if and .Values.workloadStateful (not .Values.cluster.enabled) }}
   volumeClaimTemplates:
@@ -248,6 +250,7 @@ spec:
         {{- end }}
         {{- include "common.storage.class" (dict "persistence" .Values.persistence "global" .Values.global) | nindent 8 }}
   {{- else }}
+        - name: xwiki-data
           persistentVolumeClaim:
             claimName: xwiki
 ---
